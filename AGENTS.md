@@ -5,71 +5,106 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- END:nextjs-agent-rules -->
 
 
-# Recruit Roadmap Hockey - Coding Instructions
+# Hockey Recruiting Roadmap App
 
-You are building a lean MVP for a hockey recruiting roadmap app.
+## Product concept
 
-## Product goal
-Build a private recruiting command center for hockey players and parents. The app helps a family turn a player profile into a target team/school board, outreach tracker, camp/tryout tracker, and weekly recruiting roadmap.
+This is a hockey recruiting roadmap app for boys hockey players and parents.
 
-## What this is NOT
+The app helps families:
+1. Understand the hockey pathway through a public Roadmap page.
+2. Build a personal My Plan for short-term and long-term recruiting goals.
+3. Track target teams, schools, coaches, camps, and follow-ups.
+4. Know what to do today or this week.
+
+## Main app tabs
+
+1. Today
+2. My Plan
+3. Targets
+4. My Player
+5. Roadmap
+
+## Page purposes
+
+### Today
+Shows what the player/family should do this week.
+
+### My Plan
+Shows the player's personal recruiting plan:
+- short-term next-season goals
+- long-term goals
+- selected pathways
+- connected targets
+- next steps
+
+### Targets
+Tracks teams, schools, camps, coaches, and opportunities.
+
+### My Player
+Shows player profile, videos, academics, references, and profile readiness.
+
+### Roadmap
+A public static educational boys hockey pathway guide.
+
+Roadmap should be a vertical branching guide using clickable cards.
+It should be easy for non-technical hockey parents to understand.
+
+Example structure:
+AAA / High School / Prep / Academy
+branches into:
+USHL, CHL, NAHL, NCDC, EHL, USPHL, Prep/PG
+branches into:
+NCAA D1, NCAA D3, ACHA, Pro / Minor Pro
+
+## UX principles
+
+- Extremely easy to understand
+- Parent-friendly language
+- Calm, clean, serious design
+- Not flashy
 - Not a scouting network
 - Not a marketplace
-- Not a coach/player messaging platform
-- Not an AI advisor that decides where a player should go
-- Not a full team database
-- Not a video hosting platform
-- Not an automated scraper of MyHockeyRankings or Elite Prospects
+- Not a generic spreadsheet
+- No AI recommendations yet
+- No scraping
+- No Elite Prospects or MyHockeyRankings integrations yet
+- Use mock data only for now
 
-## UX direction
-Clean, serious, calm, sports-professional.
-Think: Notion + Linear + recruiting binder.
-Use dark navy, white, light gray, subtle ice-blue accents.
-Avoid loud sports graphics, clutter, neon, childish styling.
+## Design style
 
-## MVP pages
-1. Landing page
-2. Auth pages
-3. Onboarding/player intake
-4. Dashboard: weekly recruiting roadmap
-5. Target board
-6. Program detail page
-7. Player profile page
-8. Settings/admin seed page
+- Dark navy / white / light gray / ice blue accent
+- Big headings
+- Clear cards
+- Obvious buttons
+- Few things on screen at once
+- No clutter
+- Desktop-first but mobile-friendly
 
-## Main user
-A hockey parent/player managing recruiting manually through spreadsheets, emails, camp links, and notes.
+## Important wording
 
-## Core value
-The app should always answer:
-"What should I do next this week?"
+Use:
+- paths
+- options
+- targets
+- recruiting plan
+- next steps
+- opportunities
 
-## Technical rules
-- Use Next.js App Router
-- Use TypeScript
-- Use Tailwind
-- Use shadcn/ui
-- Use Supabase for auth and database
-- Keep components simple
-- Avoid unnecessary abstractions
-- Use mock data first before wiring the database
-- Every page should be mobile-friendly but desktop-first
-- Do not add paid APIs
-- Do not add AI features yet
-- Do not add scraping
+Avoid:
+- guaranteed spots
+- predictions
+- recruiting chances
+- AI advisor language
+- claims that the app can get a player recruited
 
-## MVP data objects
-- PlayerProfile
-- Program
-- TargetProgram
-- Contact
-- OutreachLog
-- Task
-- Event
-- RoadmapStage
+## Technical stack
 
-## Development style
-Build in small increments.
-After each task, run lint/build.
-Do not rewrite unrelated files.
-Do not add features not requested.
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Mock data only for this prototype
+- No Supabase/auth/database yet
+- No AI
+- No scraping
