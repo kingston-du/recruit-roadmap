@@ -1,35 +1,45 @@
 import Link from "next/link";
-import { ArrowRight, Filter, Plus } from "lucide-react";
+import { ArrowRight, CalendarDays, ClipboardList, MapPin, Target } from "lucide-react";
 
 import { AppShell } from "@/components/recruit/app-shell";
 import { Panel, StatusPill } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
-import { targetPrograms, type TargetProgram } from "@/lib/mock-data";
+import { targets, type Target as TargetItem } from "@/lib/mock-data";
 
-const columns: Array<{ title: TargetProgram["status"]; description: string }> = [
-  { title: "Researching", description: "Need basic fit and contact context." },
-  { title: "Ready for outreach", description: "Profile can be sent this week." },
-  { title: "Contacted", description: "Conversation started; keep notes current." },
-  { title: "Follow-up due", description: "Action needed before momentum fades." },
-];
+function statusTone(status: TargetItem["status"]) {
+  if (status === "Follow-up due") {
+    return "amber" as const;
+  }
+
+  if (status === "Planned" || status === "Ready to contact") {
+    return "cyan" as const;
+  }
+
+  return "slate" as const;
+}
 
 export default function TargetsPage() {
+  const followUps = targets.filter((target) => target.status === "Follow-up due");
+  const highPriority = targets.filter((target) => target.priority === "High");
+
   return (
     <AppShell
-      title="Target Board"
-      eyebrow="Programs"
+      title="Targets"
+      eyebrow="Teams, schools, camps, coaches"
+      activeHref="/targets"
       action={
-        <Button className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
-          <Plus /> Add target
+        <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
+          <Link href="/my-plan">
+            <ClipboardList /> View My Plan
+          </Link>
         </Button>
       }
     >
-      <div className="mb-6 grid gap-4 md:grid-cols-4">
+      <div className="mb-6 grid gap-4 md:grid-cols-3">
         {[
-          ["Total targets", "5"],
-          ["Match fits", "2"],
-          ["Follow-ups due", "1"],
-          ["Camp deadlines", "2"],
+          ["Total targets", targets.length.toString()],
+          ["Need follow-up", followUps.length.toString()],
+          ["High priority", highPriority.length.toString()],
         ].map(([label, value]) => (
           <Panel key={label} className="p-4">
             <p className="text-sm text-slate-500">{label}</p>
@@ -38,72 +48,68 @@ export default function TargetsPage() {
         ))}
       </div>
 
-      <div className="mb-4 flex flex-col justify-between gap-3 rounded-lg border border-slate-200 bg-white p-4 md:flex-row md:items-center">
-        <div>
-          <p className="font-medium">Board view</p>
+      <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
+        <Panel>
+          <div className="flex items-center gap-2">
+            <Target className="size-5 text-cyan-700" />
+            <h2 className="text-lg font-semibold">Target list</h2>
+          </div>
           <p className="mt-1 text-sm text-slate-500">
-            Mock recruiting pipeline grouped by the next manual action.
+            Each target has one clear next step so the family knows what happens next.
           </p>
-        </div>
-        <Button variant="outline">
-          <Filter /> Filters
-        </Button>
-      </div>
 
-      <div className="grid gap-4 xl:grid-cols-4">
-        {columns.map((column) => {
-          const targets = targetPrograms.filter((target) => target.status === column.title);
-
-          return (
-            <section key={column.title} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <div className="px-1 py-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold">{column.title}</h2>
-                  <span className="text-xs text-slate-500">{targets.length}</span>
+          <div className="mt-5 grid gap-4">
+            {targets.map((target) => (
+              <Link
+                key={target.id}
+                href={`/targets/${target.id}`}
+                className="rounded-md border border-slate-200 p-4 hover:border-cyan-200 hover:bg-cyan-50/40"
+              >
+                <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
+                  <div>
+                    <div className="flex flex-wrap gap-2">
+                      <StatusPill tone="cyan">{target.kind}</StatusPill>
+                      <StatusPill>{target.path}</StatusPill>
+                      <StatusPill tone={statusTone(target.status)}>{target.status}</StatusPill>
+                    </div>
+                    <h3 className="mt-3 text-lg font-semibold">{target.name}</h3>
+                    <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+                      <MapPin className="size-4" /> {target.location}
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-slate-600">{target.nextStep}</p>
+                  </div>
+                  <ArrowRight className="hidden size-5 text-slate-400 md:block" />
                 </div>
-                <p className="mt-1 text-xs leading-5 text-slate-500">{column.description}</p>
-              </div>
-              <div className="mt-2 grid gap-3">
-                {targets.map((target) => (
-                  <Link
-                    key={target.id}
-                    href={`/targets/${target.id}`}
-                    className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:border-cyan-200 hover:shadow-md"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-semibold tracking-tight">{target.program.name}</p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          {target.program.level} - {target.program.location}
-                        </p>
-                      </div>
-                      <ArrowRight className="size-4 text-slate-400" />
-                    </div>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <StatusPill tone={target.fit === "Reach" ? "amber" : "cyan"}>
-                        {target.fit}
-                      </StatusPill>
-                      <StatusPill>{target.program.league}</StatusPill>
-                    </div>
-                    <div className="mt-4">
-                      <div className="flex justify-between text-xs text-slate-500">
-                        <span>Priority</span>
-                        <span>{target.priority}%</span>
-                      </div>
-                      <div className="mt-2 h-1.5 rounded-full bg-slate-100">
-                        <div
-                          className="h-1.5 rounded-full bg-cyan-700"
-                          style={{ width: `${target.priority}%` }}
-                        />
-                      </div>
-                    </div>
-                    <p className="mt-4 text-sm leading-6 text-slate-600">{target.nextStep}</p>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          );
-        })}
+              </Link>
+            ))}
+          </div>
+        </Panel>
+
+        <div className="grid gap-6">
+          <Panel className="border-cyan-200 bg-cyan-50">
+            <h2 className="text-lg font-semibold">Good target notes answer three things</h2>
+            <div className="mt-4 grid gap-3 text-sm leading-6 text-slate-700">
+              <p>Why is this target on the list?</p>
+              <p>What does the family need to ask?</p>
+              <p>What is the next step?</p>
+            </div>
+          </Panel>
+
+          <Panel>
+            <div className="flex items-center gap-2">
+              <CalendarDays className="size-5 text-cyan-700" />
+              <h2 className="text-lg font-semibold">Soonest dates</h2>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {targets.slice(0, 4).map((target) => (
+                <div key={target.id} className="rounded-md bg-slate-50 p-3">
+                  <p className="text-sm font-medium">{target.name}</p>
+                  <p className="mt-1 text-xs text-slate-500">{target.nextDate}</p>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        </div>
       </div>
     </AppShell>
   );
