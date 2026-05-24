@@ -15,11 +15,11 @@ import { Button } from "@/components/ui/button";
 import { targets, type Target as TargetItem } from "@/lib/mock-data";
 
 function statusTone(status: TargetItem["status"]) {
-  if (status === "Follow-up due") {
+  if (status === "Interested / Next Step") {
     return "amber" as const;
   }
 
-  if (status === "Planned" || status === "Ready to contact") {
+  if (status === "Planning to Contact" || status === "Contacted") {
     return "cyan" as const;
   }
 

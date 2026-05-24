@@ -1,11 +1,11 @@
-export type TargetKind = "Team" | "School" | "Camp" | "Coach" | "Opportunity";
+export type TargetKind = "Team" | "School" | "Club" | "Camp" | "Coach" | "Opportunity";
 
 export type TargetStatus =
   | "Researching"
-  | "Ready to contact"
+  | "Planning to Contact"
   | "Contacted"
-  | "Follow-up due"
-  | "Planned";
+  | "Interested / Next Step"
+  | "Not a Fit";
 
 export type Priority = "High" | "Medium" | "Low";
 
@@ -14,6 +14,7 @@ export type Target = {
   name: string;
   kind: TargetKind;
   path: string;
+  connectedPath: string;
   location: string;
   contactName: string;
   contactRole: string;
@@ -25,9 +26,15 @@ export type Target = {
   nextStep: string;
   notes: string;
   connectedGoal: string;
+  rosterLinkPlaceholder: string;
+  outreachHistory: Array<{
+    date: string;
+    note: string;
+  }>;
   details: {
     whyOnList: string;
     familyQuestions: string[];
+    concerns: string[];
     prepare: string[];
   };
 };
@@ -193,23 +200,33 @@ export const targets: Target[] = [
     name: "Northwood School",
     kind: "School",
     path: "Prep",
+    connectedPath: "PG / Prep Path",
     location: "Lake Placid, NY",
     contactName: "Coach Reynolds",
     contactRole: "Prep coach",
     email: "reynolds@northwood.example",
-    status: "Follow-up due",
+    status: "Interested / Next Step",
     priority: "High",
     nextDate: "June 8",
     lastTouch: "Intro email sent May 13",
     nextStep: "Send June schedule and ask about the prospect skate.",
     notes: "Family likes the boarding setup and academic structure.",
     connectedGoal: "Explore a prep path before junior hockey decisions.",
+    rosterLinkPlaceholder: "Team roster link saved here later",
+    outreachHistory: [
+      { date: "May 13", note: "Sent intro email with player profile and spring schedule." },
+      { date: "May 18", note: "Coach replied and asked for updated game video." },
+    ],
     details: {
       whyOnList: "Prep environment with strong academics and a serious hockey schedule.",
       familyQuestions: [
         "What does a 2028 defenseman's first year usually look like?",
         "How does admissions timing work for a hockey family?",
         "What video or school material should be sent first?",
+      ],
+      concerns: [
+        "Need to understand whether a 2026-27 role is realistic.",
+        "Admissions timing and total cost still need review.",
       ],
       prepare: [
         "One-page profile",
@@ -224,17 +241,22 @@ export const targets: Target[] = [
     name: "Cranbrook Kingswood",
     kind: "School",
     path: "Prep",
+    connectedPath: "PG / Prep Path",
     location: "Bloomfield Hills, MI",
     contactName: "Coach Patel",
     contactRole: "Prep coach",
     email: "patel@cranbrook.example",
-    status: "Ready to contact",
+    status: "Planning to Contact",
     priority: "Medium",
     nextDate: "June 20",
     lastTouch: "Admissions information saved May 14",
     nextStep: "Send profile, transcript snapshot, and May highlight link.",
     notes: "Strong school fit; application timing needs attention.",
     connectedGoal: "Compare prep school options with strong academics.",
+    rosterLinkPlaceholder: "Team schedule or roster link not added yet",
+    outreachHistory: [
+      { date: "May 14", note: "Saved admissions information and coach contact." },
+    ],
     details: {
       whyOnList: "A school-first option that still keeps hockey development visible.",
       familyQuestions: [
@@ -242,25 +264,35 @@ export const targets: Target[] = [
         "How many hockey events should the family attend?",
         "What is the admissions timeline for a 2028 player?",
       ],
+      concerns: [
+        "Academic and hockey timelines may not line up cleanly.",
+        "Need clearer sense of player role before outreach.",
+      ],
       prepare: ["Transcript snapshot", "Teacher contact list", "Highlight link"],
     },
   },
   {
     id: "jr-bruins-main-camp",
-    name: "Jr. Bruins Main Camp",
-    kind: "Camp",
+    name: "Boston Jr. Bruins",
+    kind: "Club",
     path: "USPHL",
+    connectedPath: "Junior Hockey Path",
     location: "Marlborough, MA",
     contactName: "Coach Moreau",
     contactRole: "Camp contact",
     email: "moreau@jrbruins.example",
-    status: "Planned",
+    status: "Contacted",
     priority: "Medium",
     nextDate: "July 12-14",
     lastTouch: "Call with assistant coach May 10",
     nextStep: "Confirm registration and update the family calendar.",
     notes: "Useful exposure to a junior environment; school plan still matters.",
     connectedGoal: "Learn what a junior camp weekend feels like.",
+    rosterLinkPlaceholder: "Team roster link placeholder",
+    outreachHistory: [
+      { date: "May 10", note: "Call with assistant coach about summer main camp." },
+      { date: "May 16", note: "Saved camp dates and asked what video to send." },
+    ],
     details: {
       whyOnList: "A practical way to see pace, schedule, and communication expectations.",
       familyQuestions: [
@@ -268,14 +300,19 @@ export const targets: Target[] = [
         "What should parents ask after camp ends?",
         "How does this camp connect to future opportunities?",
       ],
+      concerns: [
+        "Need to confirm whether this is an evaluation or mostly exposure.",
+        "School plan during a junior season is still unclear.",
+      ],
       prepare: ["Registration receipt", "Equipment checklist", "Simple post-camp notes"],
     },
   },
   {
     id: "islanders-hockey-club",
     name: "Islanders Hockey Club",
-    kind: "Team",
+    kind: "Club",
     path: "NCDC / USPHL",
+    connectedPath: "Junior Hockey Path",
     location: "Tyngsboro, MA",
     contactName: "Coach Walsh",
     contactRole: "Program contact",
@@ -287,6 +324,10 @@ export const targets: Target[] = [
     nextStep: "Confirm the age-group pathway and evaluation skate details.",
     notes: "Keep as an option if prep timing changes.",
     connectedGoal: "Understand junior and split-season options.",
+    rosterLinkPlaceholder: "Team roster link placeholder",
+    outreachHistory: [
+      { date: "May 7", note: "Parent note added after hearing about evaluation skate." },
+    ],
     details: {
       whyOnList: "A regional junior pathway to understand before making larger travel decisions.",
       familyQuestions: [
@@ -294,31 +335,45 @@ export const targets: Target[] = [
         "How does school work with this option?",
         "What does the evaluation skate actually decide?",
       ],
+      concerns: [
+        "Need to understand exact team level and fees.",
+        "Travel and housing plan may not fit the family yet.",
+      ],
       prepare: ["Current team schedule", "Family school constraints", "Basic questions list"],
     },
   },
   {
     id: "kent-admissions-call",
-    name: "Kent School Admissions Call",
-    kind: "Opportunity",
+    name: "Kent School",
+    kind: "School",
     path: "Prep",
+    connectedPath: "PG / Prep Path",
     location: "Video call",
     contactName: "Admissions office",
     contactRole: "School contact",
     email: "admissions@kent.example",
-    status: "Contacted",
+    status: "Not a Fit",
     priority: "Medium",
     nextDate: "May 29",
     lastTouch: "Call time saved May 16",
     nextStep: "Prepare academic and boarding questions before the call.",
     notes: "Useful comparison point for prep school fit.",
     connectedGoal: "Clarify school expectations before sending more hockey material.",
+    rosterLinkPlaceholder: "Team page link placeholder",
+    outreachHistory: [
+      { date: "May 16", note: "Admissions call time saved for family review." },
+      { date: "May 22", note: "Family noted that timing may not fit the 2026-27 plan." },
+    ],
     details: {
       whyOnList: "Helps the family understand the school side before chasing hockey details.",
       familyQuestions: [
         "What courses should Evan take next year?",
         "What does a campus visit include?",
         "How should a coach reference be included?",
+      ],
+      concerns: [
+        "Timing and school fit may not match the current junior-focused plan.",
+        "Keep notes, but do not spend more outreach time this month.",
       ],
       prepare: ["Academic questions", "Current transcript", "Family travel availability"],
     },
