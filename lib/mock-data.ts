@@ -94,6 +94,25 @@ export type PlanChecklistItem = {
   done: boolean;
 };
 
+export type TodayAction = {
+  title: string;
+  whyItMatters: string;
+  urgency: string;
+  relatedTo: string;
+  buttonLabel: string;
+  href: string;
+};
+
+export type AttentionItem = {
+  title: string;
+  note: string;
+};
+
+export type ProgressItem = {
+  title: string;
+  done: boolean;
+};
+
 export type RoadmapCard = {
   id: string;
   name: string;
@@ -365,6 +384,61 @@ export const events: Event[] = [
     kind: "Camp",
   },
 ];
+
+export const todayPlan = {
+  heading: "Today’s Recruiting Plan",
+  subheading: "Here are the most important next steps for this week.",
+  actions: [
+    {
+      title: "Follow up with 2 coaches",
+      whyItMatters:
+        "A short, polite follow-up keeps active conversations from going quiet.",
+      urgency: "Due today",
+      relatedTo: "Junior Hockey Path",
+      buttonLabel: "Open targets",
+      href: "/targets",
+    },
+    {
+      title: "Add recent game video to your player profile",
+      whyItMatters:
+        "Coaches need current video before the family sends more outreach.",
+      urgency: "Due Wednesday",
+      relatedTo: "My Player",
+      buttonLabel: "Update profile",
+      href: "/my-player",
+    },
+    {
+      title: "Decide whether to attend a camp",
+      whyItMatters:
+        "The family should choose events that answer real questions about level and fit.",
+      urgency: "Decide by Friday",
+      relatedTo: "Junior options",
+      buttonLabel: "Review plan",
+      href: "/my-plan",
+    },
+  ] satisfies TodayAction[],
+  needsAttention: [
+    {
+      title: "3 targets have no coach contact yet",
+      note: "Add the right contact before sending any outreach.",
+    },
+    {
+      title: "2 follow-ups are overdue",
+      note: "Keep replies and next steps from getting buried.",
+    },
+    {
+      title: "Profile is missing recent video",
+      note: "Add one full-game link before contacting more teams.",
+    },
+  ] satisfies AttentionItem[],
+  progressSummary: [
+    { title: "Player profile started", done: true },
+    { title: "8 targets added", done: true },
+    { title: "3 coaches contacted", done: true },
+    { title: "2 camps saved", done: true },
+    { title: "1 response logged", done: true },
+  ] satisfies ProgressItem[],
+};
 
 export const myPlan = {
   playerSnapshot: {
