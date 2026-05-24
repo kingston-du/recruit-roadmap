@@ -120,6 +120,28 @@ export type ProgressItem = {
   done: boolean;
 };
 
+export type ProfileInfoItem = {
+  label: string;
+  value?: string;
+  emptyText: string;
+};
+
+export type PlayerProfileReadiness = {
+  score: number;
+  status: string;
+  summary: string;
+  basicInfo: ProfileInfoItem[];
+  hockeyInfo: ProfileInfoItem[];
+  schoolInfo: ProfileInfoItem[];
+  videosAndLinks: ProfileInfoItem[];
+  references: ProfileInfoItem[];
+  preview: {
+    headline: string;
+    summary: string;
+    details: string[];
+  };
+};
+
 export type RoadmapCard = {
   id: string;
   name: string;
@@ -193,6 +215,63 @@ export const readinessItems: ReadinessItem[] = [
     note: "June tournament dates are ready for outreach.",
   },
 ];
+
+export const playerProfileReadiness: PlayerProfileReadiness = {
+  score: 68,
+  status: "Needs a few updates before sending",
+  summary:
+    "The profile has the core player information, but recent video and one more reference should be added before broad coach outreach.",
+  basicInfo: [
+    { label: "Player name", value: playerProfile.name, emptyText: "Add player name" },
+    { label: "Birth year", value: playerProfile.birthYear, emptyText: "Add birth year" },
+    { label: "Hometown", value: playerProfile.hometown, emptyText: "Add hometown" },
+    { label: "Family contact", value: playerProfile.familyOwner, emptyText: "Add parent contact" },
+  ],
+  hockeyInfo: [
+    { label: "Current team", value: playerProfile.currentTeam, emptyText: "Add current team" },
+    { label: "Position", value: playerProfile.position, emptyText: "Add position" },
+    { label: "Shoots", value: playerProfile.shoots, emptyText: "Add shoots left/right" },
+    { label: "Size", value: `${playerProfile.height}, ${playerProfile.weight}`, emptyText: "Add height and weight" },
+  ],
+  schoolInfo: [
+    { label: "School", value: playerProfile.currentSchool, emptyText: "Add school" },
+    { label: "Graduation year", value: playerProfile.gradYear, emptyText: "Add graduation year" },
+    { label: "GPA", value: undefined, emptyText: "Add GPA or academic info" },
+    { label: "Testing", value: playerProfile.testStatus, emptyText: "Add testing plan" },
+  ],
+  videosAndLinks: [
+    {
+      label: "Highlight video",
+      value: playerProfile.videoStatus,
+      emptyText: "Add your first video link",
+    },
+    {
+      label: "Full game video",
+      value: undefined,
+      emptyText: "Add your first video link",
+    },
+    {
+      label: "Player profile PDF",
+      value: "Draft profile saved",
+      emptyText: "Add shareable profile link",
+    },
+  ],
+  references: [
+    { label: "Current head coach", value: "Coach Martin - Cushing Academy", emptyText: "Add a coach reference" },
+    { label: "Skills coach", value: undefined, emptyText: "Add a coach reference" },
+    { label: "Academic reference", value: "Academic advisor listed", emptyText: "Add school reference" },
+  ],
+  preview: {
+    headline: `${playerProfile.name} - ${playerProfile.birthYear} right-shot defenseman`,
+    summary:
+      "Cushing Academy defenseman exploring 2026-27 junior options while keeping NCAA D3 and ACHA paths open.",
+    details: [
+      `${playerProfile.height}, ${playerProfile.weight}`,
+      `${playerProfile.currentSchool} - Class of ${playerProfile.gradYear}`,
+      playerProfile.targetSummary,
+    ],
+  },
+};
 
 export const targets: Target[] = [
   {
