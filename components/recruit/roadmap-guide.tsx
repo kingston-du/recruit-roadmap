@@ -1,8 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowDown, ArrowRight, CheckCircle2, Info, Search } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowRight,
+  CheckCircle2,
+  ClipboardList,
+  Info,
+  Search,
+  Target,
+  X,
+} from "lucide-react";
+import { Dialog } from "radix-ui";
 
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/recruit/ui";
@@ -10,15 +20,41 @@ import { cn } from "@/lib/utils";
 import type { RoadmapCard, RoadmapSection } from "@/lib/mock-data";
 
 export function RoadmapGuide({ sections }: { sections: RoadmapSection[] }) {
-  const cards = useMemo(() => sections.flatMap((section) => section.cards), [sections]);
-  const [selectedId, setSelectedId] = useState(cards[0]?.id ?? "");
-  const selectedCard = cards.find((card) => card.id === selectedId) ?? cards[0];
-
   return (
-    <div
-      id="roadmap-guide"
-      className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start"
-    >
+    <section id="roadmap-guide" className="grid gap-5">
+      <div className="grid gap-5 rounded-md border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusPill tone="cyan">2-minute scan</StatusPill>
+            <StatusPill>Educational guide</StatusPill>
+          </div>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+            Read the pathway from top to bottom, then click the options that fit your player.
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+            Most boys hockey families are comparing a current playing environment, a
+            development step, possible junior options, and a college or later outcome.
+            This roadmap keeps those choices organized without treating any route as a promise.
+          </p>
+        </div>
+
+        <div className="border-l-4 border-cyan-200 pl-4">
+          <p className="text-sm font-semibold text-slate-950">How parents can use it</p>
+          <div className="mt-3 grid gap-3">
+            {[
+              "Start with where your player is now.",
+              "Click realistic options to see what to research.",
+              "Turn good-fit options into targets and plan steps.",
+            ].map((item) => (
+              <div key={item} className="flex gap-2">
+                <CheckCircle2 className="mt-0.5 size-4 text-cyan-800" />
+                <p className="text-sm leading-6 text-slate-700">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-5">
         {sections.map((section, sectionIndex) => (
           <section key={section.title} className="grid gap-4">
@@ -29,16 +65,14 @@ export function RoadmapGuide({ sections }: { sections: RoadmapSection[] }) {
                 </p>
                 <h2 className="mt-2 text-xl font-semibold tracking-tight">{section.title}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{section.intro}</p>
+                <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                  {section.cards.length} options
+                </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {section.cards.map((card) => (
-                  <RoadmapCardButton
-                    key={card.id}
-                    card={card}
-                    isSelected={card.id === selectedCard.id}
-                    onClick={() => setSelectedId(card.id)}
-                  />
+                  <RoadmapCardDialog key={card.id} card={card} sectionTitle={section.title} />
                 ))}
               </div>
             </div>
@@ -51,101 +85,132 @@ export function RoadmapGuide({ sections }: { sections: RoadmapSection[] }) {
           </section>
         ))}
       </div>
-
-      <aside className="xl:sticky xl:top-28 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto xl:pr-2 xl:overscroll-contain">
-        <SelectedRoadmapPanel card={selectedCard} />
-      </aside>
-    </div>
+    </section>
   );
 }
 
-function RoadmapCardButton({
+function RoadmapCardDialog({
   card,
-  isSelected,
-  onClick,
+  sectionTitle,
 }: {
   card: RoadmapCard;
-  isSelected: boolean;
-  onClick: () => void;
+  sectionTitle: string;
 }) {
   return (
-    <button
-      type="button"
-      aria-pressed={isSelected}
-      onClick={onClick}
-      className={cn(
-        "flex min-h-44 flex-col rounded-md border bg-white p-4 text-left shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200",
-        isSelected ? "border-cyan-500 ring-2 ring-cyan-100" : "border-slate-200",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-lg font-semibold tracking-tight text-slate-950">{card.name}</p>
-          <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
-            {card.label}
+    <Dialog.Root>
+      <Dialog.Trigger asChild>
+        <button
+          type="button"
+          aria-label={`Open ${card.name} details`}
+          className={cn(
+            "group flex min-h-44 flex-col rounded-md border border-slate-200 bg-white p-4 text-left shadow-sm transition",
+            "hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-cyan-50/40 hover:shadow-md",
+            "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200",
+          )}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-lg font-semibold tracking-tight text-slate-950">{card.name}</p>
+              <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                {card.label}
+              </p>
+            </div>
+            <ArrowRight className="size-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-cyan-700" />
+          </div>
+
+          <p className="mt-3 text-sm leading-6 text-slate-600">{card.description}</p>
+          <div className="mt-auto pt-4">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-800">
+              View details
+              <ArrowRight className="size-3.5" />
+            </span>
+          </div>
+        </button>
+      </Dialog.Trigger>
+
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-slate-950/55 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0" />
+        <Dialog.Content
+          className={cn(
+            "fixed inset-x-3 bottom-3 z-50 max-h-[calc(100vh-1.5rem)] overflow-y-auto rounded-md border border-slate-200 bg-white p-5 shadow-2xl outline-none",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom-6 data-[state=closed]:slide-out-to-bottom-6",
+            "md:inset-y-3 md:left-auto md:right-3 md:w-[min(560px,calc(100vw-2rem))] md:max-h-none md:data-[state=open]:slide-in-from-right-6 md:data-[state=closed]:slide-out-to-right-6",
+          )}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusPill tone="cyan">{sectionTitle}</StatusPill>
+                <StatusPill>{card.label}</StatusPill>
+              </div>
+              <Dialog.Title className="mt-4 text-2xl font-semibold tracking-tight text-slate-950">
+                {card.name}
+              </Dialog.Title>
+              <Dialog.Description className="mt-2 text-sm leading-6 text-slate-600">
+                {card.description}
+              </Dialog.Description>
+            </div>
+
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                aria-label="Close details"
+                className="flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
+              >
+                <X className="size-4" />
+              </button>
+            </Dialog.Close>
+          </div>
+
+          <div className="mt-5 grid gap-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <DetailBlock title="Best for" body={card.bestFor} />
+              <DetailBlock title="Common next step" body={card.commonNextStep} />
+            </div>
+
+            <DetailBlock title="What it is" body={card.whatItIs} />
+            <DetailBlock title="Who it is usually for" body={card.usuallyFor} />
+            <DetailBlock title="How players usually get there" body={card.howPlayersGetThere} />
+
+            <DetailList
+              icon={<Search className="size-4 text-cyan-700" />}
+              title="What to research"
+              items={card.whatToResearch}
+            />
+            <DetailList
+              icon={<Info className="size-4 text-cyan-700" />}
+              title="Common misconceptions"
+              items={card.misconceptions}
+            />
+            {card.examples ? (
+              <DetailList
+                icon={<CheckCircle2 className="size-4 text-cyan-700" />}
+                title="Examples"
+                items={card.examples}
+              />
+            ) : null}
+          </div>
+
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">
+            <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
+              <Link href="/targets">
+                <Target /> Start tracking your targets
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/my-plan">
+                <ClipboardList /> Create My Plan
+              </Link>
+            </Button>
+          </div>
+
+          <p className="mt-4 text-xs leading-5 text-slate-500">
+            This guide is educational. It is not a recruiting agency, scouting service,
+            roster promise, scholarship promise, or guarantee of coach responses.
           </p>
-        </div>
-        <ArrowRight className="size-4 text-slate-400" />
-      </div>
-
-      <p className="mt-3 text-sm leading-6 text-slate-600">{card.description}</p>
-    </button>
-  );
-}
-
-function SelectedRoadmapPanel({ card }: { card: RoadmapCard }) {
-  return (
-    <section className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-wrap items-center gap-2">
-        <StatusPill tone="cyan">Selected path</StatusPill>
-        <StatusPill>{card.label}</StatusPill>
-      </div>
-      <h2 className="mt-4 text-2xl font-semibold tracking-tight">{card.name}</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{card.description}</p>
-
-      <div className="mt-5 grid gap-4">
-        <div className="grid gap-3">
-          <DetailBlock title="Best for" body={card.bestFor} />
-          <DetailBlock title="Common next step" body={card.commonNextStep} />
-        </div>
-        <DetailBlock title="What it is" body={card.whatItIs} />
-        <DisclosureDetailBlock title="Who it is usually for" body={card.usuallyFor} />
-        <DisclosureDetailBlock title="How players usually get there" body={card.howPlayersGetThere} />
-
-        <DisclosureDetailList
-          icon={<Search className="size-4 text-cyan-700" />}
-          title="What to research"
-          items={card.whatToResearch}
-        />
-
-        <DisclosureDetailList
-          icon={<Info className="size-4 text-cyan-700" />}
-          title="Common misconceptions"
-          items={card.misconceptions}
-        />
-
-        {card.examples ? (
-          <DisclosureDetailList
-            icon={<CheckCircle2 className="size-4 text-cyan-700" />}
-            title="Example related leagues or teams"
-            items={card.examples}
-          />
-        ) : null}
-      </div>
-
-      <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-        <Button disabled className="bg-[#071a2f] text-white disabled:opacity-60">
-          Add to My Plan
-        </Button>
-        <Button disabled variant="outline">
-          View related targets
-        </Button>
-      </div>
-      <p className="mt-3 text-xs leading-5 text-slate-500">
-        Mock actions for this static prototype. This guide is educational and does not
-        guarantee placement or predict outcomes.
-      </p>
-    </section>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
@@ -158,18 +223,7 @@ function DetailBlock({ title, body }: { title: string; body: string }) {
   );
 }
 
-function DisclosureDetailBlock({ title, body }: { title: string; body: string }) {
-  return (
-    <details className="rounded-md bg-slate-50 p-3">
-      <summary className="cursor-pointer text-sm font-semibold text-slate-900">
-        {title}
-      </summary>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{body}</p>
-    </details>
-  );
-}
-
-function DisclosureDetailList({
+function DetailList({
   icon,
   title,
   items,
@@ -179,18 +233,19 @@ function DisclosureDetailList({
   items: string[];
 }) {
   return (
-    <details className="rounded-md bg-slate-50 p-3">
-      <summary className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-slate-900">
+    <div className="rounded-md bg-slate-50 p-3">
+      <div className="flex items-center gap-2">
         {icon}
-        {title}
-      </summary>
+        <p className="text-sm font-semibold text-slate-900">{title}</p>
+      </div>
       <ul className="mt-2 grid gap-2">
         {items.map((item) => (
-          <li key={item} className="text-sm leading-6 text-slate-600">
-            {item}
+          <li key={item} className="flex gap-2 text-sm leading-6 text-slate-600">
+            <CheckCircle2 className="mt-1 size-3.5 shrink-0 text-cyan-700" />
+            <span>{item}</span>
           </li>
         ))}
       </ul>
-    </details>
+    </div>
   );
 }
