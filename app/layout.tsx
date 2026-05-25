@@ -3,7 +3,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Recruit Roadmap Hockey",
-  description: "A simple hockey recruiting roadmap and planning prototype for families.",
+  description:
+    "A freemium hockey recruiting roadmap and planning app for families.",
 };
 
 export default function RootLayout({
