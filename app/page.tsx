@@ -85,7 +85,7 @@ function StartFreeButton({ className = "" }: { className?: string }) {
       asChild
       className={`h-12 rounded-md bg-[#d71920] px-5 text-base text-white hover:bg-[#b8141a] ${className}`}
     >
-      <Link href="/today">
+      <Link href="/signup">
         Start free <ArrowRight className="size-4" />
       </Link>
     </Button>
@@ -142,11 +142,14 @@ export default function HomePage() {
               <Link href="#product" className="hover:text-white">
                 Product
               </Link>
-              <Link href="#plans" className="hover:text-white">
+              <Link href="/pricing" className="hover:text-white">
                 Plans
               </Link>
               <Link href="/roadmap" className="hover:text-white">
                 Roadmap
+              </Link>
+              <Link href="/login" className="hover:text-white">
+                Log in
               </Link>
             </nav>
           </header>

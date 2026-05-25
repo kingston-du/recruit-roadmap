@@ -4,14 +4,20 @@ import { ArrowRight, CalendarDays, CheckCircle2, Circle, Target } from "lucide-r
 import { AppShell } from "@/components/recruit/app-shell";
 import { Panel, StatusPill } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
+import { requireUser } from "@/lib/auth";
 import { myPlan, playerProfile } from "@/lib/mock-data";
 
-export default function MyPlanPage() {
+export const dynamic = "force-dynamic";
+
+export default async function MyPlanPage() {
+  const user = await requireUser("/my-plan");
+
   return (
     <AppShell
       title="My Plan"
       eyebrow="Recruiting plan"
       activeHref="/my-plan"
+      userEmail={user.email}
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
           <Link href="/targets">

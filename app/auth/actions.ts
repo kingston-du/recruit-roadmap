@@ -1,0 +1,129 @@
+"use server";
+
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+
+import { getSafeRedirectPath } from "@/lib/auth";
+import { getSupabaseConfig } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
+
+export type AuthFormState = {
+  message: string;
+  success?: boolean;
+  fieldErrors?: {
+    email?: string[];
+    password?: string[];
+  };
+};
+
+const authSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address."),
+  password: z.string().min(6, "Password must be at least 6 characters."),
+  next: z.string().optional(),
+});
+
+const initialError = {
+  message:
+    "Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY to your environment.",
+} satisfies AuthFormState;
+
+function readAuthForm(formData: FormData) {
+  return authSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+    next: formData.get("next") ?? undefined,
+  });
+}
+
+export async function loginAction(
+  _previousState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const parsed = readAuthForm(formData);
+
+  if (!parsed.success) {
+    return {
+      message: "Please fix the highlighted fields.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  if (!getSupabaseConfig()) {
+    return initialError;
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({
+    email: parsed.data.email,
+    password: parsed.data.password,
+  });
+
+  if (error) {
+    return {
+      message: "We could not sign you in with that email and password.",
+    };
+  }
+
+  redirect(getSafeRedirectPath(parsed.data.next));
+}
+
+export async function signupAction(
+  _previousState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const parsed = readAuthForm(formData);
+
+  if (!parsed.success) {
+    return {
+      message: "Please fix the highlighted fields.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  if (!getSupabaseConfig()) {
+    return initialError;
+  }
+
+  const requestHeaders = await headers();
+  const origin =
+    requestHeaders.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+  const supabase = await createClient();
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.signUp({
+    email: parsed.data.email,
+    password: parsed.data.password,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(
+        getSafeRedirectPath(parsed.data.next),
+      )}`,
+    },
+  });
+
+  if (error) {
+    return {
+      message: error.message,
+    };
+  }
+
+  if (!session) {
+    return {
+      message: "Check your email to confirm your account, then come back to sign in.",
+      success: true,
+    };
+  }
+
+  redirect(getSafeRedirectPath(parsed.data.next));
+}
+
+export async function logoutAction() {
+  if (getSupabaseConfig()) {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+  }
+
+  redirect("/login");
+}

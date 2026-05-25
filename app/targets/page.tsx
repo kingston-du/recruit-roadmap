@@ -4,14 +4,20 @@ import { ClipboardList } from "lucide-react";
 import { AppShell } from "@/components/recruit/app-shell";
 import { TargetsBoard } from "@/components/recruit/targets-board";
 import { Button } from "@/components/ui/button";
+import { requireUser } from "@/lib/auth";
 import { targets } from "@/lib/mock-data";
 
-export default function TargetsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function TargetsPage() {
+  const user = await requireUser("/targets");
+
   return (
     <AppShell
       title="Targets"
       eyebrow="Execution board"
       activeHref="/targets"
+      userEmail={user.email}
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
           <Link href="/my-plan">

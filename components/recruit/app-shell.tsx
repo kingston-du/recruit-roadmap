@@ -2,11 +2,14 @@ import Link from "next/link";
 import {
   CalendarCheck,
   ClipboardList,
+  LogOut,
   Map,
+  Settings,
   Target,
   UserRound,
 } from "lucide-react";
 
+import { logoutAction } from "@/app/auth/actions";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -15,6 +18,7 @@ const navItems = [
   { href: "/targets", label: "Targets", icon: Target },
   { href: "/my-player", label: "My Player", icon: UserRound },
   { href: "/roadmap", label: "Roadmap", icon: Map },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function AppShell({
@@ -23,12 +27,14 @@ export function AppShell({
   eyebrow,
   activeHref,
   action,
+  userEmail,
 }: {
   children: React.ReactNode;
   title: string;
   eyebrow: string;
   activeHref: string;
   action?: React.ReactNode;
+  userEmail?: string | null;
 }) {
   return (
     <div className="min-h-screen bg-[#f7fafc] text-slate-950">
@@ -71,6 +77,18 @@ export function AppShell({
               Keep the next few steps clear before adding more targets.
             </p>
           </div>
+
+          {userEmail ? (
+            <form action={logoutAction} className="mt-3">
+              <button
+                type="submit"
+                className="flex w-full items-center justify-between gap-3 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-left text-xs text-slate-300 hover:bg-white/10 hover:text-white"
+              >
+                <span className="truncate">{userEmail}</span>
+                <LogOut className="size-4 shrink-0" />
+              </button>
+            </form>
+          ) : null}
         </div>
       </aside>
 
@@ -85,7 +103,21 @@ export function AppShell({
                 {title}
               </h1>
             </div>
-            {action ? <div className="hidden items-center gap-2 md:flex">{action}</div> : null}
+            <div className="hidden items-center gap-2 md:flex">
+              {action}
+              {userEmail ? (
+                <form action={logoutAction}>
+                  <button
+                    type="submit"
+                    className="flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                    aria-label="Log out"
+                    title="Log out"
+                  >
+                    <LogOut className="size-4" />
+                  </button>
+                </form>
+              ) : null}
+            </div>
           </div>
 
           <nav

@@ -4,14 +4,20 @@ import { AlertCircle, ArrowRight, CheckCircle2, Circle, Target } from "lucide-re
 import { AppShell } from "@/components/recruit/app-shell";
 import { Panel, StatusPill } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
+import { requireUser } from "@/lib/auth";
 import { todayPlan } from "@/lib/mock-data";
 
-export default function TodayPage() {
+export const dynamic = "force-dynamic";
+
+export default async function TodayPage() {
+  const user = await requireUser("/today");
+
   return (
     <AppShell
       title="Today"
       eyebrow="This week"
       activeHref="/today"
+      userEmail={user.email}
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
           <Link href="/targets">

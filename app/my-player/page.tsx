@@ -11,7 +11,10 @@ import {
 import { AppShell } from "@/components/recruit/app-shell";
 import { Panel, StatusPill } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
+import { requireUser } from "@/lib/auth";
 import { playerProfileReadiness, type ProfileInfoItem } from "@/lib/mock-data";
+
+export const dynamic = "force-dynamic";
 
 function itemTone(item: ProfileInfoItem) {
   return item.value ? ("green" as const) : ("amber" as const);
@@ -35,12 +38,15 @@ function InfoGrid({ items }: { items: ProfileInfoItem[] }) {
   );
 }
 
-export default function MyPlayerPage() {
+export default async function MyPlayerPage() {
+  const user = await requireUser("/my-player");
+
   return (
     <AppShell
       title="My Player"
       eyebrow="Profile readiness"
       activeHref="/my-player"
+      userEmail={user.email}
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
           <Link href="#videos-links">

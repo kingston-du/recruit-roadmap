@@ -34,12 +34,12 @@ export default function RoadmapPage() {
       action={
         <div className="flex items-center gap-2">
           <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
-            <Link href="/targets">
+            <Link href="/signup?next=/targets">
               <Target /> Start tracking your targets
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/my-plan">
+            <Link href="/signup?next=/my-plan">
               <ClipboardList /> Create My Plan
             </Link>
           </Button>
@@ -66,7 +66,7 @@ export default function RoadmapPage() {
 
               <div className="mt-5 flex flex-wrap gap-2">
                 <Button asChild className="bg-white text-[#071a2f] hover:bg-cyan-50">
-                  <Link href="/targets">
+                  <Link href="/signup?next=/targets">
                     <Target /> Start tracking your targets
                   </Link>
                 </Button>
@@ -75,7 +75,7 @@ export default function RoadmapPage() {
                   variant="outline"
                   className="border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
                 >
-                  <Link href="/my-plan">
+                  <Link href="/signup?next=/my-plan">
                     <ClipboardList /> Create My Plan
                   </Link>
                 </Button>
