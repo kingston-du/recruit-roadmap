@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList, Map } from "lucide-react";
+import { Map } from "lucide-react";
 
 import { AppShell } from "@/components/recruit/app-shell";
 import { RoadmapGuide } from "@/components/recruit/roadmap-guide";
@@ -15,8 +15,8 @@ export default function RoadmapPage() {
       activeHref="/roadmap"
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
-          <Link href="/my-plan">
-            <ClipboardList /> View My Plan
+          <Link href="#roadmap-guide">
+            <Map /> Start With the Guide
           </Link>
         </Button>
       }
@@ -32,9 +32,8 @@ export default function RoadmapPage() {
               Understand the common paths from youth hockey to what comes next.
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-300">
-              Click a card to learn what the path is, who it may fit, what to research,
-              and what families sometimes misunderstand. This is static educational
-              content, not a ranking or placement promise.
+              A simple educational guide to common options. Focus on one path at a
+              time, then review the details before making family decisions.
             </p>
           </div>
         </Panel>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, CheckCircle2, Circle, Map, Target } from "lucide-react";
+import { ArrowRight, CalendarDays, CheckCircle2, Circle, Target } from "lucide-react";
 
 import { AppShell } from "@/components/recruit/app-shell";
 import { Panel, StatusPill } from "@/components/recruit/ui";
@@ -14,8 +14,8 @@ export default function MyPlanPage() {
       activeHref="/my-plan"
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
-          <Link href="/roadmap">
-            <Map /> Open Roadmap
+          <Link href="/targets">
+            <Target /> Work on Targets
           </Link>
         </Button>
       }
@@ -93,31 +93,36 @@ export default function MyPlanPage() {
                   </div>
                 </div>
 
-                <div className="mt-5 grid gap-4">
-                  <div>
-                    <p className="text-sm font-semibold">Next 3 steps</p>
-                    <div className="mt-2 grid gap-2">
-                      {path.nextSteps.map((step) => (
-                        <div key={step} className="flex gap-2 rounded-md bg-cyan-50 p-3">
-                          <CheckCircle2 className="mt-0.5 size-4 text-cyan-800" />
-                          <p className="text-sm leading-6 text-slate-700">{step}</p>
-                        </div>
-                      ))}
+                <details className="mt-5 rounded-md border border-slate-200 bg-white p-3">
+                  <summary className="cursor-pointer text-sm font-semibold text-slate-950">
+                    Next steps and open questions
+                  </summary>
+                  <div className="mt-4 grid gap-4">
+                    <div>
+                      <p className="text-sm font-semibold">Next 3 steps</p>
+                      <div className="mt-2 grid gap-2">
+                        {path.nextSteps.map((step) => (
+                          <div key={step} className="flex gap-2 rounded-md bg-cyan-50 p-3">
+                            <CheckCircle2 className="mt-0.5 size-4 text-cyan-800" />
+                            <p className="text-sm leading-6 text-slate-700">{step}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <p className="text-sm font-semibold">Open questions</p>
-                    <div className="mt-2 grid gap-2">
-                      {path.openQuestions.map((question) => (
-                        <div key={question} className="flex gap-2 rounded-md bg-slate-50 p-3">
-                          <Circle className="mt-1 size-3 text-slate-400" />
-                          <p className="text-sm leading-6 text-slate-600">{question}</p>
-                        </div>
-                      ))}
+                    <div>
+                      <p className="text-sm font-semibold">Open questions</p>
+                      <div className="mt-2 grid gap-2">
+                        {path.openQuestions.map((question) => (
+                          <div key={question} className="flex gap-2 rounded-md bg-slate-50 p-3">
+                            <Circle className="mt-1 size-3 text-slate-400" />
+                            <p className="text-sm leading-6 text-slate-600">{question}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
+                </details>
               </Panel>
             ))}
           </div>
@@ -130,19 +135,21 @@ export default function MyPlanPage() {
               <h2 className="text-lg font-semibold">Next season options</h2>
             </div>
             <p className="mt-1 text-sm text-slate-500">
-              Mock targets grouped by the type of option the family is weighing.
+              Targets grouped by the type of option the family is weighing.
             </p>
 
             <div className="mt-5 grid gap-5">
               {myPlan.nextSeasonOptions.map((group) => (
-                <section key={group.title} className="rounded-md border border-slate-200 p-4">
-                  <div className="flex flex-col justify-between gap-2 md:flex-row md:items-start">
-                    <div>
-                      <h3 className="font-semibold">{group.title}</h3>
-                      <p className="mt-1 text-sm leading-6 text-slate-500">{group.note}</p>
-                    </div>
-                    <StatusPill tone="cyan">{group.options.length} options</StatusPill>
-                  </div>
+                <details
+                  key={group.title}
+                  className="rounded-md border border-slate-200 p-4"
+                  open={group.title === "Junior options"}
+                >
+                  <summary className="cursor-pointer">
+                    <span className="font-semibold">{group.title}</span>
+                    <span className="ml-2 text-sm text-slate-500">{group.options.length} options</span>
+                  </summary>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">{group.note}</p>
 
                   <div className="mt-4 grid gap-3 lg:grid-cols-3">
                     {group.options.map((option) => (
@@ -158,7 +165,7 @@ export default function MyPlanPage() {
                       </div>
                     ))}
                   </div>
-                </section>
+                </details>
               ))}
             </div>
           </Panel>

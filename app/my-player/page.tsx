@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   Eye,
-  FileText,
   GraduationCap,
   LinkIcon,
   Shield,
@@ -44,8 +43,8 @@ export default function MyPlayerPage() {
       activeHref="/my-player"
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
-          <Link href="/my-plan">
-            <FileText /> View My Plan
+          <Link href="#videos-links">
+            <Video /> Fix Missing Items
           </Link>
         </Button>
       }
@@ -104,13 +103,15 @@ export default function MyPlayerPage() {
             <InfoGrid items={playerProfileReadiness.schoolInfo} />
           </Panel>
 
-          <Panel>
-            <div className="flex items-center gap-2">
-              <Video className="size-5 text-cyan-700" />
-              <h2 className="text-lg font-semibold">Videos & Links</h2>
-            </div>
-            <InfoGrid items={playerProfileReadiness.videosAndLinks} />
-          </Panel>
+          <div id="videos-links">
+            <Panel>
+              <div className="flex items-center gap-2">
+                <Video className="size-5 text-cyan-700" />
+                <h2 className="text-lg font-semibold">Videos & Links</h2>
+              </div>
+              <InfoGrid items={playerProfileReadiness.videosAndLinks} />
+            </Panel>
+          </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">

@@ -15,7 +15,10 @@ export function RoadmapGuide({ sections }: { sections: RoadmapSection[] }) {
   const selectedCard = cards.find((card) => card.id === selectedId) ?? cards[0];
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
+    <div
+      id="roadmap-guide"
+      className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start"
+    >
       <div className="grid gap-5">
         {sections.map((section, sectionIndex) => (
           <section key={section.title} className="grid gap-4">
@@ -71,7 +74,7 @@ function RoadmapCardButton({
       aria-pressed={isSelected}
       onClick={onClick}
       className={cn(
-        "flex min-h-72 flex-col rounded-md border bg-white p-4 text-left shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200",
+        "flex min-h-44 flex-col rounded-md border bg-white p-4 text-left shadow-sm transition hover:border-cyan-300 hover:bg-cyan-50/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200",
         isSelected ? "border-cyan-500 ring-2 ring-cyan-100" : "border-slate-200",
       )}
     >
@@ -86,21 +89,6 @@ function RoadmapCardButton({
       </div>
 
       <p className="mt-3 text-sm leading-6 text-slate-600">{card.description}</p>
-
-      <div className="mt-4 grid gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-            Best for
-          </p>
-          <p className="mt-1 text-sm leading-5 text-slate-700">{card.bestFor}</p>
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-            Common next step
-          </p>
-          <p className="mt-1 text-sm leading-5 text-slate-700">{card.commonNextStep}</p>
-        </div>
-      </div>
     </button>
   );
 }
@@ -116,24 +104,28 @@ function SelectedRoadmapPanel({ card }: { card: RoadmapCard }) {
       <p className="mt-2 text-sm leading-6 text-slate-600">{card.description}</p>
 
       <div className="mt-5 grid gap-4">
+        <div className="grid gap-3">
+          <DetailBlock title="Best for" body={card.bestFor} />
+          <DetailBlock title="Common next step" body={card.commonNextStep} />
+        </div>
         <DetailBlock title="What it is" body={card.whatItIs} />
-        <DetailBlock title="Who it is usually for" body={card.usuallyFor} />
-        <DetailBlock title="How players usually get there" body={card.howPlayersGetThere} />
+        <DisclosureDetailBlock title="Who it is usually for" body={card.usuallyFor} />
+        <DisclosureDetailBlock title="How players usually get there" body={card.howPlayersGetThere} />
 
-        <DetailList
+        <DisclosureDetailList
           icon={<Search className="size-4 text-cyan-700" />}
           title="What to research"
           items={card.whatToResearch}
         />
 
-        <DetailList
+        <DisclosureDetailList
           icon={<Info className="size-4 text-cyan-700" />}
           title="Common misconceptions"
           items={card.misconceptions}
         />
 
         {card.examples ? (
-          <DetailList
+          <DisclosureDetailList
             icon={<CheckCircle2 className="size-4 text-cyan-700" />}
             title="Example related leagues or teams"
             items={card.examples}
@@ -166,7 +158,18 @@ function DetailBlock({ title, body }: { title: string; body: string }) {
   );
 }
 
-function DetailList({
+function DisclosureDetailBlock({ title, body }: { title: string; body: string }) {
+  return (
+    <details className="rounded-md bg-slate-50 p-3">
+      <summary className="cursor-pointer text-sm font-semibold text-slate-900">
+        {title}
+      </summary>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{body}</p>
+    </details>
+  );
+}
+
+function DisclosureDetailList({
   icon,
   title,
   items,
@@ -176,11 +179,11 @@ function DetailList({
   items: string[];
 }) {
   return (
-    <div className="rounded-md bg-slate-50 p-3">
-      <div className="flex items-center gap-2">
+    <details className="rounded-md bg-slate-50 p-3">
+      <summary className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-slate-900">
         {icon}
-        <p className="text-sm font-semibold text-slate-900">{title}</p>
-      </div>
+        {title}
+      </summary>
       <ul className="mt-2 grid gap-2">
         {items.map((item) => (
           <li key={item} className="text-sm leading-6 text-slate-600">
@@ -188,6 +191,6 @@ function DetailList({
           </li>
         ))}
       </ul>
-    </div>
+    </details>
   );
 }

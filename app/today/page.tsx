@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertCircle, ArrowRight, CheckCircle2, Circle, ClipboardList } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, Circle, Target } from "lucide-react";
 
 import { AppShell } from "@/components/recruit/app-shell";
 import { Panel, StatusPill } from "@/components/recruit/ui";
@@ -14,8 +14,8 @@ export default function TodayPage() {
       activeHref="/today"
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
-          <Link href="/my-plan">
-            <ClipboardList /> View My Plan
+          <Link href="/targets">
+            <Target /> Start First Action
           </Link>
         </Button>
       }
@@ -23,7 +23,7 @@ export default function TodayPage() {
       <div className="grid gap-6">
         <Panel className="bg-[#071a2f] text-white">
           <div className="max-w-3xl">
-            <p className="text-sm font-medium text-cyan-100">Family focus</p>
+            <p className="text-sm font-medium text-cyan-100">Home base</p>
             <h2 className="mt-2 text-4xl font-semibold tracking-tight">
               {todayPlan.heading}
             </h2>
@@ -36,12 +36,12 @@ export default function TodayPage() {
         <section className="grid gap-4">
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight">Top 3 actions</h2>
+              <h2 className="text-xl font-semibold tracking-tight">Do these first</h2>
               <p className="mt-1 text-sm text-slate-500">
                 Keep this week focused on the few steps that matter most.
               </p>
             </div>
-            <StatusPill tone="cyan">No more than 3 this week</StatusPill>
+            <StatusPill tone="cyan">3 actions</StatusPill>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-3">
@@ -55,7 +55,7 @@ export default function TodayPage() {
                 <div className="mt-4 grid gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                      Why it matters
+                      Why
                     </p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
                       {action.whyItMatters}
@@ -63,7 +63,7 @@ export default function TodayPage() {
                   </div>
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                      Related target/path
+                      Path or target
                     </p>
                     <p className="mt-1 text-sm leading-6 text-slate-700">
                       {action.relatedTo}

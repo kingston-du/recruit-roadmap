@@ -60,7 +60,7 @@ export function TargetsBoard({ targets }: { targets: Target[] }) {
         </div>
       </div>
 
-      <aside className="2xl:sticky 2xl:top-28">
+      <aside className="2xl:sticky 2xl:top-28 2xl:max-h-[calc(100vh-8rem)] 2xl:overflow-y-auto 2xl:pr-2 2xl:overscroll-contain">
         <TargetDetailPanel target={selectedTarget} />
       </aside>
     </div>
@@ -88,8 +88,8 @@ function TargetCard({
       }
     >
       <h3 className="font-semibold tracking-tight text-slate-950">{target.name}</h3>
-      <p className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-slate-500">
-        {target.kind} / {target.path}
+      <p className="mt-1 text-sm text-slate-600">
+        {target.kind} - {target.path}
       </p>
       <p className="mt-3 flex items-center gap-2 text-sm text-slate-600">
         <MapPin className="size-4 text-slate-400" /> {target.location}
@@ -114,7 +114,10 @@ function TargetDetailPanel({ target }: { target: Target }) {
       </div>
       <h2 className="mt-4 text-2xl font-semibold tracking-tight">{target.name}</h2>
       <p className="mt-1 text-sm text-slate-500">
-        {target.kind} / {target.path} - {target.location}
+        {target.kind} - {target.path}
+      </p>
+      <p className="mt-1 text-sm text-slate-500">
+        {target.location}
       </p>
 
       <div className="mt-5 grid gap-4">
@@ -122,7 +125,7 @@ function TargetDetailPanel({ target }: { target: Target }) {
           <p>{target.notes}</p>
         </DetailBlock>
 
-        <DetailBlock title="Coach/contact info" icon={<UserRound className="size-4 text-cyan-700" />}>
+        <DetailBlock title="Coach contact" icon={<UserRound className="size-4 text-cyan-700" />}>
           <p>{target.contactName}</p>
           <p className="mt-1 text-slate-500">{target.contactRole}</p>
           <p className="mt-2 flex items-center gap-2 break-all">
@@ -130,10 +133,10 @@ function TargetDetailPanel({ target }: { target: Target }) {
           </p>
         </DetailBlock>
 
-        <DetailBlock title="Outreach history" icon={<CalendarDays className="size-4 text-cyan-700" />}>
+        <DisclosureBlock title="Outreach history" icon={<CalendarDays className="size-4 text-cyan-700" />}>
           <div className="grid gap-2">
             {target.outreachHistory.map((item) => (
-              <div key={`${target.id}-${item.date}`} className="rounded-md bg-slate-50 p-3">
+              <div key={`${target.id}-${item.date}`} className="rounded-md bg-white p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                   {item.date}
                 </p>
@@ -141,26 +144,26 @@ function TargetDetailPanel({ target }: { target: Target }) {
               </div>
             ))}
           </div>
-        </DetailBlock>
+        </DisclosureBlock>
 
-        <DetailBlock title="Roster/team link placeholder" icon={<ExternalLink className="size-4 text-cyan-700" />}>
+        <DisclosureBlock title="Team link" icon={<ExternalLink className="size-4 text-cyan-700" />}>
           <p>{target.rosterLinkPlaceholder}</p>
           <Button disabled variant="outline" className="mt-3">
             Open link
           </Button>
-        </DetailBlock>
+        </DisclosureBlock>
 
-        <DetailBlock title="Why this target is being considered">
+        <DisclosureBlock title="Why this target is on the list">
           <p>{target.details.whyOnList}</p>
-        </DetailBlock>
+        </DisclosureBlock>
 
-        <DetailBlock title="Concerns / open questions">
+        <DisclosureBlock title="Questions to answer">
           <ul className="grid gap-2">
             {target.details.concerns.map((question) => (
               <li key={question}>{question}</li>
             ))}
           </ul>
-        </DetailBlock>
+        </DisclosureBlock>
       </div>
     </section>
   );
@@ -183,5 +186,25 @@ function DetailBlock({
       </div>
       <div className="mt-2">{children}</div>
     </div>
+  );
+}
+
+function DisclosureBlock({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <details className="rounded-md bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+      <summary className="flex cursor-pointer items-center gap-2 font-semibold text-slate-950">
+        {icon}
+        {title}
+      </summary>
+      <div className="mt-2">{children}</div>
+    </details>
   );
 }
