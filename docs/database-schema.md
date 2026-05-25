@@ -12,7 +12,10 @@ One row per signed-in user. This stores basic account information such as email,
 
 ### `player_profiles`
 
-The player's basic hockey profile. This is intentionally simple for MVP: name, graduation year, position, current team, school, GPA, profile URL, and notes. The table is one player profile per user for now.
+The player's private hockey profile. This stores name, birth year, position,
+shoots, size, current team and level, hometown, GPA, target path, goals, video
+links, optional Elite Prospects and MyHockey URLs, and an optional coach
+reference. The table is one player profile per user for now.
 
 ### `plans`
 
