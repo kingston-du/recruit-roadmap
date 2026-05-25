@@ -1,16 +1,41 @@
 import Link from "next/link";
-import { ClipboardList } from "lucide-react";
+import { AlertCircle, ClipboardList } from "lucide-react";
 
+import { createTargetAction, deleteTargetAction, updateTargetAction } from "@/app/targets/actions";
 import { AppShell } from "@/components/recruit/app-shell";
 import { TargetsBoard } from "@/components/recruit/targets-board";
+import { Panel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth";
-import { targets } from "@/lib/mock-data";
+import {
+  freeTargetLimit,
+  hasProTargets,
+  normalizeSubscription,
+  normalizeTargets,
+  targetSelect,
+} from "@/lib/targets";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function TargetsPage() {
   const user = await requireUser("/targets");
+  const supabase = await createClient();
+  const [targetsResult, subscriptionResult] = await Promise.all([
+    supabase
+      .from("targets")
+      .select(targetSelect)
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("subscriptions")
+      .select("plan_name, status")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
+  const userTargets = normalizeTargets(targetsResult.data);
+  const subscription = normalizeSubscription(subscriptionResult.data);
+  const isPro = hasProTargets(subscription);
 
   return (
     <AppShell
@@ -35,7 +60,25 @@ export default async function TargetsPage() {
           </p>
         </div>
 
-        <TargetsBoard targets={targets} />
+        {targetsResult.error || subscriptionResult.error ? (
+          <Panel className="border-amber-200 bg-amber-50">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 size-5 text-amber-700" />
+              <p className="text-sm leading-6 text-amber-900">
+                We could not load all target data. Try refreshing before making changes.
+              </p>
+            </div>
+          </Panel>
+        ) : null}
+
+        <TargetsBoard
+          targets={userTargets}
+          isPro={isPro}
+          freeTargetLimit={freeTargetLimit}
+          createAction={createTargetAction}
+          updateAction={updateTargetAction}
+          deleteAction={deleteTargetAction}
+        />
       </div>
     </AppShell>
   );

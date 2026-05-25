@@ -27,7 +27,7 @@ The roadmap steps inside a plan. These are the concrete path items a family want
 
 ### `targets`
 
-Teams, schools, leagues, or other recruiting targets the family wants to track. The MVP uses text fields for type, level, status, and priority so the product can evolve before locking down strict values.
+Teams, schools, camps, leagues, or other recruiting targets the family wants to track. The table stores board status, priority, follow-up date, links, notes, why the family is considering the target, and concerns. RLS keeps targets user-owned, and a trigger prevents free accounts from creating more than 5 targets while Pro accounts can create unlimited targets.
 
 ### `contacts`
 
