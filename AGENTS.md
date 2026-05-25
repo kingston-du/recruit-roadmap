@@ -104,7 +104,35 @@ Avoid:
 - TypeScript
 - Tailwind CSS
 - shadcn/ui
-- Mock data only for this prototype
-- No Supabase/auth/database yet
-- No AI
-- No scraping
+- Supabase Auth
+- Supabase Postgres
+- Supabase Row Level Security
+- Zod for validation
+- Vercel for deployment
+- Stripe Payment Links first, full Stripe integration later
+
+## Coding rules
+
+- Use TypeScript strictly.
+- Keep pages simple and parent-friendly.
+- Do not add AI recommendations.
+- Do not scrape Elite Prospects or MyHockeyRankings.
+- Do not build coach/player messaging.
+- Do not build a marketplace.
+- Do not collect unnecessary personal data.
+- Do not store secrets in code.
+- Use mock data only until a feature is explicitly wired to Supabase.
+- Every database table with user data must use Row Level Security.
+- Run lint and build after every major change.
+
+## Business goal
+
+Build toward a paid concierge MVP:
+- public Roadmap page
+- landing page
+- setup request form
+- parent/player account
+- My Player profile
+- My Plan
+- Targets board
+- Today action dashboard
