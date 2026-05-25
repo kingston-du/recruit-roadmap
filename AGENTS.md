@@ -7,17 +7,17 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Hockey Recruiting Roadmap App
 
-## Product concept
+## Product direction
 
-This is a hockey recruiting roadmap app for boys hockey players and parents.
+This is a freemium hockey recruiting tracker and roadmap app for boys hockey players and parents.
 
 The app helps families:
-1. Understand the hockey pathway through a public Roadmap page.
-2. Build a personal My Plan for short-term and long-term recruiting goals.
-3. Track target teams, schools, coaches, camps, and follow-ups.
+1. Learn the boys hockey pathway through a public Roadmap.
+2. Create a personal My Plan.
+3. Track target teams, schools, coaches, camps, and dates.
 4. Know what to do today or this week.
 
-## Main app tabs
+## Main pages
 
 1. Today
 2. My Plan
@@ -25,78 +25,37 @@ The app helps families:
 4. My Player
 5. Roadmap
 
-## Page purposes
+## Business model
 
-### Today
-Shows what the player/family should do this week.
+Free:
+- Public Roadmap
+- My Player
+- My Plan
+- Up to 5 targets
+- Up to 3 coach contacts
+- Up to 3 events/dates
+- Basic Today checklist
 
-### My Plan
-Shows the player's personal recruiting plan:
-- short-term next-season goals
-- long-term goals
-- selected pathways
-- connected targets
-- next steps
+Pro:
+- Unlimited targets
+- Unlimited contacts
+- Unlimited events/dates
+- Outreach history
+- Follow-up reminders
+- Shareable player profile
+- Advanced Today checklist
 
-### Targets
-Tracks teams, schools, camps, coaches, and opportunities.
+Optional:
+- $20 Setup Assist to help users import their own targets, contacts, dates, and links.
 
-### My Player
-Shows player profile, videos, academics, references, and profile readiness.
+## What this is NOT
 
-### Roadmap
-A public static educational boys hockey pathway guide.
-
-Roadmap should be a vertical branching guide using clickable cards.
-It should be easy for non-technical hockey parents to understand.
-
-Example structure:
-AAA / High School / Prep / Academy
-branches into:
-USHL, CHL, NAHL, NCDC, EHL, USPHL, Prep/PG
-branches into:
-NCAA D1, NCAA D3, ACHA, Pro / Minor Pro
-
-## UX principles
-
-- Extremely easy to understand
-- Parent-friendly language
-- Calm, clean, serious design
-- Not flashy
-- Not a scouting network
-- Not a marketplace
-- Not a generic spreadsheet
-- No AI recommendations yet
-- No scraping
-- No Elite Prospects or MyHockeyRankings integrations yet
-- Use mock data only for now
-
-## Design style
-
-- Dark navy / white / light gray / ice blue accent
-- Big headings
-- Clear cards
-- Obvious buttons
-- Few things on screen at once
-- No clutter
-- Desktop-first but mobile-friendly
-
-## Important wording
-
-Use:
-- paths
-- options
-- targets
-- recruiting plan
-- next steps
-- opportunities
-
-Avoid:
-- guaranteed spots
-- predictions
-- recruiting chances
-- AI advisor language
-- claims that the app can get a player recruited
+- Not a recruiting agency
+- Not a scouting service
+- Not a coach/player marketplace
+- Not a guarantee of roster spots, scholarships, or coach responses
+- Not an AI advisor deciding where players should go
+- Not a scraping app for MyHockeyRankings or Elite Prospects
 
 ## Technical stack
 
@@ -107,32 +66,23 @@ Avoid:
 - Supabase Auth
 - Supabase Postgres
 - Supabase Row Level Security
-- Zod for validation
-- Vercel for deployment
-- Stripe Payment Links first, full Stripe integration later
+- Zod validation
+- Stripe Payment Links first
+- Vercel deployment
+- GitHub Actions CI
 
-## Coding rules
+## Engineering rules
 
 - Use TypeScript strictly.
-- Keep pages simple and parent-friendly.
-- Do not add AI recommendations.
-- Do not scrape Elite Prospects or MyHockeyRankings.
-- Do not build coach/player messaging.
-- Do not build a marketplace.
-- Do not collect unnecessary personal data.
-- Do not store secrets in code.
-- Use mock data only until a feature is explicitly wired to Supabase.
-- Every database table with user data must use Row Level Security.
-- Run lint and build after every major change.
-
-## Business goal
-
-Build toward a paid concierge MVP:
-- public Roadmap page
-- landing page
-- setup request form
-- parent/player account
-- My Player profile
-- My Plan
-- Targets board
-- Today action dashboard
+- Use Zod for form validation.
+- Use Supabase RLS for every private user-owned table.
+- Never expose service role keys to client code.
+- Never commit `.env.local`.
+- Do not add AI.
+- Do not add scraping.
+- Do not add coach/player messaging.
+- Do not add a marketplace.
+- Keep every page simple enough for a non-technical hockey parent.
+- Run lint, typecheck, and build after major changes.
+- Codex must plan before coding.
+- Codex must not add unrelated features.
