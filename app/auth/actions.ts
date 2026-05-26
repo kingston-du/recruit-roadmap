@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -27,6 +26,27 @@ const initialError = {
   message:
     "Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY to your environment.",
 } satisfies AuthFormState;
+
+function getConfiguredSiteOrigin() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  if (!siteUrl) {
+    return "http://localhost:3000";
+  }
+
+  try {
+    return new URL(siteUrl).origin;
+  } catch {
+    return "http://localhost:3000";
+  }
+}
+
+function buildEmailRedirectTo(next: string | undefined) {
+  const callbackUrl = new URL("/auth/callback", getConfiguredSiteOrigin());
+  callbackUrl.searchParams.set("next", getSafeRedirectPath(next));
+
+  return callbackUrl.toString();
+}
 
 function readAuthForm(formData: FormData) {
   return authSchema.safeParse({
@@ -85,10 +105,6 @@ export async function signupAction(
     return initialError;
   }
 
-  const requestHeaders = await headers();
-  const origin =
-    requestHeaders.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
   const supabase = await createClient();
   const {
     data: { session },
@@ -97,9 +113,7 @@ export async function signupAction(
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(
-        getSafeRedirectPath(parsed.data.next),
-      )}`,
+      emailRedirectTo: buildEmailRedirectTo(parsed.data.next),
     },
   });
 
