@@ -4,12 +4,15 @@ import { AlertCircle, ClipboardList } from "lucide-react";
 import {
   createContactAction,
   createEventAction,
+  createOutreachLogAction,
   createTargetAction,
   deleteContactAction,
   deleteEventAction,
+  deleteOutreachLogAction,
   deleteTargetAction,
   updateContactAction,
   updateEventAction,
+  updateOutreachLogAction,
   updateTargetAction,
 } from "@/app/targets/actions";
 import { AppShell } from "@/components/recruit/app-shell";
@@ -19,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth";
 import { contactSelect, freeContactLimit, normalizeContacts } from "@/lib/contacts";
 import { eventSelect, freeEventLimit, normalizeEvents } from "@/lib/events";
+import { freeOutreachLogLimit, normalizeOutreachLogs, outreachLogSelect } from "@/lib/outreach";
 import {
   freeTargetLimit,
   hasProTargets,
@@ -33,7 +37,7 @@ export const dynamic = "force-dynamic";
 export default async function TargetsPage() {
   const user = await requireUser("/targets");
   const supabase = await createClient();
-  const [targetsResult, contactsResult, eventsResult, subscriptionResult] = await Promise.all([
+  const [targetsResult, contactsResult, eventsResult, outreachLogsResult, subscriptionResult] = await Promise.all([
     supabase
       .from("targets")
       .select(targetSelect)
@@ -50,6 +54,11 @@ export default async function TargetsPage() {
       .eq("user_id", user.id)
       .order("start_date", { ascending: true }),
     supabase
+      .from("outreach_logs")
+      .select(outreachLogSelect)
+      .eq("user_id", user.id)
+      .order("outreach_date", { ascending: false }),
+    supabase
       .from("subscriptions")
       .select("plan_name, status")
       .eq("user_id", user.id)
@@ -58,6 +67,7 @@ export default async function TargetsPage() {
   const userTargets = normalizeTargets(targetsResult.data);
   const userContacts = normalizeContacts(contactsResult.data);
   const userEvents = normalizeEvents(eventsResult.data);
+  const userOutreachLogs = normalizeOutreachLogs(outreachLogsResult.data);
   const subscription = normalizeSubscription(subscriptionResult.data);
   const isPro = hasProTargets(subscription);
 
@@ -84,7 +94,11 @@ export default async function TargetsPage() {
           </p>
         </div>
 
-        {targetsResult.error || contactsResult.error || eventsResult.error || subscriptionResult.error ? (
+        {targetsResult.error ||
+        contactsResult.error ||
+        eventsResult.error ||
+        outreachLogsResult.error ||
+        subscriptionResult.error ? (
           <Panel className="border-amber-200 bg-amber-50">
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 size-5 text-amber-700" />
@@ -99,10 +113,12 @@ export default async function TargetsPage() {
           targets={userTargets}
           contacts={userContacts}
           events={userEvents}
+          outreachLogs={userOutreachLogs}
           isPro={isPro}
           freeTargetLimit={freeTargetLimit}
           freeContactLimit={freeContactLimit}
           freeEventLimit={freeEventLimit}
+          freeOutreachLogLimit={freeOutreachLogLimit}
           createAction={createTargetAction}
           updateAction={updateTargetAction}
           deleteAction={deleteTargetAction}
@@ -112,6 +128,9 @@ export default async function TargetsPage() {
           createEventAction={createEventAction}
           updateEventAction={updateEventAction}
           deleteEventAction={deleteEventAction}
+          createOutreachLogAction={createOutreachLogAction}
+          updateOutreachLogAction={updateOutreachLogAction}
+          deleteOutreachLogAction={deleteOutreachLogAction}
         />
       </div>
     </AppShell>

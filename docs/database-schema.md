@@ -55,7 +55,13 @@ creating more than 3 events while Pro accounts can create unlimited events.
 
 ### `outreach_logs`
 
-History of outreach activity for Pro users later. This is a log of what happened, when it happened, the method used, the outcome, and a possible next follow-up date. It is not a messaging system.
+History of outreach activity for targets. Each log belongs to the user and one
+target, can optionally point to a contact saved to that target, and stores the
+outreach type, direction, outreach date, summary, outcome, and optional next
+follow-up date. RLS keeps logs user-owned, triggers ensure target/contact
+ownership, and a trigger prevents free accounts from creating more than 3
+outreach logs while Pro accounts can create unlimited logs. It is not a
+messaging system and does not send email.
 
 ### `tasks`
 
@@ -74,6 +80,9 @@ Requests for the optional paid setup assist. Signed-in users can create and mana
 - RLS is on for all 11 tables.
 - Most tables have one owner policy: the user can select, insert, update, and delete only rows where `user_id = auth.uid()`.
 - Contacts and events have extra trigger-level guards so `target_id` cannot point to another user's target.
+- Outreach logs have extra trigger-level guards so `target_id` is required and
+  `contact_id` can only point at a contact saved to the same target by the same
+  user.
 - `setup_assist_requests` also allows admins to view and update requests.
 - `subscriptions` allows users to view their own row and admins to view or update subscription rows.
 - The service role key should stay server-only. It is not needed in client code and should never be committed.

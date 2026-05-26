@@ -24,6 +24,8 @@ import type {
   ContactMutationState,
   EventDeleteState,
   EventMutationState,
+  OutreachLogDeleteState,
+  OutreachLogMutationState,
   TargetDeleteState,
   TargetMutationState,
 } from "@/app/targets/actions";
@@ -41,6 +43,15 @@ import {
   type EventFormFieldName,
   type RecruitEvent,
 } from "@/lib/events";
+import {
+  compareOutreachLogs,
+  outreachDirectionLabels,
+  outreachDirectionOptions,
+  outreachTypeLabels,
+  outreachTypeOptions,
+  type OutreachLog,
+  type OutreachLogFormFieldName,
+} from "@/lib/outreach";
 import { cn } from "@/lib/utils";
 import {
   targetPriorityOptions,
@@ -74,6 +85,14 @@ const initialEventDeleteState: EventDeleteState = {
   message: "",
 };
 
+const initialOutreachLogMutationState: OutreachLogMutationState = {
+  message: "",
+};
+
+const initialOutreachLogDeleteState: OutreachLogDeleteState = {
+  message: "",
+};
+
 type TargetMutationAction = (
   previousState: TargetMutationState,
   formData: FormData,
@@ -104,6 +123,16 @@ type EventDeleteAction = (
   formData: FormData,
 ) => Promise<EventDeleteState>;
 
+type OutreachLogMutationAction = (
+  previousState: OutreachLogMutationState,
+  formData: FormData,
+) => Promise<OutreachLogMutationState>;
+
+type OutreachLogDeleteAction = (
+  previousState: OutreachLogDeleteState,
+  formData: FormData,
+) => Promise<OutreachLogDeleteState>;
+
 type DrawerMode =
   | "create"
   | "detail"
@@ -115,16 +144,21 @@ type DrawerMode =
   | "create-event"
   | "edit-event"
   | "event-upgrade"
+  | "create-outreach"
+  | "edit-outreach"
+  | "outreach-upgrade"
   | null;
 
 type TargetsBoardProps = {
   targets: Target[];
   contacts: Contact[];
   events: RecruitEvent[];
+  outreachLogs: OutreachLog[];
   isPro: boolean;
   freeTargetLimit: number;
   freeContactLimit: number;
   freeEventLimit: number;
+  freeOutreachLogLimit: number;
   createAction: TargetMutationAction;
   updateAction: TargetMutationAction;
   deleteAction: TargetDeleteAction;
@@ -134,6 +168,9 @@ type TargetsBoardProps = {
   createEventAction: EventMutationAction;
   updateEventAction: EventMutationAction;
   deleteEventAction: EventDeleteAction;
+  createOutreachLogAction: OutreachLogMutationAction;
+  updateOutreachLogAction: OutreachLogMutationAction;
+  deleteOutreachLogAction: OutreachLogDeleteAction;
 };
 
 type FieldState<FieldName extends string> = {
@@ -269,6 +306,7 @@ function TextAreaField<FieldName extends string>({
   label,
   defaultValue,
   rows,
+  required,
   placeholder,
   state,
 }: {
@@ -276,6 +314,7 @@ function TextAreaField<FieldName extends string>({
   label: string;
   defaultValue?: string | null;
   rows: number;
+  required?: boolean;
   placeholder?: string;
   state: FieldState<FieldName>;
 }) {
@@ -286,13 +325,14 @@ function TextAreaField<FieldName extends string>({
     <div className="grid gap-2">
       <label htmlFor={name} className="text-sm font-medium text-slate-700">
         {label}
-        <span className="text-slate-400"> optional</span>
+        {required ? null : <span className="text-slate-400"> optional</span>}
       </label>
       <textarea
         id={name}
         name={name}
         defaultValue={defaultValue ?? ""}
         rows={rows}
+        required={required}
         placeholder={placeholder}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? errorId : undefined}
@@ -307,10 +347,12 @@ export function TargetsBoard({
   targets,
   contacts,
   events,
+  outreachLogs,
   isPro,
   freeTargetLimit,
   freeContactLimit,
   freeEventLimit,
+  freeOutreachLogLimit,
   createAction,
   updateAction,
   deleteAction,
@@ -320,6 +362,9 @@ export function TargetsBoard({
   createEventAction,
   updateEventAction,
   deleteEventAction,
+  createOutreachLogAction,
+  updateOutreachLogAction,
+  deleteOutreachLogAction,
 }: TargetsBoardProps) {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
   const [selectedId, setSelectedId] = useState<string | null>(targets[0]?.id ?? null);
@@ -327,12 +372,19 @@ export function TargetsBoard({
   const [contactTargetId, setContactTargetId] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(events[0]?.id ?? null);
   const [eventTargetId, setEventTargetId] = useState<string | null>(null);
+  const [selectedOutreachLogId, setSelectedOutreachLogId] = useState<string | null>(
+    outreachLogs[0]?.id ?? null,
+  );
+  const [outreachTargetId, setOutreachTargetId] = useState<string | null>(null);
   const selectedTarget = targets.find((target) => target.id === selectedId) ?? null;
   const selectedContact = contacts.find((contact) => contact.id === selectedContactId) ?? null;
   const selectedEvent = events.find((event) => event.id === selectedEventId) ?? null;
+  const selectedOutreachLog =
+    outreachLogs.find((outreachLog) => outreachLog.id === selectedOutreachLogId) ?? null;
   const limitReached = !isPro && targets.length >= freeTargetLimit;
   const contactLimitReached = !isPro && contacts.length >= freeContactLimit;
   const eventLimitReached = !isPro && events.length >= freeEventLimit;
+  const outreachLogLimitReached = !isPro && outreachLogs.length >= freeOutreachLogLimit;
   const targetNameById = useMemo(
     () => new Map(targets.map((target) => [target.id, target.name])),
     [targets],
@@ -363,6 +415,19 @@ export function TargetsBoard({
 
     return counts;
   }, [events]);
+  const lastOutreachDateByTarget = useMemo(() => {
+    const dates = new Map<string, string>();
+
+    outreachLogs.forEach((outreachLog) => {
+      const currentDate = dates.get(outreachLog.target_id);
+
+      if (!currentDate || outreachLog.outreach_date > currentDate) {
+        dates.set(outreachLog.target_id, outreachLog.outreach_date);
+      }
+    });
+
+    return dates;
+  }, [outreachLogs]);
   const selectedTargetContacts = selectedTarget
     ? contacts.filter((contact) => contact.target_id === selectedTarget.id)
     : [];
@@ -370,6 +435,11 @@ export function TargetsBoard({
     ? [...events]
         .filter((event) => event.target_id === selectedTarget.id)
         .sort(compareRecruitEvents)
+    : [];
+  const selectedTargetOutreachLogs = selectedTarget
+    ? [...outreachLogs]
+        .filter((outreachLog) => outreachLog.target_id === selectedTarget.id)
+        .sort(compareOutreachLogs)
     : [];
   const sortedEvents = useMemo(() => [...events].sort(compareRecruitEvents), [events]);
   const targetsByStatus = useMemo(
@@ -424,6 +494,19 @@ export function TargetsBoard({
     setDrawerMode("edit-event");
   }
 
+  function openCreateOutreachLogDrawer(targetId: string) {
+    setOutreachTargetId(targetId);
+    setSelectedOutreachLogId(null);
+    setDrawerMode(outreachLogLimitReached ? "outreach-upgrade" : "create-outreach");
+  }
+
+  function openEditOutreachLogDrawer(outreachLog: OutreachLog) {
+    setSelectedOutreachLogId(outreachLog.id);
+    setOutreachTargetId(outreachLog.target_id);
+    setSelectedId(outreachLog.target_id);
+    setDrawerMode("edit-outreach");
+  }
+
   function closeDrawer() {
     setDrawerMode(null);
   }
@@ -468,6 +551,21 @@ export function TargetsBoard({
     closeDrawer();
   }
 
+  function handleOutreachLogSaved() {
+    if (outreachTargetId) {
+      setSelectedId(outreachTargetId);
+      setDrawerMode("detail");
+      return;
+    }
+
+    closeDrawer();
+  }
+
+  function handleOutreachLogEdited(outreachLog: OutreachLog) {
+    setSelectedId(outreachLog.target_id);
+    setDrawerMode("detail");
+  }
+
   return (
     <div className="grid gap-4">
       <Panel>
@@ -505,6 +603,7 @@ export function TargetsBoard({
                       target={target}
                       contactCount={contactCountByTarget.get(target.id) ?? 0}
                       eventCount={eventCountByTarget.get(target.id) ?? 0}
+                      lastOutreachDate={lastOutreachDateByTarget.get(target.id) ?? null}
                       isSelected={target.id === selectedTarget?.id}
                       onClick={() => openDetailDrawer(target)}
                     />
@@ -557,20 +656,26 @@ export function TargetsBoard({
               target={selectedTarget}
               contacts={selectedTargetContacts}
               events={selectedTargetEvents}
+              outreachLogs={selectedTargetOutreachLogs}
               contactsUsed={contacts.length}
               eventsUsed={events.length}
+              outreachLogsUsed={outreachLogs.length}
               isPro={isPro}
               freeContactLimit={freeContactLimit}
               freeEventLimit={freeEventLimit}
+              freeOutreachLogLimit={freeOutreachLogLimit}
               onEdit={() => setDrawerMode("edit")}
               onClose={closeDrawer}
               onAddContact={() => openCreateContactDrawer(selectedTarget.id)}
               onEditContact={openEditContactDrawer}
               onAddEvent={() => openCreateEventDrawer(selectedTarget.id)}
               onEditEvent={openEditEventDrawer}
+              onAddOutreachLog={() => openCreateOutreachLogDrawer(selectedTarget.id)}
+              onEditOutreachLog={openEditOutreachLogDrawer}
               deleteAction={deleteAction}
               deleteContactAction={deleteContactAction}
               deleteEventAction={deleteEventAction}
+              deleteOutreachLogAction={deleteOutreachLogAction}
             />
           ) : null}
 
@@ -635,12 +740,41 @@ export function TargetsBoard({
             />
           ) : null}
 
+          {drawerMode === "create-outreach" && selectedTarget ? (
+            <OutreachLogForm
+              key={`create-outreach-${outreachTargetId ?? selectedTarget.id}`}
+              target={selectedTarget}
+              contacts={selectedTargetContacts}
+              action={createOutreachLogAction}
+              submitLabel="Add outreach"
+              pendingLabel="Adding..."
+              onSuccess={handleOutreachLogSaved}
+            />
+          ) : null}
+
+          {drawerMode === "edit-outreach" && selectedOutreachLog && selectedTarget ? (
+            <OutreachLogForm
+              key={`edit-outreach-${selectedOutreachLog.id}`}
+              outreachLog={selectedOutreachLog}
+              target={selectedTarget}
+              contacts={selectedTargetContacts}
+              action={updateOutreachLogAction}
+              submitLabel="Save outreach"
+              pendingLabel="Saving..."
+              onSuccess={() => handleOutreachLogEdited(selectedOutreachLog)}
+            />
+          ) : null}
+
           {drawerMode === "contact-upgrade" ? (
             <ContactUpgradePrompt used={contacts.length} limit={freeContactLimit} />
           ) : null}
 
           {drawerMode === "event-upgrade" ? (
             <EventUpgradePrompt used={events.length} limit={freeEventLimit} />
+          ) : null}
+
+          {drawerMode === "outreach-upgrade" ? (
+            <OutreachUpgradePrompt used={outreachLogs.length} limit={freeOutreachLogLimit} />
           ) : null}
         </TargetDrawer>
       ) : null}
@@ -685,6 +819,18 @@ function drawerTitle(mode: DrawerMode, target: Target | null, contact: Contact |
     return "Upgrade event limit";
   }
 
+  if (mode === "create-outreach") {
+    return "Log outreach";
+  }
+
+  if (mode === "edit-outreach") {
+    return "Edit outreach";
+  }
+
+  if (mode === "outreach-upgrade") {
+    return "Upgrade outreach limit";
+  }
+
   return target?.name ?? "Target details";
 }
 
@@ -692,12 +838,14 @@ function TargetCard({
   target,
   contactCount,
   eventCount,
+  lastOutreachDate,
   isSelected,
   onClick,
 }: {
   target: Target;
   contactCount: number;
   eventCount: number;
+  lastOutreachDate: string | null;
   isSelected: boolean;
   onClick: () => void;
 }) {
@@ -735,6 +883,11 @@ function TargetCard({
         <p className="mt-3 flex items-center gap-2 text-sm text-slate-600">
           <CalendarDays className="size-4 text-slate-400" /> {eventCount}{" "}
           {eventCount === 1 ? "date" : "dates"}
+        </p>
+      ) : null}
+      {lastOutreachDate ? (
+        <p className="mt-3 flex items-center gap-2 text-sm text-slate-600">
+          <Mail className="size-4 text-slate-400" /> Last outreach {formatDateLabel(lastOutreachDate)}
         </p>
       ) : null}
       {target.connected_path ? (
@@ -1191,43 +1344,191 @@ function EventForm({
   );
 }
 
+function OutreachLogForm({
+  outreachLog,
+  target,
+  contacts,
+  action,
+  submitLabel,
+  pendingLabel,
+  onSuccess,
+}: {
+  outreachLog?: OutreachLog;
+  target: Target;
+  contacts: Contact[];
+  action: OutreachLogMutationAction;
+  submitLabel: string;
+  pendingLabel: string;
+  onSuccess: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, initialOutreachLogMutationState);
+  const contactOptions = contacts.map((contact) => ({ value: contact.id, label: contact.name }));
+  const typeOptions = outreachTypeOptions.map((option) => ({
+    value: option,
+    label: outreachTypeLabels[option],
+  }));
+  const directionOptions = outreachDirectionOptions.map((option) => ({
+    value: option,
+    label: outreachDirectionLabels[option],
+  }));
+
+  useEffect(() => {
+    if (state.success) {
+      onSuccess();
+    }
+  }, [onSuccess, state.success]);
+
+  return (
+    <form action={formAction} className="grid gap-5">
+      {outreachLog ? <input type="hidden" name="id" value={outreachLog.id} /> : null}
+      <input type="hidden" name="target_id" value={target.id} />
+
+      <div className="rounded-md bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+        <p className="font-semibold text-slate-950">{target.name}</p>
+        <p className="mt-1">Save what happened so the next follow-up is easy to find.</p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <SelectField<OutreachLogFormFieldName>
+          name="outreach_type"
+          label="Type"
+          defaultValue={outreachLog?.outreach_type ?? "email"}
+          required
+          options={typeOptions}
+          state={state}
+        />
+        <SelectField<OutreachLogFormFieldName>
+          name="direction"
+          label="Direction"
+          defaultValue={outreachLog?.direction ?? "sent"}
+          required
+          options={directionOptions}
+          state={state}
+        />
+        <TextField<OutreachLogFormFieldName>
+          name="outreach_date"
+          label="Outreach date"
+          type="date"
+          defaultValue={outreachLog?.outreach_date}
+          required
+          state={state}
+        />
+        <TextField<OutreachLogFormFieldName>
+          name="next_follow_up_date"
+          label="Next follow-up date"
+          type="date"
+          defaultValue={outreachLog?.next_follow_up_date}
+          state={state}
+        />
+      </div>
+
+      <SelectField<OutreachLogFormFieldName>
+        name="contact_id"
+        label="Contact"
+        defaultValue={outreachLog?.contact_id ?? ""}
+        options={contactOptions}
+        placeholder="No contact"
+        state={state}
+      />
+
+      <TextAreaField<OutreachLogFormFieldName>
+        name="summary"
+        label="Summary"
+        defaultValue={outreachLog?.summary}
+        rows={5}
+        required
+        placeholder="What did you send, hear, ask, or learn?"
+        state={state}
+      />
+
+      <TextAreaField<OutreachLogFormFieldName>
+        name="outcome"
+        label="Outcome"
+        defaultValue={outreachLog?.outcome}
+        rows={4}
+        placeholder="Example: Waiting on coach response, invited to call, no fit."
+        state={state}
+      />
+
+      {state.message ? (
+        <p
+          className={
+            state.success
+              ? "rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm leading-6 text-emerald-800"
+              : "rounded-md border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-800"
+          }
+        >
+          {state.message}
+        </p>
+      ) : null}
+
+      {state.upgradeRequired ? <InlineOutreachUpgradePrompt /> : null}
+
+      <Button
+        type="submit"
+        disabled={pending}
+        className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]"
+      >
+        <Save /> {pending ? pendingLabel : submitLabel}
+      </Button>
+    </form>
+  );
+}
+
 function TargetDetail({
   target,
   contacts,
   events,
+  outreachLogs,
   contactsUsed,
   eventsUsed,
+  outreachLogsUsed,
   isPro,
   freeContactLimit,
   freeEventLimit,
+  freeOutreachLogLimit,
   onEdit,
   onClose,
   onAddContact,
   onEditContact,
   onAddEvent,
   onEditEvent,
+  onAddOutreachLog,
+  onEditOutreachLog,
   deleteAction,
   deleteContactAction,
   deleteEventAction,
+  deleteOutreachLogAction,
 }: {
   target: Target;
   contacts: Contact[];
   events: RecruitEvent[];
+  outreachLogs: OutreachLog[];
   contactsUsed: number;
   eventsUsed: number;
+  outreachLogsUsed: number;
   isPro: boolean;
   freeContactLimit: number;
   freeEventLimit: number;
+  freeOutreachLogLimit: number;
   onEdit: () => void;
   onClose: () => void;
   onAddContact: () => void;
   onEditContact: (contact: Contact) => void;
   onAddEvent: () => void;
   onEditEvent: (event: RecruitEvent) => void;
+  onAddOutreachLog: () => void;
+  onEditOutreachLog: (outreachLog: OutreachLog) => void;
   deleteAction: TargetDeleteAction;
   deleteContactAction: ContactDeleteAction;
   deleteEventAction: EventDeleteAction;
+  deleteOutreachLogAction: OutreachLogDeleteAction;
 }) {
+  const contactNameById = useMemo(
+    () => new Map(contacts.map((contact) => [contact.id, contact.name])),
+    [contacts],
+  );
+
   return (
     <div className="grid gap-5">
       <div>
@@ -1300,6 +1601,31 @@ function TargetDetail({
             showTarget={false}
             onEditContact={onEditContact}
             deleteContactAction={deleteContactAction}
+          />
+        </div>
+      </section>
+
+      <section className="rounded-md bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div>
+            <p className="font-semibold text-slate-950">Outreach history</p>
+            <p className="mt-1 text-slate-500">
+              {isPro
+                ? "Pro plan: unlimited outreach logs"
+                : `${outreachLogsUsed} of ${freeOutreachLogLimit} free outreach logs used`}
+            </p>
+          </div>
+          <Button type="button" variant="outline" onClick={onAddOutreachLog} className="h-8 w-fit rounded-md">
+            <Plus /> Log outreach
+          </Button>
+        </div>
+        <div className="mt-3">
+          <OutreachLogList
+            outreachLogs={outreachLogs}
+            contactNameById={contactNameById}
+            emptyText="No outreach logged for this target."
+            onEditOutreachLog={onEditOutreachLog}
+            deleteOutreachLogAction={deleteOutreachLogAction}
           />
         </div>
       </section>
@@ -1527,6 +1853,120 @@ function DeleteEventForm({
       }}
     >
       <input type="hidden" name="id" value={event.id} />
+      <Button type="submit" disabled={pending} variant="destructive" size="sm" className="rounded-md">
+        <Trash2 /> {pending ? "Deleting..." : "Delete"}
+      </Button>
+      {state.message && !state.success ? <p className="mt-2 text-sm text-red-700">{state.message}</p> : null}
+    </form>
+  );
+}
+
+function OutreachLogList({
+  outreachLogs,
+  contactNameById,
+  emptyText,
+  onEditOutreachLog,
+  deleteOutreachLogAction,
+}: {
+  outreachLogs: OutreachLog[];
+  contactNameById: Map<string, string>;
+  emptyText: string;
+  onEditOutreachLog: (outreachLog: OutreachLog) => void;
+  deleteOutreachLogAction: OutreachLogDeleteAction;
+}) {
+  if (outreachLogs.length === 0) {
+    return (
+      <div className="rounded-md border border-dashed border-slate-200 bg-white p-4 text-sm leading-6 text-slate-500">
+        {emptyText}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3">
+      {outreachLogs.map((outreachLog) => (
+        <OutreachLogItem
+          key={outreachLog.id}
+          outreachLog={outreachLog}
+          contactName={outreachLog.contact_id ? contactNameById.get(outreachLog.contact_id) : undefined}
+          onEdit={() => onEditOutreachLog(outreachLog)}
+          deleteOutreachLogAction={deleteOutreachLogAction}
+        />
+      ))}
+    </div>
+  );
+}
+
+function OutreachLogItem({
+  outreachLog,
+  contactName,
+  onEdit,
+  deleteOutreachLogAction,
+}: {
+  outreachLog: OutreachLog;
+  contactName?: string;
+  onEdit: () => void;
+  deleteOutreachLogAction: OutreachLogDeleteAction;
+}) {
+  return (
+    <section className="rounded-md border border-slate-200 bg-white p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex flex-wrap gap-2">
+            <StatusPill tone="cyan">{outreachTypeLabels[outreachLog.outreach_type]}</StatusPill>
+            <StatusPill>{outreachDirectionLabels[outreachLog.direction]}</StatusPill>
+          </div>
+          <p className="mt-3 flex items-start gap-2 font-semibold tracking-tight text-slate-950">
+            <CalendarDays className="mt-1 size-4 shrink-0 text-cyan-700" />
+            {formatDateLabel(outreachLog.outreach_date)}
+          </p>
+          {contactName ? <p className="mt-1 text-sm text-slate-500">Contact: {contactName}</p> : null}
+        </div>
+        <div className="flex shrink-0 flex-wrap justify-end gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={onEdit} className="rounded-md">
+            <Pencil /> Edit
+          </Button>
+          <DeleteOutreachLogForm outreachLog={outreachLog} action={deleteOutreachLogAction} />
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-2 text-sm leading-6 text-slate-600">
+        <p className="whitespace-pre-wrap break-words text-slate-700">{outreachLog.summary}</p>
+        {outreachLog.outcome ? (
+          <p className="whitespace-pre-wrap break-words">
+            <span className="font-medium text-slate-700">Outcome:</span> {outreachLog.outcome}
+          </p>
+        ) : null}
+        {outreachLog.next_follow_up_date ? (
+          <p className="flex items-start gap-2 font-medium text-slate-700">
+            <CalendarDays className="mt-1 size-4 shrink-0 text-cyan-700" />
+            Next follow-up {formatDateLabel(outreachLog.next_follow_up_date)}
+          </p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function DeleteOutreachLogForm({
+  outreachLog,
+  action,
+}: {
+  outreachLog: OutreachLog;
+  action: OutreachLogDeleteAction;
+}) {
+  const [state, formAction, pending] = useActionState(action, initialOutreachLogDeleteState);
+
+  return (
+    <form
+      action={formAction}
+      onSubmit={(event) => {
+        if (!window.confirm("Delete this outreach log?")) {
+          event.preventDefault();
+        }
+      }}
+    >
+      <input type="hidden" name="id" value={outreachLog.id} />
       <Button type="submit" disabled={pending} variant="destructive" size="sm" className="rounded-md">
         <Trash2 /> {pending ? "Deleting..." : "Delete"}
       </Button>
@@ -1801,6 +2241,27 @@ function EventUpgradePrompt({ used, limit }: { used: number; limit: number }) {
   );
 }
 
+function OutreachUpgradePrompt({ used, limit }: { used: number; limit: number }) {
+  return (
+    <div className="grid gap-5">
+      <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="mt-0.5 size-5 text-amber-700" />
+          <div>
+            <h3 className="font-semibold text-amber-950">Free outreach limit reached</h3>
+            <p className="mt-1 text-sm leading-6 text-amber-900">
+              You are tracking {used} of {limit} free outreach logs. Pro unlocks unlimited outreach history.
+            </p>
+          </div>
+        </div>
+      </div>
+      <Button asChild className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
+        <Link href="/pricing">View Pro options</Link>
+      </Button>
+    </div>
+  );
+}
+
 function InlineUpgradePrompt() {
   return (
     <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
@@ -1824,6 +2285,22 @@ function InlineEventUpgradePrompt() {
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
           Free accounts include 3 events or dates.{" "}
+          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
+            View Pro options
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function InlineOutreachUpgradePrompt() {
+  return (
+    <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+      <div className="flex items-start gap-2">
+        <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
+        <p>
+          Free accounts include 3 outreach logs.{" "}
           <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
             View Pro options
           </Link>

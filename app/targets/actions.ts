@@ -21,6 +21,15 @@ import {
   readEventFormData,
   type EventFormFieldName,
 } from "@/lib/events";
+import {
+  buildOutreachLogInsert,
+  buildOutreachLogUpdate,
+  freeOutreachLogLimit,
+  outreachLogFormSchema,
+  outreachLogIdSchema,
+  readOutreachLogFormData,
+  type OutreachLogFormFieldName,
+} from "@/lib/outreach";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildTargetInsert,
@@ -66,6 +75,18 @@ export type EventMutationState = {
 };
 
 export type EventDeleteState = {
+  message: string;
+  success?: boolean;
+};
+
+export type OutreachLogMutationState = {
+  message: string;
+  success?: boolean;
+  upgradeRequired?: boolean;
+  fieldErrors?: Partial<Record<OutreachLogFormFieldName, string[]>>;
+};
+
+export type OutreachLogDeleteState = {
   message: string;
   success?: boolean;
 };
@@ -160,6 +181,29 @@ async function canCreateAnotherEvent(userId: string) {
   };
 }
 
+async function canCreateAnotherOutreachLog(userId: string) {
+  const supabase = await createClient();
+  const [{ isPro, error: planError }, { count, error: countError }] = await Promise.all([
+    userHasActivePro(userId),
+    supabase
+      .from("outreach_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
+  ]);
+
+  if (planError || countError) {
+    return {
+      allowed: false,
+      upgradeRequired: false,
+    };
+  }
+
+  return {
+    allowed: isPro || (count ?? 0) < freeOutreachLogLimit,
+    upgradeRequired: !isPro && (count ?? 0) >= freeOutreachLogLimit,
+  };
+}
+
 async function validateOwnedTarget(userId: string, targetId: string | null) {
   if (!targetId) {
     return {
@@ -187,6 +231,75 @@ async function validateOwnedTarget(userId: string, targetId: string | null) {
     return {
       valid: false,
       message: "Choose one of your targets or leave the target blank.",
+    };
+  }
+
+  return {
+    valid: true,
+    message: "",
+  };
+}
+
+async function validateRequiredOwnedTarget(userId: string, targetId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("targets")
+    .select("id")
+    .eq("id", targetId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    return {
+      valid: false,
+      message: "We could not verify the selected target. Please try again.",
+    };
+  }
+
+  if (!data) {
+    return {
+      valid: false,
+      message: "Choose one of your targets.",
+    };
+  }
+
+  return {
+    valid: true,
+    message: "",
+  };
+}
+
+async function validateOwnedContactForTarget(
+  userId: string,
+  targetId: string,
+  contactId: string | null,
+) {
+  if (!contactId) {
+    return {
+      valid: true,
+      message: "",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("id, target_id")
+    .eq("id", contactId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    return {
+      valid: false,
+      message: "We could not verify the selected contact. Please try again.",
+    };
+  }
+
+  if (!data || data.target_id !== targetId) {
+    return {
+      valid: false,
+      message: "Choose a contact saved to this target or leave the contact blank.",
     };
   }
 
@@ -251,10 +364,41 @@ function formatEventDatabaseError(message: string) {
   } satisfies EventMutationState;
 }
 
+function formatOutreachLogDatabaseError(message: string) {
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("outreach log limit")) {
+    return {
+      message: "Free accounts can track up to 3 outreach logs. Upgrade to Pro for unlimited outreach history.",
+      upgradeRequired: true,
+    } satisfies OutreachLogMutationState;
+  }
+
+  if (
+    lowerMessage.includes("outreach log target") ||
+    lowerMessage.includes("outreach log contact") ||
+    lowerMessage.includes("same user") ||
+    lowerMessage.includes("same target")
+  ) {
+    return {
+      message: "Choose one of your targets and its saved contacts.",
+    } satisfies OutreachLogMutationState;
+  }
+
+  return {
+    message: "We could not save the outreach log. Please try again.",
+  } satisfies OutreachLogMutationState;
+}
+
 function revalidateEventViews() {
   revalidatePath("/targets");
   revalidatePath("/today");
   revalidatePath("/my-plan");
+}
+
+function revalidateOutreachViews() {
+  revalidatePath("/targets");
+  revalidatePath("/today");
 }
 
 export async function createTargetAction(
@@ -389,6 +533,68 @@ export async function createEventAction(
 
   return {
     message: "Event added.",
+    success: true,
+  };
+}
+
+export async function createOutreachLogAction(
+  _previousState: OutreachLogMutationState,
+  formData: FormData,
+): Promise<OutreachLogMutationState> {
+  const parsed = outreachLogFormSchema.safeParse(readOutreachLogFormData(formData));
+
+  if (!parsed.success) {
+    return {
+      message: "Please fix the highlighted fields.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const user = await requireUser("/targets");
+  const target = await validateRequiredOwnedTarget(user.id, parsed.data.target_id);
+
+  if (!target.valid) {
+    return {
+      message: target.message,
+    };
+  }
+
+  const contact = await validateOwnedContactForTarget(
+    user.id,
+    parsed.data.target_id,
+    parsed.data.contact_id,
+  );
+
+  if (!contact.valid) {
+    return {
+      message: contact.message,
+    };
+  }
+
+  const limit = await canCreateAnotherOutreachLog(user.id);
+
+  if (!limit.allowed) {
+    return {
+      message: limit.upgradeRequired
+        ? "Free accounts can track up to 3 outreach logs. Upgrade to Pro for unlimited outreach history."
+        : "We could not verify your plan. Please try again.",
+      upgradeRequired: limit.upgradeRequired,
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("outreach_logs")
+    .insert(buildOutreachLogInsert(user.id, parsed.data));
+
+  if (error) {
+    return formatOutreachLogDatabaseError(error.message);
+  }
+
+  revalidateOutreachViews();
+
+  return {
+    message: "Outreach log added.",
     success: true,
   };
 }
@@ -547,6 +753,74 @@ export async function updateEventAction(
   };
 }
 
+export async function updateOutreachLogAction(
+  _previousState: OutreachLogMutationState,
+  formData: FormData,
+): Promise<OutreachLogMutationState> {
+  const idParsed = outreachLogIdSchema.safeParse({ id: formData.get("id") });
+  const parsed = outreachLogFormSchema.safeParse(readOutreachLogFormData(formData));
+
+  if (!idParsed.success) {
+    return {
+      message: "Outreach log id is invalid.",
+    };
+  }
+
+  if (!parsed.success) {
+    return {
+      message: "Please fix the highlighted fields.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const user = await requireUser("/targets");
+  const target = await validateRequiredOwnedTarget(user.id, parsed.data.target_id);
+
+  if (!target.valid) {
+    return {
+      message: target.message,
+    };
+  }
+
+  const contact = await validateOwnedContactForTarget(
+    user.id,
+    parsed.data.target_id,
+    parsed.data.contact_id,
+  );
+
+  if (!contact.valid) {
+    return {
+      message: contact.message,
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("outreach_logs")
+    .update(buildOutreachLogUpdate(parsed.data))
+    .eq("id", idParsed.data.id)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return formatOutreachLogDatabaseError(error.message);
+  }
+
+  if (!data) {
+    return {
+      message: "We could not find that outreach log.",
+    };
+  }
+
+  revalidateOutreachViews();
+
+  return {
+    message: "Outreach log updated.",
+    success: true,
+  };
+}
+
 export async function deleteTargetAction(
   _previousState: TargetDeleteState,
   formData: FormData,
@@ -669,6 +943,48 @@ export async function deleteEventAction(
 
   return {
     message: "Event deleted.",
+    success: true,
+  };
+}
+
+export async function deleteOutreachLogAction(
+  _previousState: OutreachLogDeleteState,
+  formData: FormData,
+): Promise<OutreachLogDeleteState> {
+  const idParsed = outreachLogIdSchema.safeParse({ id: formData.get("id") });
+
+  if (!idParsed.success) {
+    return {
+      message: "Outreach log id is invalid.",
+    };
+  }
+
+  const user = await requireUser("/targets");
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("outreach_logs")
+    .delete()
+    .eq("id", idParsed.data.id)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return {
+      message: "We could not delete the outreach log. Please try again.",
+    };
+  }
+
+  if (!data) {
+    return {
+      message: "We could not find that outreach log.",
+    };
+  }
+
+  revalidateOutreachViews();
+
+  return {
+    message: "Outreach log deleted.",
     success: true,
   };
 }

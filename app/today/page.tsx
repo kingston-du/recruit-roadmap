@@ -24,6 +24,14 @@ import {
   type RecruitEvent,
 } from "@/lib/events";
 import { todayPlan } from "@/lib/mock-data";
+import {
+  compareFollowUpLogs,
+  normalizeOutreachLogs,
+  outreachDirectionLabels,
+  outreachLogSelect,
+  outreachTypeLabels,
+  type OutreachLog,
+} from "@/lib/outreach";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -32,13 +40,18 @@ export default async function TodayPage() {
   const user = await requireUser("/today");
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
-  const [eventsResult, targetsResult] = await Promise.all([
+  const [eventsResult, targetsResult, outreachLogsResult] = await Promise.all([
     supabase
       .from("events")
       .select(eventSelect)
       .eq("user_id", user.id)
       .order("start_date", { ascending: true }),
     supabase.from("targets").select("id, name").eq("user_id", user.id),
+    supabase
+      .from("outreach_logs")
+      .select(outreachLogSelect)
+      .eq("user_id", user.id)
+      .order("next_follow_up_date", { ascending: true }),
   ]);
   const upcomingEvents = normalizeEvents(eventsResult.data)
     .filter((event) => event.status !== "Canceled")
@@ -48,6 +61,10 @@ export default async function TodayPage() {
         Boolean(event.registration_deadline && event.registration_deadline >= today),
     )
     .sort(compareRecruitEvents)
+    .slice(0, 6);
+  const followUps = normalizeOutreachLogs(outreachLogsResult.data)
+    .filter((outreachLog) => Boolean(outreachLog.next_follow_up_date))
+    .sort(compareFollowUpLogs)
     .slice(0, 6);
   const targetNameById = new Map(
     (targetsResult.data ?? [])
@@ -140,6 +157,52 @@ export default async function TodayPage() {
         <section className="grid gap-4">
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
             <div>
+              <h2 className="text-xl font-semibold tracking-tight">Follow-ups</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Outreach next steps with saved follow-up dates.
+              </p>
+            </div>
+            <StatusPill tone="cyan">{followUps.length} queued</StatusPill>
+          </div>
+
+          {outreachLogsResult.error || targetsResult.error ? (
+            <Panel className="border-amber-200 bg-amber-50">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="mt-0.5 size-5 text-amber-700" />
+                <p className="text-sm leading-6 text-amber-900">
+                  We could not load outreach follow-ups. Try refreshing before making changes.
+                </p>
+              </div>
+            </Panel>
+          ) : null}
+
+          {followUps.length > 0 ? (
+            <div className="grid gap-4 xl:grid-cols-3">
+              {followUps.map((outreachLog) => (
+                <FollowUpCard
+                  key={outreachLog.id}
+                  outreachLog={outreachLog}
+                  targetName={targetNameById.get(outreachLog.target_id)}
+                  today={today}
+                />
+              ))}
+            </div>
+          ) : (
+            <Panel className="border-dashed">
+              <p className="font-semibold text-slate-950">No outreach follow-ups saved yet.</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Log outreach from a target and add a next follow-up date when a coach response or next step matters.
+              </p>
+              <Button asChild variant="outline" className="mt-4 w-fit rounded-md">
+                <Link href="/targets">Open Targets</Link>
+              </Button>
+            </Panel>
+          )}
+        </section>
+
+        <section className="grid gap-4">
+          <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+            <div>
               <h2 className="text-xl font-semibold tracking-tight">Upcoming dates</h2>
               <p className="mt-1 text-sm text-slate-500">
                 Camps, tryouts, deadlines, calls, and visits coming up.
@@ -227,6 +290,55 @@ export default async function TodayPage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function FollowUpCard({
+  outreachLog,
+  targetName,
+  today,
+}: {
+  outreachLog: OutreachLog;
+  targetName: string | undefined;
+  today: string;
+}) {
+  const followUpDate = outreachLog.next_follow_up_date ?? "";
+  const isDue = followUpDate <= today;
+
+  return (
+    <Panel className="flex flex-col">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <StatusPill tone="cyan">{outreachTypeLabels[outreachLog.outreach_type]}</StatusPill>
+          <h3 className="mt-3 text-lg font-semibold tracking-tight">
+            {targetName ?? "Target"}
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">
+            {outreachDirectionLabels[outreachLog.direction]} {formatDateLabel(outreachLog.outreach_date)}
+          </p>
+        </div>
+        <StatusPill tone={isDue ? "amber" : "slate"}>{isDue ? "Due" : "Next"}</StatusPill>
+      </div>
+
+      <div className="mt-4 grid flex-1 gap-2 text-sm leading-6 text-slate-600">
+        <p className="flex items-start gap-2 font-medium text-slate-800">
+          <CalendarDays className="mt-1 size-4 shrink-0 text-cyan-700" />
+          Follow up {formatDateLabel(followUpDate)}
+        </p>
+        <p className="whitespace-pre-wrap break-words text-slate-700">{outreachLog.summary}</p>
+        {outreachLog.outcome ? (
+          <p className="whitespace-pre-wrap break-words">
+            <span className="font-medium text-slate-700">Outcome:</span> {outreachLog.outcome}
+          </p>
+        ) : null}
+      </div>
+
+      <Button asChild className="mt-5 w-fit bg-[#071a2f] text-white hover:bg-[#0b2745]">
+        <Link href="/targets">
+          Open Targets <ArrowRight />
+        </Link>
+      </Button>
+    </Panel>
   );
 }
 
