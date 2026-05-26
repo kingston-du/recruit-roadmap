@@ -74,23 +74,23 @@ export default async function TargetsPage() {
   return (
     <AppShell
       title="Targets"
-      eyebrow="Execution board"
+      eyebrow="Targets, contacts, and dates"
       activeHref="/targets"
       userEmail={user.email}
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
           <Link href="/my-plan">
-            <ClipboardList /> Review Plan
+            <ClipboardList /> Review My Plan
           </Link>
         </Button>
       }
     >
       <div className="grid gap-5">
         <div className="max-w-3xl">
-          <h2 className="text-2xl font-semibold tracking-tight">Move targets forward</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Keep each target clear</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Pick one target, review the notes, and complete the next step. Keep the
-            board simple so follow-ups do not get lost.
+            Track the teams, schools, camps, leagues, coach contacts, dates, and next
+            steps your family is already researching.
           </p>
         </div>
 
@@ -103,7 +103,7 @@ export default async function TargetsPage() {
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 size-5 text-amber-700" />
               <p className="text-sm leading-6 text-amber-900">
-                We could not load all target data. Try refreshing before making changes.
+                We could not load all target details. Refresh before adding or editing anything.
               </p>
             </div>
           </Panel>

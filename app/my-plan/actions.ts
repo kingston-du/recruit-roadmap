@@ -145,7 +145,7 @@ export async function saveMainPlanAction(
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -159,7 +159,7 @@ export async function saveMainPlanAction(
 
   if (planId && !planId.success) {
     return {
-      message: "We could not identify that plan.",
+      message: "We could not identify that plan. Refresh and try again.",
     };
   }
 
@@ -175,7 +175,7 @@ export async function saveMainPlanAction(
 
     if (error || !data) {
       return {
-        message: "We could not save the plan. Please try again.",
+        message: "We could not save the plan. Wait a moment and try again.",
       };
     }
   } else {
@@ -183,7 +183,7 @@ export async function saveMainPlanAction(
 
     if (existingPlan.error) {
       return {
-        message: "We could not load the current plan. Please try again.",
+        message: "We could not load the current plan. Refresh and try again.",
       };
     }
 
@@ -196,7 +196,7 @@ export async function saveMainPlanAction(
 
       if (error) {
         return {
-          message: "We could not save the plan. Please try again.",
+          message: "We could not save the plan. Wait a moment and try again.",
         };
       }
     } else {
@@ -204,7 +204,7 @@ export async function saveMainPlanAction(
 
       if (error) {
         return {
-          message: "We could not create the plan. Please try again.",
+          message: "We could not create the plan. Wait a moment and try again.",
         };
       }
     }
@@ -226,7 +226,7 @@ export async function createPlanPathAction(
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -237,7 +237,7 @@ export async function createPlanPathAction(
 
   if (!mainPlan.id || mainPlan.error) {
     return {
-      message: "We could not prepare the plan. Please try again.",
+      message: "We could not prepare the plan. Refresh and try again.",
     };
   }
 
@@ -252,7 +252,7 @@ export async function createPlanPathAction(
 
   if (error) {
     return {
-      message: "We could not add the path. Please try again.",
+      message: "We could not add the path. Wait a moment and try again.",
     };
   }
 
@@ -273,7 +273,7 @@ export async function updatePlanPathAction(
 
   if (!idParsed.success || !parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.success ? undefined : parsed.error.flatten().fieldErrors,
     };
   }
@@ -290,7 +290,7 @@ export async function updatePlanPathAction(
 
   if (error || !data) {
     return {
-      message: "We could not save the path. Please try again.",
+      message: "We could not save the path. Wait a moment and try again.",
     };
   }
 
@@ -310,7 +310,7 @@ export async function deletePlanPathAction(
 
   if (!idParsed.success) {
     return {
-      message: "Path id is invalid.",
+      message: "We could not identify that path. Refresh and try again.",
     };
   }
 
@@ -326,7 +326,7 @@ export async function deletePlanPathAction(
 
   if (error || !data) {
     return {
-      message: "We could not delete the path. Please try again.",
+      message: "We could not delete the path. Wait a moment and try again.",
     };
   }
 
@@ -345,7 +345,7 @@ export async function addDefaultPlanPathsAction(): Promise<DefaultPathsState> {
 
   if (!mainPlan.id || mainPlan.error) {
     return {
-      message: "We could not prepare the plan. Please try again.",
+      message: "We could not prepare the plan. Refresh and try again.",
     };
   }
 
@@ -358,7 +358,7 @@ export async function addDefaultPlanPathsAction(): Promise<DefaultPathsState> {
 
   if (existingError) {
     return {
-      message: "We could not check the current paths. Please try again.",
+      message: "We could not check the current paths. Refresh and try again.",
     };
   }
 
@@ -386,7 +386,7 @@ export async function addDefaultPlanPathsAction(): Promise<DefaultPathsState> {
 
   if (error) {
     return {
-      message: "We could not add the path examples. Please try again.",
+      message: "We could not add the path examples. Wait a moment and try again.",
     };
   }
 

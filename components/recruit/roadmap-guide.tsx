@@ -29,7 +29,7 @@ export function RoadmapGuide({ sections }: { sections: RoadmapSection[] }) {
             <StatusPill>Educational guide</StatusPill>
           </div>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-            Read the pathway from top to bottom, then click the options that fit your player.
+            Scan the pathway from top to bottom, then open the options your family wants to understand.
           </h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
             Most boys hockey families are comparing a current playing environment, a
@@ -43,7 +43,7 @@ export function RoadmapGuide({ sections }: { sections: RoadmapSection[] }) {
           <div className="mt-3 grid gap-3">
             {[
               "Start with where your player is now.",
-              "Click realistic options to see what to research.",
+              "Open realistic options to see what to research.",
               "Turn good-fit options into targets and plan steps.",
             ].map((item) => (
               <div key={item} className="flex gap-2">

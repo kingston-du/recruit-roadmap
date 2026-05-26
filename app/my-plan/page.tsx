@@ -73,7 +73,7 @@ export default async function MyPlanPage() {
   return (
     <AppShell
       title="My Plan"
-      eyebrow="Recruiting plan"
+      eyebrow="Family recruiting plan"
       activeHref="/my-plan"
       userEmail={user.email}
       action={
@@ -90,7 +90,7 @@ export default async function MyPlanPage() {
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 size-5 text-amber-700" />
               <p className="text-sm leading-6 text-amber-900">
-                We could not load all plan data. Try refreshing before making changes.
+                We could not load all plan details. Refresh before adding or editing anything.
               </p>
             </div>
           </Panel>

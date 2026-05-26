@@ -79,16 +79,16 @@ export const contactFormSchema = z.object({
   target_id: z
     .union([z.string().uuid("Choose a valid target."), z.literal("")])
     .transform((value) => (value.length > 0 ? value : null)),
-  name: requiredText("Name", 120),
-  role: requiredText("Role", 120),
+  name: requiredText("Contact name", 120),
+  role: requiredText("Coach or staff role", 120),
   email: requiredEmail("Email", 240),
   phone: optionalText("Phone", 60),
-  source_url: optionalUrl("Source URL"),
+  source_url: optionalUrl("Where you found this contact"),
   notes: optionalText("Notes", 2000),
 });
 
 export const contactIdSchema = z.object({
-  id: z.string().uuid("Contact id is invalid."),
+  id: z.string().uuid("We could not identify that contact. Refresh and try again."),
 });
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;

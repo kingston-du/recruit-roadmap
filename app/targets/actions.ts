@@ -223,7 +223,7 @@ async function validateOwnedTarget(userId: string, targetId: string | null) {
   if (error) {
     return {
       valid: false,
-      message: "We could not verify the selected target. Please try again.",
+      message: "We could not check the selected target. Refresh and try again.",
     };
   }
 
@@ -252,7 +252,7 @@ async function validateRequiredOwnedTarget(userId: string, targetId: string) {
   if (error) {
     return {
       valid: false,
-      message: "We could not verify the selected target. Please try again.",
+      message: "We could not check the selected target. Refresh and try again.",
     };
   }
 
@@ -292,7 +292,7 @@ async function validateOwnedContactForTarget(
   if (error) {
     return {
       valid: false,
-      message: "We could not verify the selected contact. Please try again.",
+      message: "We could not check the selected contact. Refresh and try again.",
     };
   }
 
@@ -318,7 +318,7 @@ function formatDatabaseError(message: string) {
   }
 
   return {
-    message: "We could not save the target. Please try again.",
+    message: "We could not save the target. Wait a moment and try again.",
   } satisfies TargetMutationState;
 }
 
@@ -339,7 +339,7 @@ function formatContactDatabaseError(message: string) {
   }
 
   return {
-    message: "We could not save the contact. Please try again.",
+    message: "We could not save the contact. Wait a moment and try again.",
   } satisfies ContactMutationState;
 }
 
@@ -360,7 +360,7 @@ function formatEventDatabaseError(message: string) {
   }
 
   return {
-    message: "We could not save the event. Please try again.",
+    message: "We could not save the date. Wait a moment and try again.",
   } satisfies EventMutationState;
 }
 
@@ -386,7 +386,7 @@ function formatOutreachLogDatabaseError(message: string) {
   }
 
   return {
-    message: "We could not save the outreach log. Please try again.",
+    message: "We could not save the outreach note. Wait a moment and try again.",
   } satisfies OutreachLogMutationState;
 }
 
@@ -409,7 +409,7 @@ export async function createTargetAction(
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -421,7 +421,7 @@ export async function createTargetAction(
     return {
       message: limit.upgradeRequired
         ? "Free accounts can track up to 5 targets. Upgrade to Pro for unlimited targets."
-        : "We could not verify your plan. Please try again.",
+        : "We could not check your plan. Refresh and try again.",
       upgradeRequired: limit.upgradeRequired,
     };
   }
@@ -449,7 +449,7 @@ export async function createContactAction(
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -469,7 +469,7 @@ export async function createContactAction(
     return {
       message: limit.upgradeRequired
         ? "Free accounts can track up to 3 coach contacts. Upgrade to Pro for unlimited contacts."
-        : "We could not verify your plan. Please try again.",
+        : "We could not check your plan. Refresh and try again.",
       upgradeRequired: limit.upgradeRequired,
     };
   }
@@ -497,7 +497,7 @@ export async function createEventAction(
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -517,7 +517,7 @@ export async function createEventAction(
     return {
       message: limit.upgradeRequired
         ? "Free accounts can track up to 3 events or dates. Upgrade to Pro for unlimited events."
-        : "We could not verify your plan. Please try again.",
+        : "We could not check your plan. Refresh and try again.",
       upgradeRequired: limit.upgradeRequired,
     };
   }
@@ -545,7 +545,7 @@ export async function createOutreachLogAction(
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -577,7 +577,7 @@ export async function createOutreachLogAction(
     return {
       message: limit.upgradeRequired
         ? "Outreach history is included with Pro. Upgrade for unlimited outreach history."
-        : "We could not verify your plan. Please try again.",
+        : "We could not check your plan. Refresh and try again.",
       upgradeRequired: limit.upgradeRequired,
     };
   }
@@ -608,7 +608,7 @@ export async function updateTargetAction(
 
   if (!idParsed.success || !parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.success ? undefined : parsed.error.flatten().fieldErrors,
     };
   }
@@ -629,7 +629,7 @@ export async function updateTargetAction(
 
   if (!data) {
     return {
-      message: "We could not find that target.",
+      message: "We could not find that target. Refresh and try again.",
     };
   }
 
@@ -650,13 +650,13 @@ export async function updateContactAction(
 
   if (!idParsed.success) {
     return {
-      message: "Contact id is invalid.",
+      message: "We could not identify that contact. Refresh and try again.",
     };
   }
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -685,7 +685,7 @@ export async function updateContactAction(
 
   if (!data) {
     return {
-      message: "We could not find that contact.",
+      message: "We could not find that contact. Refresh and try again.",
     };
   }
 
@@ -706,13 +706,13 @@ export async function updateEventAction(
 
   if (!idParsed.success) {
     return {
-      message: "Event id is invalid.",
+      message: "We could not identify that date. Refresh and try again.",
     };
   }
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -741,7 +741,7 @@ export async function updateEventAction(
 
   if (!data) {
     return {
-      message: "We could not find that event.",
+      message: "We could not find that date. Refresh and try again.",
     };
   }
 
@@ -762,13 +762,13 @@ export async function updateOutreachLogAction(
 
   if (!idParsed.success) {
     return {
-      message: "Outreach log id is invalid.",
+      message: "We could not identify that outreach note. Refresh and try again.",
     };
   }
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -809,7 +809,7 @@ export async function updateOutreachLogAction(
 
   if (!data) {
     return {
-      message: "We could not find that outreach log.",
+      message: "We could not find that outreach note. Refresh and try again.",
     };
   }
 
@@ -829,7 +829,7 @@ export async function deleteTargetAction(
 
   if (!idParsed.success) {
     return {
-      message: "Target id is invalid.",
+      message: "We could not identify that target. Refresh and try again.",
     };
   }
 
@@ -845,13 +845,13 @@ export async function deleteTargetAction(
 
   if (error) {
     return {
-      message: "We could not delete the target. Please try again.",
+      message: "We could not delete the target. Wait a moment and try again.",
     };
   }
 
   if (!data) {
     return {
-      message: "We could not find that target.",
+      message: "We could not find that target. Refresh and try again.",
     };
   }
 
@@ -871,7 +871,7 @@ export async function deleteContactAction(
 
   if (!idParsed.success) {
     return {
-      message: "Contact id is invalid.",
+      message: "We could not identify that contact. Refresh and try again.",
     };
   }
 
@@ -887,13 +887,13 @@ export async function deleteContactAction(
 
   if (error) {
     return {
-      message: "We could not delete the contact. Please try again.",
+      message: "We could not delete the contact. Wait a moment and try again.",
     };
   }
 
   if (!data) {
     return {
-      message: "We could not find that contact.",
+      message: "We could not find that contact. Refresh and try again.",
     };
   }
 
@@ -913,7 +913,7 @@ export async function deleteEventAction(
 
   if (!idParsed.success) {
     return {
-      message: "Event id is invalid.",
+      message: "We could not identify that date. Refresh and try again.",
     };
   }
 
@@ -929,13 +929,13 @@ export async function deleteEventAction(
 
   if (error) {
     return {
-      message: "We could not delete the event. Please try again.",
+      message: "We could not delete the date. Wait a moment and try again.",
     };
   }
 
   if (!data) {
     return {
-      message: "We could not find that event.",
+      message: "We could not find that date. Refresh and try again.",
     };
   }
 
@@ -955,7 +955,7 @@ export async function deleteOutreachLogAction(
 
   if (!idParsed.success) {
     return {
-      message: "Outreach log id is invalid.",
+      message: "We could not identify that outreach note. Refresh and try again.",
     };
   }
 
@@ -971,13 +971,13 @@ export async function deleteOutreachLogAction(
 
   if (error) {
     return {
-      message: "We could not delete the outreach log. Please try again.",
+      message: "We could not delete the outreach note. Wait a moment and try again.",
     };
   }
 
   if (!data) {
     return {
-      message: "We could not find that outreach log.",
+      message: "We could not find that outreach note. Refresh and try again.",
     };
   }
 

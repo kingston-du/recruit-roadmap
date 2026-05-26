@@ -32,6 +32,7 @@ type TextFieldProps = {
   required?: boolean;
   type?: "text" | "number" | "url";
   placeholder?: string;
+  helperText?: string;
   autoComplete?: string;
   state: PlayerProfileFormState;
 };
@@ -68,6 +69,7 @@ function TextField({
   required,
   type = "text",
   placeholder,
+  helperText,
   autoComplete,
   state,
 }: TextFieldProps) {
@@ -92,6 +94,7 @@ function TextField({
         aria-describedby={error ? errorId : undefined}
         className={fieldClass(Boolean(error))}
       />
+      {helperText ? <p className="text-sm leading-5 text-slate-500">{helperText}</p> : null}
       <FieldMessage id={errorId} message={error} />
     </div>
   );
@@ -102,12 +105,14 @@ function SelectField({
   label,
   defaultValue,
   options,
+  helperText,
   state,
 }: {
   name: PlayerProfileFieldName;
   label: string;
   defaultValue?: string | null;
   options: readonly string[];
+  helperText?: string;
   state: PlayerProfileFormState;
 }) {
   const error = fieldError(state, name);
@@ -136,6 +141,7 @@ function SelectField({
           </option>
         ))}
       </select>
+      {helperText ? <p className="text-sm leading-5 text-slate-500">{helperText}</p> : null}
       <FieldMessage id={errorId} message={error} />
     </div>
   );
@@ -148,6 +154,7 @@ function TextAreaField({
   required,
   rows,
   placeholder,
+  helperText,
   state,
 }: {
   name: PlayerProfileFieldName;
@@ -156,6 +163,7 @@ function TextAreaField({
   required?: boolean;
   rows: number;
   placeholder?: string;
+  helperText?: string;
   state: PlayerProfileFormState;
 }) {
   const error = fieldError(state, name);
@@ -178,6 +186,7 @@ function TextAreaField({
         aria-describedby={error ? errorId : undefined}
         className={cn(fieldClass(Boolean(error)), "py-3 leading-6")}
       />
+      {helperText ? <p className="text-sm leading-5 text-slate-500">{helperText}</p> : null}
       <FieldMessage id={errorId} message={error} />
     </div>
   );
@@ -211,6 +220,7 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           required
           type="number"
           placeholder="2009"
+          helperText="Use the player's birth year, not graduation year."
           state={state}
         />
         <TextField
@@ -229,6 +239,7 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           label="Position"
           defaultValue={profile?.position}
           options={playerPositionOptions}
+          helperText="Choose the position families and coaches would recognize first."
           state={state}
         />
         <SelectField
@@ -236,6 +247,7 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           label="Shoots"
           defaultValue={profile?.shoots}
           options={shootsOptions}
+          helperText="For goalies, use catching hand if that is how your family tracks it."
           state={state}
         />
         <TextField
@@ -251,7 +263,7 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           label="Weight"
           defaultValue={profile?.weight}
           required
-          placeholder="165"
+          placeholder="165 lbs"
           state={state}
         />
         <TextField
@@ -267,6 +279,7 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           defaultValue={profile?.current_level}
           required
           placeholder="AAA, Prep, High School"
+          helperText="Use the level your family uses when comparing options."
           state={state}
         />
       </div>
@@ -278,22 +291,25 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           defaultValue={profile?.gpa}
           type="number"
           placeholder="3.7"
+          helperText="Optional. Add it only if your family wants academics visible here."
           state={state}
         />
         <TextField
           name="target_path"
-          label="Target path"
+          label="Path you are considering"
           defaultValue={profile?.target_path}
           required
           placeholder="Prep, juniors, college hockey"
+          helperText="This is not a prediction. It is the path your family wants to organize."
           state={state}
         />
         <TextAreaField
           name="goals"
-          label="Goals"
+          label="Player and family goals"
           defaultValue={profile?.goals}
           required
           rows={5}
+          placeholder="Example: Find the right development level, keep academics strong, and compare realistic next steps."
           state={state}
         />
       </div>
@@ -306,6 +322,7 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           required
           rows={4}
           placeholder="One URL per line"
+          helperText="Paste links your family already has. Recruit Roadmap does not scrape video or profile sites."
           state={state}
         />
         <div className="grid gap-4 md:grid-cols-2">
@@ -314,6 +331,7 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
             label="Elite Prospects URL"
             defaultValue={profile?.elite_prospects_url}
             type="url"
+            helperText="Optional public profile link."
             state={state}
           />
           <TextField
@@ -321,6 +339,7 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
             label="MyHockey URL"
             defaultValue={profile?.myhockey_url}
             type="url"
+            helperText="Optional public profile or ranking link."
             state={state}
           />
         </div>
@@ -337,6 +356,7 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           name="coach_reference_contact"
           label="Coach reference contact"
           defaultValue={profile?.coach_reference_contact}
+          placeholder="Email or phone"
           state={state}
         />
       </div>

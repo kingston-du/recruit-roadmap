@@ -56,6 +56,8 @@ export function AuthForm({ mode, action, nextPath }: AuthFormProps) {
         />
         {state.fieldErrors?.password ? (
           <p className="text-sm text-red-700">{state.fieldErrors.password[0]}</p>
+        ) : !isLogin ? (
+          <p className="text-sm leading-5 text-slate-500">Use at least 6 characters.</p>
         ) : null}
       </div>
 
@@ -76,7 +78,7 @@ export function AuthForm({ mode, action, nextPath }: AuthFormProps) {
         disabled={pending}
         className="h-11 rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]"
       >
-        {pending ? "Working..." : isLogin ? "Log in" : "Create account"}
+        {pending ? (isLogin ? "Checking..." : "Creating...") : isLogin ? "Log in" : "Create account"}
       </Button>
 
       <p className="text-center text-sm text-slate-600">

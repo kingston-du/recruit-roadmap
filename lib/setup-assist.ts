@@ -17,7 +17,7 @@ function optionalText(label: string, maxLength: number) {
 }
 
 export const setupAssistRequestFormSchema = z.object({
-  parent_player_name: requiredText("Parent/player name", 120),
+  parent_player_name: requiredText("Parent or family contact name", 120),
   email: z
     .string()
     .trim()
@@ -25,7 +25,7 @@ export const setupAssistRequestFormSchema = z.object({
     .max(254, "Email must be 254 characters or fewer."),
   player_name: requiredText("Player name", 120),
   help_needed: requiredText("What you need help importing", 1200),
-  goals: requiredText("Goals", 1200),
+  goals: requiredText("What you are trying to organize", 1200),
   current_target_list: optionalText("Current target list", 5000),
   coach_contacts: optionalText("Coach contacts", 5000),
   camp_date_links: optionalText("Camp/date links", 5000),

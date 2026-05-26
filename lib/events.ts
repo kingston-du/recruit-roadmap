@@ -137,8 +137,8 @@ export const eventFormSchema = z
     target_id: z
       .union([z.string().uuid("Choose a valid target."), z.literal("")])
       .transform((value) => (value.length > 0 ? value : null)),
-    title: requiredText("Title", 120),
-    event_type: z.enum(eventTypeOptions, { message: "Choose an event type." }),
+    title: requiredText("Date or event name", 120),
+    event_type: z.enum(eventTypeOptions, { message: "Choose a date type." }),
     start_date: requiredDate("Start date"),
     end_date: optionalDate("End date"),
     registration_deadline: optionalDate("Registration deadline"),
@@ -146,7 +146,7 @@ export const eventFormSchema = z
     location: optionalText("Location", 160),
     url: optionalUrl("URL"),
     notes: optionalText("Notes", 2000),
-    status: z.enum(eventStatusOptions, { message: "Choose an event status." }),
+    status: z.enum(eventStatusOptions, { message: "Choose a date status." }),
   })
   .superRefine((data, context) => {
     if (data.end_date && data.end_date < data.start_date) {
@@ -159,7 +159,7 @@ export const eventFormSchema = z
   });
 
 export const eventIdSchema = z.object({
-  id: z.string().uuid("Event id is invalid."),
+  id: z.string().uuid("We could not identify that date. Refresh and try again."),
 });
 
 export type EventFormData = z.infer<typeof eventFormSchema>;

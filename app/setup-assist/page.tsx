@@ -31,7 +31,7 @@ function PaymentButton({
         disabled
         className={className ?? "h-10 rounded-md bg-[#071a2f] text-white"}
       >
-        <LockKeyhole /> Payment link unavailable
+        <LockKeyhole /> Payment link not ready
       </Button>
     );
   }
@@ -74,11 +74,11 @@ export default async function SetupAssistPage() {
                 <p className="text-sm font-semibold">Optional $20 add-on</p>
               </div>
               <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight">
-                Send the details you already have, then complete payment.
+                Send the details you already have, then complete the one-time payment.
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
-                Setup Assist is for importing and organizing your own targets,
-                contacts, dates, and profile links inside Recruit Roadmap.
+                Setup Assist is for organizing user-provided targets, contacts, dates,
+                and profile links inside Recruit Roadmap. It is optional.
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-white/5 p-5">
@@ -98,8 +98,11 @@ export default async function SetupAssistPage() {
           <Panel>
             <div className="flex items-center gap-2">
               <Wrench className="size-5 text-cyan-700" />
-              <h2 className="text-lg font-semibold">Request details</h2>
+              <h2 className="text-lg font-semibold">Request Details</h2>
             </div>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Paste what you already have. It does not need to be perfectly formatted.
+            </p>
             <div className="mt-5">
               <SetupAssistForm
                 action={createSetupAssistRequestAction}
@@ -125,7 +128,7 @@ export default async function SetupAssistPage() {
             <Panel className="border-cyan-200 bg-cyan-50">
               <h2 className="text-lg font-semibold">Already paid?</h2>
               <p className="mt-2 text-sm leading-6 text-slate-700">
-                Submit the request here so the details are tied to this account.
+                Submit this form so the setup details are tied to this account.
               </p>
               <Button asChild variant="outline" className="mt-4 h-10 rounded-md bg-white">
                 <Link href="/targets">

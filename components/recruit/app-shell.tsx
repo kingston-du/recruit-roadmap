@@ -20,7 +20,7 @@ const navItems = [
   { href: "/targets", label: "Targets", icon: Target },
   { href: "/my-player", label: "My Player", icon: UserRound },
   { href: "/roadmap", label: "Roadmap", icon: Map },
-  { href: "/pricing", label: "Upgrade", icon: CreditCard },
+  { href: "/pricing", label: "Plans", icon: CreditCard },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -77,7 +77,7 @@ export function AppShell({
             <CalendarCheck className="size-5 text-cyan-200" />
             <p className="mt-3 text-sm font-medium">This week</p>
             <p className="mt-1 text-xs leading-5 text-slate-300">
-              Keep the next few steps clear before adding more targets.
+              Start with the next clear step before adding more to the list.
             </p>
           </div>
 

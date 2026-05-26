@@ -129,27 +129,27 @@ function optionalText(label: string, maxLength: number) {
 export const mainPlanFormSchema = z.object({
   title: requiredText("Plan name", 120),
   season: optionalText("Season", 80),
-  pathway_goal: optionalText("Main focus", 800),
+  pathway_goal: optionalText("Family focus", 800),
   short_term_goal: optionalText("Short-term goal", 1000),
   long_term_goal: optionalText("Long-term goal", 1000),
   notes: optionalText("Notes", 2000),
 });
 
 export const planPathFormSchema = z.object({
-  title: requiredText("Path title", 120),
-  goal: requiredText("Goal", 800),
+  title: requiredText("Path name", 120),
+  goal: requiredText("What this path is for", 800),
   timeline: optionalText("Timeline", 200),
-  why_considering: optionalText("Why considering", 1200),
+  why_considering: optionalText("Why this might fit", 1200),
   next_steps: optionalText("Next steps", 2000),
-  open_questions: optionalText("Open questions", 2000),
+  open_questions: optionalText("Questions to answer", 2000),
 });
 
 export const planIdSchema = z.object({
-  id: z.string().uuid("Plan id is invalid."),
+  id: z.string().uuid("We could not identify that plan. Refresh and try again."),
 });
 
 export const planPathIdSchema = z.object({
-  id: z.string().uuid("Path id is invalid."),
+  id: z.string().uuid("We could not identify that path. Refresh and try again."),
 });
 
 export type MainPlanFormFieldName = keyof z.input<typeof mainPlanFormSchema>;

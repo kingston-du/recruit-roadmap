@@ -123,12 +123,12 @@ function optionalDate(label: string) {
 }
 
 export const targetFormSchema = z.object({
-  name: requiredText("Name", 120),
-  target_type: z.enum(targetTypeOptions, { message: "Choose a target type." }),
+  name: requiredText("Target name", 120),
+  target_type: z.enum(targetTypeOptions, { message: "Choose what kind of target this is." }),
   level: optionalText("Level", 80),
   location: optionalText("Location", 160),
   connected_path: optionalText("Connected path", 160),
-  status: z.enum(targetStatusOptions, { message: "Choose a board column." }),
+  status: z.enum(targetStatusOptions, { message: "Choose the current stage." }),
   next_step: optionalText("Next step", 400),
   follow_up_date: optionalDate("Follow-up date"),
   priority: z
@@ -143,7 +143,7 @@ export const targetFormSchema = z.object({
 });
 
 export const targetIdSchema = z.object({
-  id: z.string().uuid("Target id is invalid."),
+  id: z.string().uuid("We could not identify that target. Refresh and try again."),
 });
 
 export type TargetFormData = z.infer<typeof targetFormSchema>;

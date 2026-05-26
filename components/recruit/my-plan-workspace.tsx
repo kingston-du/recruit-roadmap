@@ -116,6 +116,7 @@ function TextField<FieldName extends string>({
   defaultValue,
   required,
   placeholder,
+  helperText,
   state,
 }: {
   name: FieldName;
@@ -123,6 +124,7 @@ function TextField<FieldName extends string>({
   defaultValue?: string | null;
   required?: boolean;
   placeholder?: string;
+  helperText?: string;
   state: FieldState<FieldName>;
 }) {
   const error = fieldError(state, name);
@@ -144,6 +146,7 @@ function TextField<FieldName extends string>({
         aria-describedby={error ? errorId : undefined}
         className={fieldClass(Boolean(error))}
       />
+      {helperText ? <p className="text-sm leading-5 text-slate-500">{helperText}</p> : null}
       <FieldMessage id={errorId} message={error} />
     </div>
   );
@@ -156,6 +159,7 @@ function TextAreaField<FieldName extends string>({
   required,
   rows,
   placeholder,
+  helperText,
   state,
 }: {
   name: FieldName;
@@ -164,6 +168,7 @@ function TextAreaField<FieldName extends string>({
   required?: boolean;
   rows: number;
   placeholder?: string;
+  helperText?: string;
   state: FieldState<FieldName>;
 }) {
   const error = fieldError(state, name);
@@ -186,6 +191,7 @@ function TextAreaField<FieldName extends string>({
         aria-describedby={error ? errorId : undefined}
         className={cn(fieldClass(Boolean(error)), "py-3 leading-6")}
       />
+      {helperText ? <p className="text-sm leading-5 text-slate-500">{helperText}</p> : null}
       <FieldMessage id={errorId} message={error} />
     </div>
   );
@@ -244,10 +250,10 @@ export function MyPlanWorkspace({
           <Panel>
             <div className="flex items-center gap-2">
               <Save className="size-5 text-cyan-700" />
-              <h2 className="text-lg font-semibold">Main Plan</h2>
+              <h2 className="text-lg font-semibold">Family Plan</h2>
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Keep the short-term and long-term goals in one private plan.
+              Keep the big-picture goals in one private place before comparing options.
             </p>
             <div className="mt-5">
               <MainPlanForm plan={plan} action={saveMainPlanAction} />
@@ -257,9 +263,9 @@ export function MyPlanWorkspace({
           <section className="grid gap-4">
             <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
               <div>
-                <h2 className="text-xl font-semibold tracking-tight">Paths</h2>
+                <h2 className="text-xl font-semibold tracking-tight">Possible Paths</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Compare options and keep next steps visible.
+                  Compare routes your family is considering, such as prep, juniors, college, or backup options.
                 </p>
               </div>
               <Button
@@ -284,10 +290,9 @@ export function MyPlanWorkspace({
               </div>
             ) : (
               <Panel className="border-dashed">
-                <p className="font-semibold text-slate-950">No paths saved yet.</p>
+                <p className="font-semibold text-slate-950">No possible paths saved yet.</p>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Add a path from scratch, or start with the example paths and adjust them
-                  for the player.
+                  Add one route your family is considering, or start with the examples and adjust them for the player.
                 </p>
               </Panel>
             )}
@@ -343,12 +348,12 @@ function PlanSummary({
     <Panel className="bg-[#071a2f] text-white">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
         <div>
-          <p className="text-sm font-medium text-cyan-100">Recruiting plan</p>
+          <p className="text-sm font-medium text-cyan-100">Family recruiting plan</p>
           <h2 className="mt-2 max-w-4xl text-3xl font-semibold tracking-tight">
-            {plan?.pathway_goal ?? "Organize options, paths, and next steps."}
+            {plan?.pathway_goal ?? "Organize options, possible paths, and next steps."}
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-            This plan helps the family compare paths without treating any outcome as certain.
+            This plan helps your family compare choices without treating any outcome as certain.
           </p>
         </div>
         <div className="rounded-md border border-white/10 bg-white/5 p-4">
@@ -356,7 +361,7 @@ function PlanSummary({
             Snapshot
           </p>
           <div className="mt-3 grid gap-3 text-sm text-slate-300">
-            <p>{pathCount} saved paths</p>
+            <p>{pathCount} possible paths</p>
             <p>{targetGroupCount} target groups</p>
             <p>{eventCount} linked dates</p>
             <p>{plan?.season ?? "Season not set"}</p>
@@ -387,16 +392,18 @@ function MainPlanForm({ plan, action }: { plan: MainPlan | null; action: MainPla
           label="Season"
           defaultValue={plan?.season}
           placeholder="2026-27"
+          helperText="Use the season this plan is mostly about."
           state={state}
         />
       </div>
 
       <TextAreaField<MainPlanFormFieldName>
         name="pathway_goal"
-        label="Main focus"
+        label="Family focus"
         defaultValue={plan?.pathway_goal}
         rows={3}
-        placeholder="Example: Compare junior, college, and development options for the next season."
+        placeholder="Example: Compare prep, junior, college, and development options for next season."
+        helperText="One plain sentence is enough."
         state={state}
       />
       <TextAreaField<MainPlanFormFieldName>
@@ -405,6 +412,7 @@ function MainPlanForm({ plan, action }: { plan: MainPlan | null; action: MainPla
         defaultValue={plan?.short_term_goal}
         rows={3}
         placeholder="Example: Pick three target options to research this month."
+        helperText="What should happen in the next few weeks?"
         state={state}
       />
       <TextAreaField<MainPlanFormFieldName>
@@ -413,6 +421,7 @@ function MainPlanForm({ plan, action }: { plan: MainPlan | null; action: MainPla
         defaultValue={plan?.long_term_goal}
         rows={3}
         placeholder="Example: Keep school, hockey, and development fit organized over the next two seasons."
+        helperText="What bigger outcome is the family working toward?"
         state={state}
       />
       <TextAreaField<MainPlanFormFieldName>
@@ -476,13 +485,13 @@ function PathCard({
       <div className="mt-5 grid flex-1 gap-4">
         <PathDetail title="Goal">{path.goal ?? "No goal added yet."}</PathDetail>
         <PathDetail title="Timeline">{path.timeline ?? "No timeline added yet."}</PathDetail>
-        <PathDetail title="Why considering">
+        <PathDetail title="Why this might fit">
           {path.why_considering ?? "No notes added yet."}
         </PathDetail>
 
         <PathList title="Next steps" value={path.next_steps} emptyText="No next steps added yet." />
         <PathList
-          title="Open questions"
+          title="Questions to answer"
           value={path.open_questions}
           emptyText="No open questions added yet."
         />
@@ -557,7 +566,7 @@ function DeletePathForm({
       action={formAction}
       className="mt-5"
       onSubmit={(event) => {
-        if (!window.confirm(`Delete ${path.title}?`)) {
+        if (!window.confirm(`Delete the path "${path.title}"?`)) {
           event.preventDefault();
         }
       }}
@@ -638,19 +647,21 @@ function PlanPathForm({
 
       <TextField<PlanPathFormFieldName>
         name="title"
-        label="Path title"
+        label="Path name"
         defaultValue={path?.title}
         required
         placeholder="Junior Hockey Path"
+        helperText="Name the route your family wants to compare."
         state={state}
       />
       <TextAreaField<PlanPathFormFieldName>
         name="goal"
-        label="Goal"
+        label="What this path is for"
         defaultValue={path?.goal}
         required
         rows={3}
         placeholder="Describe what this path helps the family compare."
+        helperText="This can be a simple sentence."
         state={state}
       />
       <TextField<PlanPathFormFieldName>
@@ -658,13 +669,15 @@ function PlanPathForm({
         label="Timeline"
         defaultValue={path?.timeline}
         placeholder="This season, next offseason, longer-term"
+        helperText="When would this path matter?"
         state={state}
       />
       <TextAreaField<PlanPathFormFieldName>
         name="why_considering"
-        label="Why considering"
+        label="Why this might fit"
         defaultValue={path?.why_considering}
         rows={4}
+        placeholder="Example: More development time, school fit, location, cost, or competition level."
         state={state}
       />
       <TextAreaField<PlanPathFormFieldName>
@@ -673,11 +686,12 @@ function PlanPathForm({
         defaultValue={path?.next_steps}
         rows={5}
         placeholder="One next step per line"
+        helperText="Add small actions like research a team, check cost, or save a contact."
         state={state}
       />
       <TextAreaField<PlanPathFormFieldName>
         name="open_questions"
-        label="Open questions"
+        label="Questions to answer"
         defaultValue={path?.open_questions}
         rows={5}
         placeholder="One question per line"
@@ -715,9 +729,9 @@ function DefaultPathsPanel({ action }: { action: DefaultPathsAction }) {
       <div className="flex items-start gap-3">
         <Circle className="mt-1 size-4 text-cyan-800" />
         <div>
-          <h2 className="text-lg font-semibold">Path Examples</h2>
+          <h2 className="text-lg font-semibold">Starter Path Examples</h2>
           <p className="mt-1 text-sm leading-6 text-slate-700">
-            Start with common planning paths, then edit the wording for the player.
+            Add common planning paths, then edit them so they match your player.
           </p>
         </div>
       </div>
@@ -750,7 +764,7 @@ function DefaultPathsPanel({ action }: { action: DefaultPathsAction }) {
           variant="outline"
           className="h-10 rounded-md border-cyan-200 bg-white"
         >
-          <Plus /> {pending ? "Adding..." : "Add examples"}
+          <Plus /> {pending ? "Adding..." : "Add starter examples"}
         </Button>
       </form>
     </Panel>
@@ -792,7 +806,7 @@ function TargetGroupsPanel({
         <h2 className="text-lg font-semibold">Targets by Path</h2>
       </div>
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        Targets are grouped by their connected path.
+        Targets appear here when their connected path matches a path in your plan.
       </p>
 
       <div className="mt-5 grid gap-3">
@@ -838,9 +852,9 @@ function TargetGroupsPanel({
             <div className="flex items-start gap-2">
               <AlertCircle className="mt-0.5 size-4 text-slate-400" />
               <div>
-                <p className="text-sm font-semibold text-slate-950">No connected targets yet.</p>
+                <p className="text-sm font-semibold text-slate-950">No targets connected to a path yet.</p>
                 <p className="mt-1 text-sm leading-6 text-slate-500">
-                  Add targets and set their connected path to see them here.
+                  Open Targets and add a connected plan path, such as Junior Hockey Path or College Hockey Path.
                 </p>
                 <Button asChild variant="outline" className="mt-3 rounded-md">
                   <Link href="/targets">Open Targets</Link>

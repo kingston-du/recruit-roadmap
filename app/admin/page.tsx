@@ -390,7 +390,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <div>
               <h2 className="text-xl font-semibold tracking-tight">Users and profiles</h2>
               <p className="mt-1 text-sm leading-6 text-slate-600">
-                Account email, profile name, and current plan_tier.
+                Account email, profile name, and current plan.
               </p>
             </div>
             <StatusPill tone="cyan">{dashboardData.users.length} shown</StatusPill>
@@ -403,8 +403,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   <th className="px-3 py-3 font-semibold">User</th>
                   <th className="px-3 py-3 font-semibold">Profile</th>
                   <th className="px-3 py-3 font-semibold">Created</th>
-                  <th className="px-3 py-3 font-semibold">Current plan_tier</th>
-                  <th className="px-3 py-3 font-semibold">Change plan_tier</th>
+                  <th className="px-3 py-3 font-semibold">Current plan</th>
+                  <th className="px-3 py-3 font-semibold">Change plan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -522,7 +522,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <div className="flex items-start gap-3">
             <ClipboardList className="mt-0.5 size-5 text-cyan-800" />
             <p className="text-sm leading-6 text-cyan-950">
-              Admin access is checked on the server against ADMIN_EMAILS before any dashboard data or plan_tier
+              Admin access is checked on the server against ADMIN_EMAILS before any dashboard data or plan
               action runs.
             </p>
           </div>

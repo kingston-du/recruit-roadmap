@@ -60,7 +60,7 @@ export default function RoadmapPage() {
               <p className="mt-3 text-sm leading-6 text-slate-300">
                 A free educational roadmap for families comparing AAA, school, prep,
                 academy, junior, college, and later hockey options. Use it to learn the
-                landscape, then track the specific teams, schools, coaches, camps, and
+                landscape first, then track the specific teams, schools, coaches, camps, and
                 dates that fit your player.
               </p>
 

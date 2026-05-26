@@ -39,8 +39,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Log in to your family recruiting plan.
           </h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            Your account keeps Today, My Plan, Targets, and My Player private to your
-            family.
+            Your account keeps Today, My Plan, Targets, and My Player in one private
+            family workspace.
           </p>
         </section>
 
@@ -51,7 +51,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </h2>
           {params.message === "setup" ? (
             <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
-              Supabase needs environment values before login can work.
+              Login is not ready because the Supabase settings are missing.
             </p>
           ) : null}
           <AuthForm mode="login" action={loginAction} nextPath={nextPath} />

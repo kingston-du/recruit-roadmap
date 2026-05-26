@@ -38,15 +38,15 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             Start a private recruiting workspace.
           </h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            Create a free account for My Plan, My Player, five targets, and a basic
-            Today checklist.
+            Create a free account for My Plan, My Player, five starter targets, and
+            a basic Today checklist.
           </p>
         </section>
 
         <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm md:p-8">
           <p className="text-sm font-semibold text-cyan-800">Start free</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-            Sign up with email and password
+            Create your free account
           </h2>
           <AuthForm mode="signup" action={signupAction} nextPath={nextPath} />
         </section>

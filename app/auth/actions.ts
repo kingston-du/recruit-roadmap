@@ -24,7 +24,7 @@ const authSchema = z.object({
 
 const initialError = {
   message:
-    "Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY to your environment.",
+    "Login is not ready because the Supabase settings are missing.",
 } satisfies AuthFormState;
 
 function getConfiguredSiteOrigin() {
@@ -64,7 +64,7 @@ export async function loginAction(
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -81,7 +81,7 @@ export async function loginAction(
 
   if (error) {
     return {
-      message: "We could not sign you in with that email and password.",
+      message: "We could not sign you in. Check the email and password, then try again.",
     };
   }
 
@@ -96,7 +96,7 @@ export async function signupAction(
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }

@@ -27,7 +27,7 @@ export async function createSetupAssistRequestAction(
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -40,7 +40,7 @@ export async function createSetupAssistRequestAction(
 
   if (error) {
     return {
-      message: "We could not submit your setup assist request. Please try again.",
+      message: "We could not submit your setup request. Wait a moment and try again.",
     };
   }
 
@@ -48,7 +48,7 @@ export async function createSetupAssistRequestAction(
   revalidatePath("/admin");
 
   return {
-    message: "Setup assist request submitted. Complete the one-time payment when ready.",
+    message: "Setup Assist request submitted. Complete the one-time payment when ready.",
     success: true,
   };
 }

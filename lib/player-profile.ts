@@ -160,8 +160,8 @@ export const playerProfileFormSchema = z.object({
       return Number.isFinite(gpa) && gpa >= 0 && gpa <= 5;
     }, "Enter a GPA from 0.0 to 5.0.")
     .transform((value) => (value.length > 0 ? value : null)),
-  target_path: requiredText("Target path", 200),
-  goals: requiredText("Goals", 1200),
+  target_path: requiredText("Path you are considering", 200),
+  goals: requiredText("Player and family goals", 1200),
   video_links_text: z
     .string()
     .trim()

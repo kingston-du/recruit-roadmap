@@ -186,6 +186,7 @@ type FormFieldProps<FieldName extends string> = {
   min?: string;
   step?: string;
   placeholder?: string;
+  helperText?: string;
   state: FieldState<FieldName>;
 };
 
@@ -223,6 +224,7 @@ function TextField<FieldName extends string>({
   min,
   step,
   placeholder,
+  helperText,
   state,
 }: FormFieldProps<FieldName>) {
   const error = fieldError(state, name);
@@ -247,6 +249,7 @@ function TextField<FieldName extends string>({
         aria-describedby={error ? errorId : undefined}
         className={fieldClass(Boolean(error))}
       />
+      {helperText ? <p className="text-sm leading-5 text-slate-500">{helperText}</p> : null}
       <FieldMessage id={errorId} message={error} />
     </div>
   );
@@ -259,6 +262,7 @@ function SelectField<FieldName extends string>({
   required,
   options,
   placeholder = "Select",
+  helperText,
   state,
 }: {
   name: FieldName;
@@ -267,6 +271,7 @@ function SelectField<FieldName extends string>({
   required?: boolean;
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
+  helperText?: string;
   state: FieldState<FieldName>;
 }) {
   const error = fieldError(state, name);
@@ -296,6 +301,7 @@ function SelectField<FieldName extends string>({
           </option>
         ))}
       </select>
+      {helperText ? <p className="text-sm leading-5 text-slate-500">{helperText}</p> : null}
       <FieldMessage id={errorId} message={error} />
     </div>
   );
@@ -308,6 +314,7 @@ function TextAreaField<FieldName extends string>({
   rows,
   required,
   placeholder,
+  helperText,
   state,
 }: {
   name: FieldName;
@@ -316,6 +323,7 @@ function TextAreaField<FieldName extends string>({
   rows: number;
   required?: boolean;
   placeholder?: string;
+  helperText?: string;
   state: FieldState<FieldName>;
 }) {
   const error = fieldError(state, name);
@@ -338,6 +346,7 @@ function TextAreaField<FieldName extends string>({
         aria-describedby={error ? errorId : undefined}
         className={cn(fieldClass(Boolean(error)), "py-3 leading-6")}
       />
+      {helperText ? <p className="text-sm leading-5 text-slate-500">{helperText}</p> : null}
       <FieldMessage id={errorId} message={error} />
     </div>
   );
@@ -455,19 +464,19 @@ export function TargetsBoard({
       id: "target-limit",
       reached: limitReached,
       title: "Free target limit reached",
-      detail: `${targets.length} of ${freeTargetLimit} free targets are used. Pro unlocks unlimited targets.`,
+      detail: `${targets.length} of ${freeTargetLimit} free targets are used. Upgrade only when your family needs more room.`,
     },
     {
       id: "contact-limit",
       reached: contactLimitReached,
       title: "Free contact limit reached",
-      detail: `${contacts.length} of ${freeContactLimit} free contacts are used. Pro unlocks unlimited contacts.`,
+      detail: `${contacts.length} of ${freeContactLimit} free contacts are used. Upgrade only when your contact list grows.`,
     },
     {
       id: "event-limit",
       reached: eventLimitReached,
       title: "Free event limit reached",
-      detail: `${events.length} of ${freeEventLimit} free events are used. Pro unlocks unlimited events.`,
+      detail: `${events.length} of ${freeEventLimit} free dates are used. Upgrade only when you need more camps, deadlines, or visits.`,
     },
   ].filter((prompt) => prompt.reached);
 
@@ -616,7 +625,7 @@ export function TargetsBoard({
       <Panel>
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight">Target board</h2>
+            <h2 className="text-lg font-semibold tracking-tight">Target Board</h2>
             <p className="mt-1 text-sm text-slate-500">
               {isPro ? "Pro plan: unlimited targets" : `${targets.length} of ${freeTargetLimit} free targets used`}
             </p>
@@ -655,7 +664,7 @@ export function TargetsBoard({
                   ))
                 ) : (
                   <div className="rounded-md border border-dashed border-slate-200 bg-white p-4 text-sm leading-6 text-slate-500">
-                    No targets here yet.
+                    No targets in this stage yet.
                   </div>
                 )}
               </div>
@@ -835,7 +844,7 @@ function drawerTitle(mode: DrawerMode, target: Target | null, contact: Contact |
   }
 
   if (mode === "upgrade") {
-    return "Upgrade target limit";
+    return "Free target limit reached";
   }
 
   if (mode === "create-contact") {
@@ -847,7 +856,7 @@ function drawerTitle(mode: DrawerMode, target: Target | null, contact: Contact |
   }
 
   if (mode === "contact-upgrade") {
-    return "Upgrade contact limit";
+    return "Free contact limit reached";
   }
 
   if (mode === "create-event") {
@@ -859,7 +868,7 @@ function drawerTitle(mode: DrawerMode, target: Target | null, contact: Contact |
   }
 
   if (mode === "event-upgrade") {
-    return "Upgrade event limit";
+    return "Free date limit reached";
   }
 
   if (mode === "create-outreach") {
@@ -871,7 +880,7 @@ function drawerTitle(mode: DrawerMode, target: Target | null, contact: Contact |
   }
 
   if (mode === "outreach-upgrade") {
-    return "Upgrade for outreach history";
+    return "Outreach history is Pro";
   }
 
   return target?.name ?? "Target details";
@@ -1020,10 +1029,18 @@ function TargetForm({
       {target ? <input type="hidden" name="id" value={target.id} /> : null}
 
       <div className="grid gap-4 md:grid-cols-2">
-        <TextField name="name" label="Name" defaultValue={target?.name} required state={state} />
+        <TextField
+          name="name"
+          label="Team, school, camp, or league name"
+          defaultValue={target?.name}
+          required
+          placeholder="Boston Junior Eagles"
+          helperText="Use the name your family will recognize later."
+          state={state}
+        />
         <SelectField
           name="target_type"
-          label="Target type"
+          label="What kind of target is this?"
           defaultValue={target?.target_type}
           required
           options={typeOptions}
@@ -1036,10 +1053,11 @@ function TargetForm({
       <div className="grid gap-4 md:grid-cols-2">
         <SelectField
           name="status"
-          label="Board column"
+          label="Current stage"
           defaultValue={target?.status ?? "Researching"}
           required
           options={statusOptions}
+          helperText="This decides which board column the target appears in."
           state={state}
         />
         <SelectField
@@ -1051,16 +1069,18 @@ function TargetForm({
         />
         <TextField
           name="connected_path"
-          label="Connected path"
+          label="Connected plan path"
           defaultValue={target?.connected_path}
-          placeholder="Prep, juniors, college"
+          placeholder="Junior Hockey Path"
+          helperText="Use the same wording as a path in My Plan when possible."
           state={state}
         />
         <TextField
           name="follow_up_date"
-          label="Follow-up date"
+          label="Next follow-up date"
           type="date"
           defaultValue={target?.follow_up_date}
+          helperText="Use this when someone needs to check back."
           state={state}
         />
       </div>
@@ -1071,24 +1091,33 @@ function TargetForm({
         defaultValue={target?.next_step}
         rows={3}
         placeholder="Example: Research roster size and save coach contact."
+        helperText="Write one small action your family can do next."
         state={state}
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <TextField name="website_url" label="Website URL" type="url" defaultValue={target?.website_url} state={state} />
-        <TextField name="roster_url" label="Roster URL" type="url" defaultValue={target?.roster_url} state={state} />
-        <TextField name="camp_url" label="Camp URL" type="url" defaultValue={target?.camp_url} state={state} />
+        <TextField name="website_url" label="Main website" type="url" defaultValue={target?.website_url} state={state} />
+        <TextField name="roster_url" label="Roster link" type="url" defaultValue={target?.roster_url} state={state} />
+        <TextField name="camp_url" label="Camp or tryout link" type="url" defaultValue={target?.camp_url} state={state} />
       </div>
 
       <TextAreaField name="notes" label="Notes" defaultValue={target?.notes} rows={4} state={state} />
       <TextAreaField
         name="why_considering"
-        label="Why considering"
+        label="Why this might fit"
         defaultValue={target?.why_considering}
         rows={4}
+        placeholder="Example: Strong academics, reachable travel, good development fit, or right level."
         state={state}
       />
-      <TextAreaField name="concerns" label="Concerns" defaultValue={target?.concerns} rows={4} state={state} />
+      <TextAreaField
+        name="concerns"
+        label="Questions or concerns"
+        defaultValue={target?.concerns}
+        rows={4}
+        placeholder="Example: Cost, billet plan, roster depth, school fit, travel."
+        state={state}
+      />
 
       {state.message ? (
         <p
@@ -1147,17 +1176,18 @@ function ContactForm({
 
       <SelectField<ContactFormFieldName>
         name="target_id"
-        label="Target"
+        label="Related target"
         defaultValue={contact?.target_id ?? defaultTargetId ?? ""}
         options={targetOptions}
-        placeholder="No target"
+        placeholder="No related target"
+        helperText="Optional, but helpful when this contact belongs to a team, school, or camp."
         state={state}
       />
 
       <div className="grid gap-4 md:grid-cols-2">
         <TextField<ContactFormFieldName>
           name="name"
-          label="Name"
+          label="Contact name"
           defaultValue={contact?.name}
           required
           placeholder="Coach name"
@@ -1165,7 +1195,7 @@ function ContactForm({
         />
         <TextField<ContactFormFieldName>
           name="role"
-          label="Role"
+          label="Coach or staff role"
           defaultValue={contact?.role}
           required
           placeholder="Head coach"
@@ -1190,10 +1220,10 @@ function ContactForm({
 
       <TextField<ContactFormFieldName>
         name="source_url"
-        label="Source URL"
+        label="Where you found this contact"
         type="url"
         defaultValue={contact?.source_url}
-        placeholder="Team staff page or public profile"
+        placeholder="Team staff page or public profile URL"
         state={state}
       />
 
@@ -1268,17 +1298,18 @@ function EventForm({
 
       <SelectField<EventFormFieldName>
         name="target_id"
-        label="Target"
+        label="Related target"
         defaultValue={event?.target_id ?? defaultTargetId ?? ""}
         options={targetOptions}
-        placeholder="No target"
+        placeholder="No related target"
+        helperText="Optional, but helpful if this date belongs to a specific target."
         state={state}
       />
 
       <div className="grid gap-4 md:grid-cols-2">
         <TextField<EventFormFieldName>
           name="title"
-          label="Title"
+          label="Date or event name"
           defaultValue={event?.title}
           required
           placeholder="Summer showcase"
@@ -1286,7 +1317,7 @@ function EventForm({
         />
         <SelectField<EventFormFieldName>
           name="event_type"
-          label="Type"
+          label="Date type"
           defaultValue={event?.event_type ?? "camp"}
           required
           options={typeOptions}
@@ -1336,7 +1367,7 @@ function EventForm({
         />
         <SelectField<EventFormFieldName>
           name="status"
-          label="Status"
+          label="Date status"
           defaultValue={event?.status ?? "Planned"}
           required
           options={statusOptions}
@@ -1346,7 +1377,7 @@ function EventForm({
 
       <TextField<EventFormFieldName>
         name="url"
-        label="URL"
+        label="Registration or event link"
         type="url"
         defaultValue={event?.url}
         placeholder="Registration or event page"
@@ -1434,7 +1465,7 @@ function OutreachLogForm({
       <div className="grid gap-4 md:grid-cols-2">
         <SelectField<OutreachLogFormFieldName>
           name="outreach_type"
-          label="Type"
+          label="Outreach type"
           defaultValue={outreachLog?.outreach_type ?? "email"}
           required
           options={typeOptions}
@@ -1442,7 +1473,7 @@ function OutreachLogForm({
         />
         <SelectField<OutreachLogFormFieldName>
           name="direction"
-          label="Direction"
+          label="Sent or received"
           defaultValue={outreachLog?.direction ?? "sent"}
           required
           options={directionOptions}
@@ -1470,13 +1501,13 @@ function OutreachLogForm({
         label="Contact"
         defaultValue={outreachLog?.contact_id ?? ""}
         options={contactOptions}
-        placeholder="No contact"
+        placeholder="No saved contact"
         state={state}
       />
 
       <TextAreaField<OutreachLogFormFieldName>
         name="summary"
-        label="Summary"
+        label="What happened"
         defaultValue={outreachLog?.summary}
         rows={5}
         required
@@ -1486,7 +1517,7 @@ function OutreachLogForm({
 
       <TextAreaField<OutreachLogFormFieldName>
         name="outcome"
-        label="Outcome"
+        label="Result or response"
         defaultValue={outreachLog?.outcome}
         rows={4}
         placeholder="Example: Waiting on coach response, invited to call, no fit."
@@ -1584,7 +1615,7 @@ function TargetDetail({
 
       <div className="flex flex-wrap gap-2">
         <Button type="button" onClick={onEdit} className="rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
-          <Pencil /> Edit
+          <Pencil /> Edit target
         </Button>
         <DeleteTargetForm target={target} action={deleteAction} onSuccess={onClose} />
       </div>
@@ -1600,8 +1631,8 @@ function TargetDetail({
             <p className="font-semibold text-slate-950">Dates and events</p>
             <p className="mt-1 text-slate-500">
               {isPro
-                ? "Pro plan: unlimited events"
-                : `${eventsUsed} of ${freeEventLimit} free events used`}
+                ? "Pro plan: unlimited dates"
+                : `${eventsUsed} of ${freeEventLimit} free dates used`}
             </p>
           </div>
           <Button type="button" variant="outline" onClick={onAddEvent} className="h-8 w-fit rounded-md">
@@ -1611,7 +1642,7 @@ function TargetDetail({
         <div className="mt-3">
           <EventList
             events={events}
-            emptyText="No dates saved for this target."
+            emptyText="No dates saved for this target yet."
             showTarget={false}
             onEditEvent={onEditEvent}
             deleteEventAction={deleteEventAction}
@@ -1636,7 +1667,7 @@ function TargetDetail({
         <div className="mt-3">
           <ContactList
             contacts={contacts}
-            emptyText="No contacts saved for this target."
+            emptyText="No contacts saved for this target yet."
             showTarget={false}
             onEditContact={onEditContact}
             deleteContactAction={deleteContactAction}
@@ -1662,7 +1693,7 @@ function TargetDetail({
           <OutreachLogList
             outreachLogs={outreachLogs}
             contactNameById={contactNameById}
-            emptyText="No outreach logged for this target."
+            emptyText="No outreach notes saved for this target yet."
             onEditOutreachLog={onEditOutreachLog}
             deleteOutreachLogAction={deleteOutreachLogAction}
           />
@@ -1671,8 +1702,8 @@ function TargetDetail({
 
       <DetailBlock title="Next step">{target.next_step ?? "No next step yet."}</DetailBlock>
       <DetailBlock title="Notes">{target.notes ?? "No notes yet."}</DetailBlock>
-      <DetailBlock title="Why considering">{target.why_considering ?? "No reason added yet."}</DetailBlock>
-      <DetailBlock title="Concerns">{target.concerns ?? "No concerns added yet."}</DetailBlock>
+      <DetailBlock title="Why this might fit">{target.why_considering ?? "No fit notes yet."}</DetailBlock>
+      <DetailBlock title="Questions or concerns">{target.concerns ?? "No questions or concerns added yet."}</DetailBlock>
 
       <DetailBlock title="Links">
         <div className="grid gap-2">
@@ -1706,7 +1737,7 @@ function DeleteTargetForm({
     <form
       action={formAction}
       onSubmit={(event) => {
-        if (!window.confirm(`Delete ${target.name}?`)) {
+        if (!window.confirm(`Delete the target "${target.name}"?`)) {
           event.preventDefault();
         }
       }}
@@ -1743,7 +1774,7 @@ function EventsSection({
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Camps, dates, and events</h2>
           <p className="mt-1 text-sm text-slate-500">
-            {isPro ? "Pro plan: unlimited events" : `${events.length} of ${freeEventLimit} free events used`}
+            {isPro ? "Pro plan: unlimited dates" : `${events.length} of ${freeEventLimit} free dates used`}
           </p>
         </div>
         <Button
@@ -1759,7 +1790,7 @@ function EventsSection({
         <EventList
           events={events}
           targetNameById={targetNameById}
-          emptyText="No camps, dates, or events yet."
+          emptyText="No camps, deadlines, visits, calls, or tryouts saved yet. Add a date when something needs to be remembered."
           showTarget
           onEditEvent={onEditEvent}
           deleteEventAction={deleteEventAction}
@@ -1886,7 +1917,7 @@ function DeleteEventForm({
     <form
       action={formAction}
       onSubmit={(submitEvent) => {
-        if (!window.confirm(`Delete ${event.title}?`)) {
+        if (!window.confirm(`Delete the date "${event.title}"?`)) {
           submitEvent.preventDefault();
         }
       }}
@@ -2053,7 +2084,7 @@ function ContactsSection({
         <ContactList
           contacts={contacts}
           targetNameById={targetNameById}
-          emptyText="No coach contacts yet."
+          emptyText="No coach contacts saved yet. Add a contact when you find a public coach or staff email."
           showTarget
           onEditContact={onEditContact}
           deleteContactAction={deleteContactAction}
@@ -2171,7 +2202,7 @@ function DeleteContactForm({
     <form
       action={formAction}
       onSubmit={(event) => {
-        if (!window.confirm(`Delete ${contact.name}?`)) {
+        if (!window.confirm(`Delete the contact "${contact.name}"?`)) {
           event.preventDefault();
         }
       }}
@@ -2226,7 +2257,7 @@ function UpgradePrompt({ used, limit }: { used: number; limit: number }) {
           <div>
             <h3 className="font-semibold text-amber-950">Free target limit reached</h3>
             <p className="mt-1 text-sm leading-6 text-amber-900">
-              You are tracking {used} of {limit} free targets. Pro unlocks unlimited targets.
+              You have used {used} of {limit} free targets. Upgrade only when your family needs to track more.
             </p>
           </div>
         </div>
@@ -2247,7 +2278,7 @@ function ContactUpgradePrompt({ used, limit }: { used: number; limit: number }) 
           <div>
             <h3 className="font-semibold text-amber-950">Free contact limit reached</h3>
             <p className="mt-1 text-sm leading-6 text-amber-900">
-              You are tracking {used} of {limit} free coach contacts. Pro unlocks unlimited contacts.
+              You have used {used} of {limit} free coach contacts. Upgrade only when your contact list grows.
             </p>
           </div>
         </div>
@@ -2268,7 +2299,7 @@ function EventUpgradePrompt({ used, limit }: { used: number; limit: number }) {
           <div>
             <h3 className="font-semibold text-amber-950">Free event limit reached</h3>
             <p className="mt-1 text-sm leading-6 text-amber-900">
-              You are tracking {used} of {limit} free events or dates. Pro unlocks unlimited events.
+              You have used {used} of {limit} free dates. Upgrade only when you need more camps, deadlines, or visits.
             </p>
           </div>
         </div>
@@ -2290,7 +2321,7 @@ function OutreachUpgradePrompt({ used }: { used: number }) {
             <h3 className="font-semibold text-amber-950">Outreach history is a Pro feature</h3>
             <p className="mt-1 text-sm leading-6 text-amber-900">
               {used > 0 ? `You have ${used} saved outreach logs. ` : ""}
-              Pro unlocks outreach history and follow-up reminders.
+              Pro includes outreach history and follow-up reminders.
             </p>
           </div>
         </div>
@@ -2308,7 +2339,7 @@ function InlineUpgradePrompt() {
       <div className="flex items-start gap-2">
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
-          Free accounts include 5 targets.{" "}
+          Free accounts include 5 targets. Upgrade when your family needs more room.{" "}
           <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
             View Pro options
           </Link>
@@ -2324,7 +2355,7 @@ function InlineEventUpgradePrompt() {
       <div className="flex items-start gap-2">
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
-          Free accounts include 3 events or dates.{" "}
+          Free accounts include 3 events or dates. Upgrade when you need more room for camps, deadlines, or visits.{" "}
           <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
             View Pro options
           </Link>
@@ -2340,7 +2371,7 @@ function InlineOutreachUpgradePrompt() {
       <div className="flex items-start gap-2">
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
-          Outreach history is included with Pro.{" "}
+          Outreach history and follow-up reminders are included with Pro.{" "}
           <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
             View Pro options
           </Link>
@@ -2356,7 +2387,7 @@ function InlineContactUpgradePrompt() {
       <div className="flex items-start gap-2">
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
-          Free accounts include 3 coach contacts.{" "}
+          Free accounts include 3 coach contacts. Upgrade when your contact list grows.{" "}
           <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
             View Pro options
           </Link>

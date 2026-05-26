@@ -9,9 +9,9 @@ const freeItems = [
   "Public Roadmap",
   "My Player",
   "My Plan",
-  "5 targets",
-  "3 contacts",
-  "3 events",
+  "5 starter targets",
+  "3 coach contacts",
+  "3 dates or events",
   "Basic Today checklist",
 ];
 
@@ -146,14 +146,14 @@ export default function PricingPage() {
             <div className="mt-auto grid gap-2 pt-6">
               <CheckoutButton
                 href={proMonthlyLink}
-                disabledLabel="Monthly link unavailable"
+                disabledLabel="Monthly checkout not ready"
                 variant="secondary"
               >
                 Upgrade monthly
               </CheckoutButton>
               <CheckoutButton
                 href={proYearlyLink}
-                disabledLabel="Yearly link unavailable"
+                disabledLabel="Yearly checkout not ready"
                 variant="secondary"
               >
                 Upgrade yearly
@@ -193,8 +193,8 @@ export default function PricingPage() {
         </section>
 
         <section className="mt-6 rounded-md border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-          Stripe checkout opens from payment links. Pro access is activated separately
-          for now; webhooks and automatic account upgrades are not enabled yet.
+          Checkout uses Stripe payment links. In this early version, Pro access is
+          activated separately after payment.
         </section>
 
         <footer className="mt-10 border-t border-slate-200 pt-6">

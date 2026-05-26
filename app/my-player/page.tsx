@@ -77,7 +77,7 @@ export default async function MyPlayerPage() {
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
           <Link href="#player-profile-form">
-            <Save /> {profile ? "Edit Profile" : "Create Profile"}
+            <Save /> {profile ? "Edit profile" : "Create profile"}
           </Link>
         </Button>
       }
@@ -102,10 +102,10 @@ export default async function MyPlayerPage() {
                 {completeness.requiredCompleted} of {completeness.requiredTotal} essentials ready
               </p>
               <h2 className="mt-2 max-w-3xl text-3xl font-semibold tracking-tight">
-                Keep the player details, goals, references, and video links in one private place.
+                Keep player details, goals, references, and video links in one private place.
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
-                {completeness.completed} of {completeness.total} profile details are filled in.
+                {completeness.completed} of {completeness.total} profile details are filled in. Add only what your family wants to keep organized.
               </p>
             </div>
           </div>
@@ -116,7 +116,7 @@ export default async function MyPlayerPage() {
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 size-5 text-amber-700" />
               <p className="text-sm leading-6 text-amber-900">
-                We could not load the saved player profile. The form is still available below.
+                We could not load the saved player profile. Refresh before editing, or fill out the form below if this is your first profile.
               </p>
             </div>
           </Panel>
@@ -128,6 +128,9 @@ export default async function MyPlayerPage() {
               <UserRound className="size-5 text-cyan-700" />
               <h2 className="text-lg font-semibold">Player Profile</h2>
             </div>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Start with the required essentials. Optional fields can wait until your family has them ready.
+            </p>
             <div className="mt-5">
               <PlayerProfileForm profile={profile} action={savePlayerProfileAction} />
             </div>

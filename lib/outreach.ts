@@ -104,15 +104,15 @@ export const outreachLogFormSchema = z.object({
     .union([z.string().uuid("Choose a valid contact."), z.literal("")])
     .transform((value) => (value.length > 0 ? value : null)),
   outreach_type: z.enum(outreachTypeOptions, { message: "Choose an outreach type." }),
-  direction: z.enum(outreachDirectionOptions, { message: "Choose a direction." }),
+  direction: z.enum(outreachDirectionOptions, { message: "Choose whether this was sent or received." }),
   outreach_date: requiredDate("Outreach date"),
-  summary: requiredText("Summary", 2000),
-  outcome: optionalText("Outcome", 1000),
+  summary: requiredText("What happened", 2000),
+  outcome: optionalText("Result or response", 1000),
   next_follow_up_date: optionalDate("Next follow-up date"),
 });
 
 export const outreachLogIdSchema = z.object({
-  id: z.string().uuid("Outreach log id is invalid."),
+  id: z.string().uuid("We could not identify that outreach note. Refresh and try again."),
 });
 
 export type OutreachLogFormData = z.infer<typeof outreachLogFormSchema>;

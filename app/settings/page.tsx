@@ -28,7 +28,7 @@ export default async function SettingsPage() {
         <Panel>
           <h2 className="text-xl font-semibold tracking-tight">Log out</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Logging out removes the Supabase session cookies from this browser.
+            Logging out signs this browser out of your family account.
           </p>
           <form action={logoutAction} className="mt-5">
             <Button className="h-10 rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">

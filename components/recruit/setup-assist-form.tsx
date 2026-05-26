@@ -28,6 +28,7 @@ type TextFieldProps = {
   required?: boolean;
   type?: "text" | "email";
   placeholder?: string;
+  helperText?: string;
   autoComplete?: string;
   state: SetupAssistRequestFormState;
 };
@@ -64,6 +65,7 @@ function TextField({
   required,
   type = "text",
   placeholder,
+  helperText,
   autoComplete,
   state,
 }: TextFieldProps) {
@@ -88,6 +90,7 @@ function TextField({
         aria-describedby={error ? errorId : undefined}
         className={fieldClass(Boolean(error))}
       />
+      {helperText ? <p className="text-sm leading-5 text-slate-500">{helperText}</p> : null}
       <FieldMessage id={errorId} message={error} />
     </div>
   );
@@ -99,6 +102,7 @@ function TextAreaField({
   required,
   rows,
   placeholder,
+  helperText,
   state,
 }: {
   name: SetupAssistRequestFieldName;
@@ -106,6 +110,7 @@ function TextAreaField({
   required?: boolean;
   rows: number;
   placeholder?: string;
+  helperText?: string;
   state: SetupAssistRequestFormState;
 }) {
   const error = fieldError(state, name);
@@ -127,6 +132,7 @@ function TextAreaField({
         aria-describedby={error ? errorId : undefined}
         className={cn(fieldClass(Boolean(error)), "py-3 leading-6")}
       />
+      {helperText ? <p className="text-sm leading-5 text-slate-500">{helperText}</p> : null}
       <FieldMessage id={errorId} message={error} />
     </div>
   );
@@ -144,9 +150,10 @@ export function SetupAssistForm({
       <div className="grid gap-4 md:grid-cols-2">
         <TextField
           name="parent_player_name"
-          label="Parent/player name"
+          label="Parent or family contact name"
           required
           autoComplete="name"
+          helperText="Who should be connected to this request?"
           state={state}
         />
         <TextField
@@ -156,6 +163,7 @@ export function SetupAssistForm({
           required
           type="email"
           autoComplete="email"
+          helperText="Use the email tied to this account if possible."
           state={state}
         />
         <TextField name="player_name" label="Player name" required state={state} />
@@ -164,18 +172,20 @@ export function SetupAssistForm({
       <div className="grid gap-4">
         <TextAreaField
           name="help_needed"
-          label="What they need help importing"
+          label="What do you need help importing?"
           required
           rows={4}
           placeholder="Targets, coach contacts, dates, profile links, or a mix."
+          helperText="List the buckets of information you already have."
           state={state}
         />
         <TextAreaField
           name="goals"
-          label="What their goals are"
+          label="What are you trying to organize?"
           required
           rows={4}
-          placeholder="What the family is trying to organize or decide next."
+          placeholder="Example: Get our target list, camp dates, and coach contacts into the app."
+          helperText="A short explanation helps setup stay focused."
           state={state}
         />
       </div>
@@ -183,21 +193,23 @@ export function SetupAssistForm({
       <div className="grid gap-4">
         <TextAreaField
           name="current_target_list"
-          label="Current target list pasted text"
+          label="Paste your current target list"
           rows={6}
           placeholder="Paste teams, schools, camps, leagues, links, or notes."
+          helperText="Plain text is fine. Clean formatting is not required."
           state={state}
         />
         <TextAreaField
           name="coach_contacts"
-          label="Coach contacts pasted text"
+          label="Paste coach contacts"
           rows={6}
           placeholder="Paste names, roles, emails, phone numbers, source links, or notes."
+          helperText="Only include contacts your family already found."
           state={state}
         />
         <TextAreaField
           name="camp_date_links"
-          label="Camp/date links pasted text"
+          label="Paste camp, date, or deadline links"
           rows={6}
           placeholder="Paste camp links, registration deadlines, tryout dates, or follow-up dates."
           state={state}

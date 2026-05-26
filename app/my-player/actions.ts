@@ -25,7 +25,7 @@ export async function savePlayerProfileAction(
 
   if (!parsed.success) {
     return {
-      message: "Please fix the highlighted fields.",
+      message: "Please fill in the highlighted fields.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -38,7 +38,7 @@ export async function savePlayerProfileAction(
 
   if (error) {
     return {
-      message: "We could not save the player profile. Please try again.",
+      message: "We could not save the player profile. Wait a moment and try again.",
     };
   }
 

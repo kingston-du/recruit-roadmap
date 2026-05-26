@@ -135,8 +135,8 @@ function buildTodayActions({
   if (profileIncomplete) {
     actions.push({
       id: "player-profile",
-      title: "Finish player profile.",
-      detail: "Complete the required player details, goals, and video link before broader outreach.",
+      title: "Finish the player profile.",
+      detail: "Add the essentials a parent will want handy: player details, goals, and at least one video link.",
       href: "/my-player",
       buttonLabel: "Open My Player",
       urgency: "Setup",
@@ -147,8 +147,8 @@ function buildTodayActions({
   if (targets.length < freeTargetLimit) {
     actions.push({
       id: "add-targets",
-      title: "Add more targets.",
-      detail: `${targets.length} of ${freeTargetLimit} starter targets are saved.`,
+      title: "Add starter targets.",
+      detail: `${targets.length} of ${freeTargetLimit} free starter targets are saved. Add teams, schools, camps, or leagues you are researching.`,
       href: "/targets",
       buttonLabel: "Open Targets",
       urgency: "This week",
@@ -162,7 +162,7 @@ function buildTodayActions({
       actions.push({
         id: `target-next-step-${target.id}`,
         title: `Add next step for ${target.name}.`,
-        detail: "Write one clear next action so the target does not sit idle.",
+        detail: "Write one simple next action so your family knows what to do with this target.",
         href: "/targets",
         buttonLabel: "Open Targets",
         urgency: "Next",
@@ -214,7 +214,7 @@ function buildTodayActions({
     actions.push({
       id: "add-coach-contacts",
       title: "Add coach contacts.",
-      detail: "Save the coach or staff contacts connected to your current targets.",
+      detail: "Save coach or staff contacts for the targets you are already tracking.",
       href: "/targets",
       buttonLabel: "Open Contacts",
       urgency: "This week",
@@ -225,8 +225,8 @@ function buildTodayActions({
   if (hasPlan && pathCount === 0) {
     actions.push({
       id: "add-first-path",
-      title: "Add your first path.",
-      detail: "Create one path in My Plan so targets connect to a bigger decision.",
+      title: "Add your first possible path.",
+      detail: "Create one path in My Plan so targets connect to the bigger family decision.",
       href: "/my-plan",
       buttonLabel: "Open My Plan",
       urgency: "Setup",
@@ -258,7 +258,7 @@ function buildLimitPrompts({
     prompts.push({
       id: "target-limit",
       title: "Free target limit reached",
-      detail: `You are tracking ${targetCount} of ${freeTargetLimit} free targets. Pro unlocks unlimited targets.`,
+      detail: `You have used ${targetCount} of ${freeTargetLimit} free targets. Upgrade only when your family needs to track more.`,
     });
   }
 
@@ -266,7 +266,7 @@ function buildLimitPrompts({
     prompts.push({
       id: "contact-limit",
       title: "Free contact limit reached",
-      detail: `You are tracking ${contactCount} of ${freeContactLimit} free coach contacts. Pro unlocks unlimited contacts.`,
+      detail: `You have used ${contactCount} of ${freeContactLimit} free coach contacts. Upgrade only when your contact list grows.`,
     });
   }
 
@@ -274,7 +274,7 @@ function buildLimitPrompts({
     prompts.push({
       id: "event-limit",
       title: "Free event limit reached",
-      detail: `You are tracking ${eventCount} of ${freeEventLimit} free events or dates. Pro unlocks unlimited events.`,
+      detail: `You have used ${eventCount} of ${freeEventLimit} free dates. Upgrade only when you need to track more camps, deadlines, or visits.`,
     });
   }
 
@@ -324,7 +324,7 @@ function buildProgressSummary({
       done: events.length > 0,
     },
     {
-      title: "My Plan paths",
+      title: "Possible paths",
       detail: planTitle ? `${pathCount} saved for ${planTitle}` : "No plan saved",
       done: Boolean(planTitle && pathCount > 0),
     },
@@ -452,7 +452,7 @@ export default async function TodayPage() {
       action={
         <Button asChild className="bg-[#071a2f] text-white hover:bg-[#0b2745]">
           <Link href="/targets">
-            <Target /> Start First Action
+            <Target /> Start first action
           </Link>
         </Button>
       }
@@ -472,9 +472,9 @@ export default async function TodayPage() {
         <section className="grid gap-4">
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight">Top 3 Actions</h2>
+              <h2 className="text-xl font-semibold tracking-tight">Do These First</h2>
               <p className="mt-1 text-sm text-slate-500">
-                The most important saved-data gaps and deadlines for this week.
+                The three clearest things your family can handle next.
               </p>
             </div>
             <StatusPill tone="cyan">{topActions.length} ready</StatusPill>
@@ -488,9 +488,9 @@ export default async function TodayPage() {
             </div>
           ) : (
             <Panel className="border-dashed">
-              <p className="font-semibold text-slate-950">No required actions this week.</p>
+              <p className="font-semibold text-slate-950">Nothing urgent this week.</p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Your saved targets, profile essentials, contacts, plan paths, and near-term deadlines are covered.
+                Your saved profile essentials, targets, contacts, plan paths, and near-term deadlines are covered.
               </p>
               <Button asChild variant="outline" className="mt-4 w-fit rounded-md">
                 <Link href="/targets">Review Targets</Link>
@@ -502,9 +502,9 @@ export default async function TodayPage() {
         <section className="grid gap-4">
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight">Needs Attention</h2>
+              <h2 className="text-xl font-semibold tracking-tight">Other Helpful Next Steps</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Other items to clean up after the top actions.
+                Smaller cleanup items after the first three actions are handled.
               </p>
             </div>
             <StatusPill tone="cyan">
@@ -523,9 +523,9 @@ export default async function TodayPage() {
             </div>
           ) : (
             <Panel className="border-dashed">
-              <p className="font-semibold text-slate-950">No extra gaps right now.</p>
+              <p className="font-semibold text-slate-950">No extra cleanup right now.</p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Keep checking Today as targets, contacts, dates, and plan paths change.
+                Keep checking Today as you add or update targets, contacts, dates, and plan paths.
               </p>
             </Panel>
           )}
@@ -536,7 +536,7 @@ export default async function TodayPage() {
             <div>
               <h2 className="text-xl font-semibold tracking-tight">Upcoming Dates</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Camps, tryouts, deadlines, calls, and visits coming up.
+                Camps, tryouts, deadlines, calls, and visits you have saved.
               </p>
             </div>
             <StatusPill tone="cyan">{upcomingEvents.length} saved</StatusPill>
@@ -554,9 +554,9 @@ export default async function TodayPage() {
             </div>
           ) : (
             <Panel className="border-dashed">
-              <p className="font-semibold text-slate-950">No upcoming dates saved yet.</p>
+              <p className="font-semibold text-slate-950">No dates saved yet.</p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Add camps, deadlines, tryouts, calls, or visits from Targets when a date matters.
+                Add camps, deadlines, tryouts, calls, or visits from Targets when a date is worth remembering.
               </p>
               <Button asChild variant="outline" className="mt-4 w-fit rounded-md">
                 <Link href="/targets">Open Targets</Link>
@@ -568,9 +568,9 @@ export default async function TodayPage() {
         <section className="grid gap-4">
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight">Progress Summary</h2>
+              <h2 className="text-xl font-semibold tracking-tight">Setup Progress</h2>
               <p className="mt-1 text-sm text-slate-500">
-                A quick snapshot of what is already moving.
+                A quick look at what your family has already set up.
               </p>
             </div>
             <StatusPill tone="cyan">
