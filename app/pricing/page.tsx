@@ -74,7 +74,6 @@ function CheckoutButton({
 export default function PricingPage() {
   const proMonthlyLink = process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_LINK;
   const proYearlyLink = process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_LINK;
-  const setupAssistLink = process.env.NEXT_PUBLIC_STRIPE_SETUP_ASSIST_LINK;
 
   return (
     <main className="min-h-screen bg-[#f7fafc] text-slate-950">
@@ -183,13 +182,11 @@ export default function PricingPage() {
               ))}
             </ul>
             <div className="mt-auto pt-6">
-              <CheckoutButton
-                href={setupAssistLink}
-                disabledLabel="Setup link unavailable"
-                variant="primary"
-              >
-                Buy Setup Assist
-              </CheckoutButton>
+              <Button asChild className="h-10 w-full rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
+                <Link href="/setup-assist">
+                  Request Setup Assist <ArrowRight />
+                </Link>
+              </Button>
             </div>
           </div>
         </section>

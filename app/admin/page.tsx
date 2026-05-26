@@ -32,6 +32,15 @@ type SetupAssistRequestRow = {
   user_id?: string | null;
   request_status?: string | null;
   paid_status?: string | null;
+  parent_player_name?: string | null;
+  email?: string | null;
+  player_name?: string | null;
+  help_needed?: string | null;
+  goals?: string | null;
+  current_target_list?: string | null;
+  coach_contacts?: string | null;
+  camp_date_links?: string | null;
+  notes?: string | null;
   player_notes?: string | null;
   target_links?: string | null;
   contact_details?: string | null;
@@ -58,6 +67,15 @@ type SetupAssistRequest = {
   userName: string | null;
   requestStatus: string;
   paidStatus: string;
+  parentPlayerName: string | null;
+  email: string | null;
+  playerName: string | null;
+  helpNeeded: string | null;
+  goals: string | null;
+  currentTargetList: string | null;
+  coachContacts: string | null;
+  campDateLinks: string | null;
+  notes: string | null;
   playerNotes: string | null;
   targetLinks: string | null;
   contactDetails: string | null;
@@ -152,7 +170,7 @@ async function getAdminDashboardData(): Promise<AdminDashboardData> {
     supabase
       .from("setup_assist_requests")
       .select(
-        "id,user_id,request_status,paid_status,player_notes,target_links,contact_details,event_details,preferred_contact_method,admin_notes,created_at,updated_at",
+        "id,user_id,request_status,paid_status,parent_player_name,email,player_name,help_needed,goals,current_target_list,coach_contacts,camp_date_links,notes,player_notes,target_links,contact_details,event_details,preferred_contact_method,admin_notes,created_at,updated_at",
       )
       .order("created_at", { ascending: false }),
     supabase.from("profiles").select("id", { count: "exact", head: true }),
@@ -228,6 +246,15 @@ async function getAdminDashboardData(): Promise<AdminDashboardData> {
         userName: normalizeText(profile?.full_name),
         requestStatus: normalizeText(request.request_status) ?? "new",
         paidStatus: normalizeText(request.paid_status) ?? "unpaid",
+        parentPlayerName: normalizeText(request.parent_player_name),
+        email: normalizeText(request.email),
+        playerName: normalizeText(request.player_name),
+        helpNeeded: normalizeText(request.help_needed),
+        goals: normalizeText(request.goals),
+        currentTargetList: normalizeText(request.current_target_list),
+        coachContacts: normalizeText(request.coach_contacts),
+        campDateLinks: normalizeText(request.camp_date_links),
+        notes: normalizeText(request.notes),
         playerNotes: normalizeText(request.player_notes),
         targetLinks: normalizeText(request.target_links),
         contactDetails: normalizeText(request.contact_details),
@@ -444,8 +471,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               <article key={request.id} className="rounded-md border border-slate-200 bg-slate-50 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-medium text-slate-950">{request.userEmail}</p>
-                    <p className="mt-1 text-sm text-slate-600">{request.userName ?? "Profile name not set"}</p>
+                    <p className="font-medium text-slate-950">
+                      {request.parentPlayerName ?? request.userName ?? "Name not set"}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {request.email ?? request.userEmail}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">Account: {request.userEmail}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <StatusPill tone="amber">{request.requestStatus}</StatusPill>
@@ -456,11 +488,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 </div>
 
                 <div className="mt-4 grid gap-3 border-t border-slate-200 pt-4 md:grid-cols-2">
+                  <DetailBlock label="Player name" value={request.playerName} />
+                  <DetailBlock label="Help needed" value={request.helpNeeded} />
+                  <DetailBlock label="Goals" value={request.goals} />
+                  <DetailBlock label="Current target list" value={request.currentTargetList} />
+                  <DetailBlock label="Coach contacts" value={request.coachContacts} />
+                  <DetailBlock label="Camp/date links" value={request.campDateLinks} />
+                  <DetailBlock label="Notes" value={request.notes} />
                   <DetailBlock label="Preferred contact" value={request.preferredContactMethod} />
-                  <DetailBlock label="Player notes" value={request.playerNotes} />
-                  <DetailBlock label="Target links" value={request.targetLinks} />
-                  <DetailBlock label="Contact details" value={request.contactDetails} />
-                  <DetailBlock label="Event details" value={request.eventDetails} />
+                  <DetailBlock label="Legacy player notes" value={request.playerNotes} />
+                  <DetailBlock label="Legacy target links" value={request.targetLinks} />
+                  <DetailBlock label="Legacy contact details" value={request.contactDetails} />
+                  <DetailBlock label="Legacy event details" value={request.eventDetails} />
                   <DetailBlock label="Admin notes" value={request.adminNotes} />
                 </div>
 
