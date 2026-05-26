@@ -59,8 +59,8 @@ History of outreach activity for targets. Each log belongs to the user and one
 target, can optionally point to a contact saved to that target, and stores the
 outreach type, direction, outreach date, summary, outcome, and optional next
 follow-up date. RLS keeps logs user-owned, triggers ensure target/contact
-ownership, and a trigger prevents free accounts from creating more than 3
-outreach logs while Pro accounts can create unlimited logs. It is not a
+ownership, and a trigger reserves outreach history for Pro accounts. Pro
+accounts can create unlimited logs. It is not a
 messaging system and does not send email.
 
 ### `tasks`

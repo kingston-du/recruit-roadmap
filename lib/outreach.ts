@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const freeOutreachLogLimit = 3;
+export const freeOutreachLogLimit = 0;
 
 export const outreachTypeOptions = [
   "email",

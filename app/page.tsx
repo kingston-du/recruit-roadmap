@@ -77,6 +77,7 @@ const proPlanItems = [
   "Outreach history",
   "Follow-up reminders",
   "Shareable player profile",
+  "Advanced Today checklist",
 ];
 
 function StartFreeButton({ className = "" }: { className?: string }) {
@@ -299,6 +300,13 @@ export default function HomePage() {
               <p className="mt-6 text-sm text-slate-300">
                 Upgrade when the family is tracking more than the free limits.
               </p>
+              <Button
+                asChild
+                variant="outline"
+                className="mt-5 h-10 rounded-md border-white/25 bg-white text-[#071a2f] hover:bg-cyan-50"
+              >
+                <Link href="/pricing">View Pro options</Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -330,6 +338,12 @@ export default function HomePage() {
             <p className="mt-5 text-sm leading-6 text-slate-600">
               This is optional and not required to use the free plan.
             </p>
+            <Button
+              asChild
+              className="mt-5 h-10 rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]"
+            >
+              <Link href="/pricing">View Setup Assist</Link>
+            </Button>
           </div>
         </div>
       </section>

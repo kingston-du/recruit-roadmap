@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   CalendarCheck,
   ClipboardList,
+  CreditCard,
   LogOut,
   Map,
   Settings,
@@ -18,6 +19,7 @@ const navItems = [
   { href: "/targets", label: "Targets", icon: Target },
   { href: "/my-player", label: "My Player", icon: UserRound },
   { href: "/roadmap", label: "Roadmap", icon: Map },
+  { href: "/pricing", label: "Upgrade", icon: CreditCard },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

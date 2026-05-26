@@ -450,6 +450,26 @@ export function TargetsBoard({
       })),
     [targets],
   );
+  const freeLimitPrompts = [
+    {
+      id: "target-limit",
+      reached: limitReached,
+      title: "Free target limit reached",
+      detail: `${targets.length} of ${freeTargetLimit} free targets are used. Pro unlocks unlimited targets.`,
+    },
+    {
+      id: "contact-limit",
+      reached: contactLimitReached,
+      title: "Free contact limit reached",
+      detail: `${contacts.length} of ${freeContactLimit} free contacts are used. Pro unlocks unlimited contacts.`,
+    },
+    {
+      id: "event-limit",
+      reached: eventLimitReached,
+      title: "Free event limit reached",
+      detail: `${events.length} of ${freeEventLimit} free events are used. Pro unlocks unlimited events.`,
+    },
+  ].filter((prompt) => prompt.reached);
 
   function openCreateDrawer() {
     setDrawerMode(limitReached ? "upgrade" : "create");
@@ -568,6 +588,31 @@ export function TargetsBoard({
 
   return (
     <div className="grid gap-4">
+      {freeLimitPrompts.length > 0 ? (
+        <Panel className="border-amber-200 bg-amber-50">
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 size-5 shrink-0 text-amber-700" />
+              <div>
+                <h2 className="text-lg font-semibold tracking-tight text-amber-950">
+                  Upgrade to keep adding to your board
+                </h2>
+                <div className="mt-2 grid gap-1">
+                  {freeLimitPrompts.map((prompt) => (
+                    <p key={prompt.id} className="text-sm leading-6 text-amber-900">
+                      <span className="font-semibold">{prompt.title}:</span> {prompt.detail}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <Button asChild className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
+              <Link href="/pricing">View Pro options</Link>
+            </Button>
+          </div>
+        </Panel>
+      ) : null}
+
       <Panel>
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
@@ -659,11 +704,9 @@ export function TargetsBoard({
               outreachLogs={selectedTargetOutreachLogs}
               contactsUsed={contacts.length}
               eventsUsed={events.length}
-              outreachLogsUsed={outreachLogs.length}
               isPro={isPro}
               freeContactLimit={freeContactLimit}
               freeEventLimit={freeEventLimit}
-              freeOutreachLogLimit={freeOutreachLogLimit}
               onEdit={() => setDrawerMode("edit")}
               onClose={closeDrawer}
               onAddContact={() => openCreateContactDrawer(selectedTarget.id)}
@@ -774,7 +817,7 @@ export function TargetsBoard({
           ) : null}
 
           {drawerMode === "outreach-upgrade" ? (
-            <OutreachUpgradePrompt used={outreachLogs.length} limit={freeOutreachLogLimit} />
+            <OutreachUpgradePrompt used={outreachLogs.length} />
           ) : null}
         </TargetDrawer>
       ) : null}
@@ -828,7 +871,7 @@ function drawerTitle(mode: DrawerMode, target: Target | null, contact: Contact |
   }
 
   if (mode === "outreach-upgrade") {
-    return "Upgrade outreach limit";
+    return "Upgrade for outreach history";
   }
 
   return target?.name ?? "Target details";
@@ -1482,11 +1525,9 @@ function TargetDetail({
   outreachLogs,
   contactsUsed,
   eventsUsed,
-  outreachLogsUsed,
   isPro,
   freeContactLimit,
   freeEventLimit,
-  freeOutreachLogLimit,
   onEdit,
   onClose,
   onAddContact,
@@ -1506,11 +1547,9 @@ function TargetDetail({
   outreachLogs: OutreachLog[];
   contactsUsed: number;
   eventsUsed: number;
-  outreachLogsUsed: number;
   isPro: boolean;
   freeContactLimit: number;
   freeEventLimit: number;
-  freeOutreachLogLimit: number;
   onEdit: () => void;
   onClose: () => void;
   onAddContact: () => void;
@@ -1612,7 +1651,7 @@ function TargetDetail({
             <p className="mt-1 text-slate-500">
               {isPro
                 ? "Pro plan: unlimited outreach logs"
-                : `${outreachLogsUsed} of ${freeOutreachLogLimit} free outreach logs used`}
+                : "Pro feature: outreach history and follow-up reminders"}
             </p>
           </div>
           <Button type="button" variant="outline" onClick={onAddOutreachLog} className="h-8 w-fit rounded-md">
@@ -2241,16 +2280,17 @@ function EventUpgradePrompt({ used, limit }: { used: number; limit: number }) {
   );
 }
 
-function OutreachUpgradePrompt({ used, limit }: { used: number; limit: number }) {
+function OutreachUpgradePrompt({ used }: { used: number }) {
   return (
     <div className="grid gap-5">
       <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
         <div className="flex items-start gap-3">
           <AlertCircle className="mt-0.5 size-5 text-amber-700" />
           <div>
-            <h3 className="font-semibold text-amber-950">Free outreach limit reached</h3>
+            <h3 className="font-semibold text-amber-950">Outreach history is a Pro feature</h3>
             <p className="mt-1 text-sm leading-6 text-amber-900">
-              You are tracking {used} of {limit} free outreach logs. Pro unlocks unlimited outreach history.
+              {used > 0 ? `You have ${used} saved outreach logs. ` : ""}
+              Pro unlocks outreach history and follow-up reminders.
             </p>
           </div>
         </div>
@@ -2300,7 +2340,7 @@ function InlineOutreachUpgradePrompt() {
       <div className="flex items-start gap-2">
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
-          Free accounts include 3 outreach logs.{" "}
+          Outreach history is included with Pro.{" "}
           <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
             View Pro options
           </Link>

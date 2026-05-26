@@ -369,7 +369,7 @@ function formatOutreachLogDatabaseError(message: string) {
 
   if (lowerMessage.includes("outreach log limit")) {
     return {
-      message: "Free accounts can track up to 3 outreach logs. Upgrade to Pro for unlimited outreach history.",
+      message: "Outreach history is included with Pro. Upgrade for unlimited outreach history.",
       upgradeRequired: true,
     } satisfies OutreachLogMutationState;
   }
@@ -576,7 +576,7 @@ export async function createOutreachLogAction(
   if (!limit.allowed) {
     return {
       message: limit.upgradeRequired
-        ? "Free accounts can track up to 3 outreach logs. Upgrade to Pro for unlimited outreach history."
+        ? "Outreach history is included with Pro. Upgrade for unlimited outreach history."
         : "We could not verify your plan. Please try again.",
       upgradeRequired: limit.upgradeRequired,
     };
