@@ -19,11 +19,17 @@ reference. The table is one player profile per user for now.
 
 ### `plans`
 
-The user's personal recruiting plan. It stores the plan title, season, pathway goal, status, and notes. A user can have more than one plan, but the default app experience can still show a single "My Plan".
+The user's main recruiting plan. It stores the plan title, season, main focus,
+short-term goal, long-term goal, status, and notes. The app marks one main plan
+per user so families have a single private place to organize options and next
+steps.
 
 ### `plan_paths`
 
-The roadmap steps inside a plan. These are the concrete path items a family wants to track, such as researching teams, building a profile, visiting schools, or planning camp dates. Each row belongs to a plan.
+The paths inside a plan. These are user-owned options the family wants to
+compare, such as a junior hockey path, college hockey path, or development
+backup path. Each row belongs to a plan and stores a title, goal, timeline, why
+the family is considering it, next steps, and open questions.
 
 ### `targets`
 
