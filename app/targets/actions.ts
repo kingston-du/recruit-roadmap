@@ -3,6 +3,15 @@
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth";
+import {
+  buildContactInsert,
+  buildContactUpdate,
+  contactFormSchema,
+  contactIdSchema,
+  freeContactLimit,
+  readContactFormData,
+  type ContactFormFieldName,
+} from "@/lib/contacts";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildTargetInsert,
@@ -28,7 +37,19 @@ export type TargetDeleteState = {
   success?: boolean;
 };
 
-async function userHasProTargets(userId: string) {
+export type ContactMutationState = {
+  message: string;
+  success?: boolean;
+  upgradeRequired?: boolean;
+  fieldErrors?: Partial<Record<ContactFormFieldName, string[]>>;
+};
+
+export type ContactDeleteState = {
+  message: string;
+  success?: boolean;
+};
+
+async function userHasActivePro(userId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("subscriptions")
@@ -52,7 +73,7 @@ async function userHasProTargets(userId: string) {
 async function canCreateAnotherTarget(userId: string) {
   const supabase = await createClient();
   const [{ isPro, error: planError }, { count, error: countError }] = await Promise.all([
-    userHasProTargets(userId),
+    userHasActivePro(userId),
     supabase
       .from("targets")
       .select("id", { count: "exact", head: true })
@@ -72,6 +93,65 @@ async function canCreateAnotherTarget(userId: string) {
   };
 }
 
+async function canCreateAnotherContact(userId: string) {
+  const supabase = await createClient();
+  const [{ isPro, error: planError }, { count, error: countError }] = await Promise.all([
+    userHasActivePro(userId),
+    supabase
+      .from("contacts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
+  ]);
+
+  if (planError || countError) {
+    return {
+      allowed: false,
+      upgradeRequired: false,
+    };
+  }
+
+  return {
+    allowed: isPro || (count ?? 0) < freeContactLimit,
+    upgradeRequired: !isPro && (count ?? 0) >= freeContactLimit,
+  };
+}
+
+async function validateContactTarget(userId: string, targetId: string | null) {
+  if (!targetId) {
+    return {
+      valid: true,
+      message: "",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("targets")
+    .select("id")
+    .eq("id", targetId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    return {
+      valid: false,
+      message: "We could not verify the selected target. Please try again.",
+    };
+  }
+
+  if (!data) {
+    return {
+      valid: false,
+      message: "Choose one of your targets or leave the target blank.",
+    };
+  }
+
+  return {
+    valid: true,
+    message: "",
+  };
+}
+
 function formatDatabaseError(message: string) {
   if (message.toLowerCase().includes("target limit")) {
     return {
@@ -83,6 +163,27 @@ function formatDatabaseError(message: string) {
   return {
     message: "We could not save the target. Please try again.",
   } satisfies TargetMutationState;
+}
+
+function formatContactDatabaseError(message: string) {
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("contact limit")) {
+    return {
+      message: "Free accounts can track up to 3 coach contacts. Upgrade to Pro for unlimited contacts.",
+      upgradeRequired: true,
+    } satisfies ContactMutationState;
+  }
+
+  if (lowerMessage.includes("contact target") || lowerMessage.includes("same user")) {
+    return {
+      message: "Choose one of your targets or leave the target blank.",
+    } satisfies ContactMutationState;
+  }
+
+  return {
+    message: "We could not save the contact. Please try again.",
+  } satisfies ContactMutationState;
 }
 
 export async function createTargetAction(
@@ -121,6 +222,54 @@ export async function createTargetAction(
 
   return {
     message: "Target added.",
+    success: true,
+  };
+}
+
+export async function createContactAction(
+  _previousState: ContactMutationState,
+  formData: FormData,
+): Promise<ContactMutationState> {
+  const parsed = contactFormSchema.safeParse(readContactFormData(formData));
+
+  if (!parsed.success) {
+    return {
+      message: "Please fix the highlighted fields.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const user = await requireUser("/targets");
+  const target = await validateContactTarget(user.id, parsed.data.target_id);
+
+  if (!target.valid) {
+    return {
+      message: target.message,
+    };
+  }
+
+  const limit = await canCreateAnotherContact(user.id);
+
+  if (!limit.allowed) {
+    return {
+      message: limit.upgradeRequired
+        ? "Free accounts can track up to 3 coach contacts. Upgrade to Pro for unlimited contacts."
+        : "We could not verify your plan. Please try again.",
+      upgradeRequired: limit.upgradeRequired,
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("contacts").insert(buildContactInsert(user.id, parsed.data));
+
+  if (error) {
+    return formatContactDatabaseError(error.message);
+  }
+
+  revalidatePath("/targets");
+
+  return {
+    message: "Contact added.",
     success: true,
   };
 }
@@ -167,6 +316,62 @@ export async function updateTargetAction(
   };
 }
 
+export async function updateContactAction(
+  _previousState: ContactMutationState,
+  formData: FormData,
+): Promise<ContactMutationState> {
+  const idParsed = contactIdSchema.safeParse({ id: formData.get("id") });
+  const parsed = contactFormSchema.safeParse(readContactFormData(formData));
+
+  if (!idParsed.success) {
+    return {
+      message: "Contact id is invalid.",
+    };
+  }
+
+  if (!parsed.success) {
+    return {
+      message: "Please fix the highlighted fields.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const user = await requireUser("/targets");
+  const target = await validateContactTarget(user.id, parsed.data.target_id);
+
+  if (!target.valid) {
+    return {
+      message: target.message,
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("contacts")
+    .update(buildContactUpdate(parsed.data))
+    .eq("id", idParsed.data.id)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return formatContactDatabaseError(error.message);
+  }
+
+  if (!data) {
+    return {
+      message: "We could not find that contact.",
+    };
+  }
+
+  revalidatePath("/targets");
+
+  return {
+    message: "Contact updated.",
+    success: true,
+  };
+}
+
 export async function deleteTargetAction(
   _previousState: TargetDeleteState,
   formData: FormData,
@@ -205,6 +410,48 @@ export async function deleteTargetAction(
 
   return {
     message: "Target deleted.",
+    success: true,
+  };
+}
+
+export async function deleteContactAction(
+  _previousState: ContactDeleteState,
+  formData: FormData,
+): Promise<ContactDeleteState> {
+  const idParsed = contactIdSchema.safeParse({ id: formData.get("id") });
+
+  if (!idParsed.success) {
+    return {
+      message: "Contact id is invalid.",
+    };
+  }
+
+  const user = await requireUser("/targets");
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("contacts")
+    .delete()
+    .eq("id", idParsed.data.id)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return {
+      message: "We could not delete the contact. Please try again.",
+    };
+  }
+
+  if (!data) {
+    return {
+      message: "We could not find that contact.",
+    };
+  }
+
+  revalidatePath("/targets");
+
+  return {
+    message: "Contact deleted.",
     success: true,
   };
 }

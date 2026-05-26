@@ -37,7 +37,12 @@ Teams, schools, camps, leagues, or other recruiting targets the family wants to 
 
 ### `contacts`
 
-Coach or staff contact records connected to a target when useful. This stores contact details and notes only. It does not add messaging or marketplace behavior.
+Coach or staff contact records connected to a target when useful. This stores
+role, email, optional phone, optional source URL, and notes only. It does not
+add email sending, messaging, or marketplace behavior. RLS keeps contacts
+user-owned, a trigger ensures a contact can only point at one of the user's own
+targets, and a trigger prevents free accounts from creating more than 3 contacts
+while Pro accounts can create unlimited contacts.
 
 ### `events`
 
@@ -63,6 +68,7 @@ Requests for the optional paid setup assist. Signed-in users can create and mana
 
 - RLS is on for all 11 tables.
 - Most tables have one owner policy: the user can select, insert, update, and delete only rows where `user_id = auth.uid()`.
+- Contacts have an extra trigger-level guard so `target_id` cannot point to another user's target.
 - `setup_assist_requests` also allows admins to view and update requests.
 - `subscriptions` allows users to view their own row and admins to view or update subscription rows.
 - The service role key should stay server-only. It is not needed in client code and should never be committed.
