@@ -12,6 +12,7 @@ import {
   Video,
 } from "lucide-react";
 
+import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
 import { Button } from "@/components/ui/button";
 
 const productPages: Array<{
@@ -383,6 +384,16 @@ export default function HomePage() {
           <StartFreeButton />
         </div>
       </section>
+
+      <footer className="border-t border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-8 text-sm text-slate-600 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+          <p>Recruit Roadmap is a planning tool for hockey families.</p>
+          <LegalFooterLinks
+            className="flex flex-wrap gap-4"
+            linkClassName="hover:text-cyan-800"
+          />
+        </div>
+      </footer>
     </main>
   );
 }

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { logoutAction } from "@/app/auth/actions";
+import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -94,7 +95,7 @@ export function AppShell({
         </div>
       </aside>
 
-      <div className="lg:pl-64">
+      <div className="flex min-h-screen flex-col lg:pl-64">
         <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="flex items-center justify-between gap-4 px-5 py-4 lg:px-8">
             <div>
@@ -146,7 +147,17 @@ export function AppShell({
           </nav>
         </header>
 
-        <main className="px-5 py-6 lg:px-8">{children}</main>
+        <main className="flex-1 px-5 py-6 lg:px-8">{children}</main>
+
+        <footer className="border-t border-slate-200 bg-white px-5 py-5 text-sm text-slate-600 lg:px-8">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p>Recruit Roadmap is a planning tool, not a recruiting service.</p>
+            <LegalFooterLinks
+              className="flex flex-wrap gap-4"
+              linkClassName="hover:text-cyan-800"
+            />
+          </div>
+        </footer>
       </div>
     </div>
   );

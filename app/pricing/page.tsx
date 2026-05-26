@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, LockKeyhole, Wrench } from "lucide-react";
 
+import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -195,6 +196,16 @@ export default function PricingPage() {
           Stripe checkout opens from payment links. Pro access is activated separately
           for now; webhooks and automatic account upgrades are not enabled yet.
         </section>
+
+        <footer className="mt-10 border-t border-slate-200 pt-6">
+          <div className="flex flex-col gap-3 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
+            <p>Recruit Roadmap is a planning tool for hockey families.</p>
+            <LegalFooterLinks
+              className="flex flex-wrap gap-4"
+              linkClassName="hover:text-cyan-800"
+            />
+          </div>
+        </footer>
       </div>
     </main>
   );
