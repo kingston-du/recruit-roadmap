@@ -12,6 +12,15 @@ import {
   readContactFormData,
   type ContactFormFieldName,
 } from "@/lib/contacts";
+import {
+  buildEventInsert,
+  buildEventUpdate,
+  eventFormSchema,
+  eventIdSchema,
+  freeEventLimit,
+  readEventFormData,
+  type EventFormFieldName,
+} from "@/lib/events";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildTargetInsert,
@@ -45,6 +54,18 @@ export type ContactMutationState = {
 };
 
 export type ContactDeleteState = {
+  message: string;
+  success?: boolean;
+};
+
+export type EventMutationState = {
+  message: string;
+  success?: boolean;
+  upgradeRequired?: boolean;
+  fieldErrors?: Partial<Record<EventFormFieldName, string[]>>;
+};
+
+export type EventDeleteState = {
   message: string;
   success?: boolean;
 };
@@ -116,7 +137,30 @@ async function canCreateAnotherContact(userId: string) {
   };
 }
 
-async function validateContactTarget(userId: string, targetId: string | null) {
+async function canCreateAnotherEvent(userId: string) {
+  const supabase = await createClient();
+  const [{ isPro, error: planError }, { count, error: countError }] = await Promise.all([
+    userHasActivePro(userId),
+    supabase
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
+  ]);
+
+  if (planError || countError) {
+    return {
+      allowed: false,
+      upgradeRequired: false,
+    };
+  }
+
+  return {
+    allowed: isPro || (count ?? 0) < freeEventLimit,
+    upgradeRequired: !isPro && (count ?? 0) >= freeEventLimit,
+  };
+}
+
+async function validateOwnedTarget(userId: string, targetId: string | null) {
   if (!targetId) {
     return {
       valid: true,
@@ -186,6 +230,33 @@ function formatContactDatabaseError(message: string) {
   } satisfies ContactMutationState;
 }
 
+function formatEventDatabaseError(message: string) {
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("event limit")) {
+    return {
+      message: "Free accounts can track up to 3 events or dates. Upgrade to Pro for unlimited events.",
+      upgradeRequired: true,
+    } satisfies EventMutationState;
+  }
+
+  if (lowerMessage.includes("event target") || lowerMessage.includes("same user")) {
+    return {
+      message: "Choose one of your targets or leave the target blank.",
+    } satisfies EventMutationState;
+  }
+
+  return {
+    message: "We could not save the event. Please try again.",
+  } satisfies EventMutationState;
+}
+
+function revalidateEventViews() {
+  revalidatePath("/targets");
+  revalidatePath("/today");
+  revalidatePath("/my-plan");
+}
+
 export async function createTargetAction(
   _previousState: TargetMutationState,
   formData: FormData,
@@ -240,7 +311,7 @@ export async function createContactAction(
   }
 
   const user = await requireUser("/targets");
-  const target = await validateContactTarget(user.id, parsed.data.target_id);
+  const target = await validateOwnedTarget(user.id, parsed.data.target_id);
 
   if (!target.valid) {
     return {
@@ -270,6 +341,54 @@ export async function createContactAction(
 
   return {
     message: "Contact added.",
+    success: true,
+  };
+}
+
+export async function createEventAction(
+  _previousState: EventMutationState,
+  formData: FormData,
+): Promise<EventMutationState> {
+  const parsed = eventFormSchema.safeParse(readEventFormData(formData));
+
+  if (!parsed.success) {
+    return {
+      message: "Please fix the highlighted fields.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const user = await requireUser("/targets");
+  const target = await validateOwnedTarget(user.id, parsed.data.target_id);
+
+  if (!target.valid) {
+    return {
+      message: target.message,
+    };
+  }
+
+  const limit = await canCreateAnotherEvent(user.id);
+
+  if (!limit.allowed) {
+    return {
+      message: limit.upgradeRequired
+        ? "Free accounts can track up to 3 events or dates. Upgrade to Pro for unlimited events."
+        : "We could not verify your plan. Please try again.",
+      upgradeRequired: limit.upgradeRequired,
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("events").insert(buildEventInsert(user.id, parsed.data));
+
+  if (error) {
+    return formatEventDatabaseError(error.message);
+  }
+
+  revalidateEventViews();
+
+  return {
+    message: "Event added.",
     success: true,
   };
 }
@@ -337,7 +456,7 @@ export async function updateContactAction(
   }
 
   const user = await requireUser("/targets");
-  const target = await validateContactTarget(user.id, parsed.data.target_id);
+  const target = await validateOwnedTarget(user.id, parsed.data.target_id);
 
   if (!target.valid) {
     return {
@@ -368,6 +487,62 @@ export async function updateContactAction(
 
   return {
     message: "Contact updated.",
+    success: true,
+  };
+}
+
+export async function updateEventAction(
+  _previousState: EventMutationState,
+  formData: FormData,
+): Promise<EventMutationState> {
+  const idParsed = eventIdSchema.safeParse({ id: formData.get("id") });
+  const parsed = eventFormSchema.safeParse(readEventFormData(formData));
+
+  if (!idParsed.success) {
+    return {
+      message: "Event id is invalid.",
+    };
+  }
+
+  if (!parsed.success) {
+    return {
+      message: "Please fix the highlighted fields.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const user = await requireUser("/targets");
+  const target = await validateOwnedTarget(user.id, parsed.data.target_id);
+
+  if (!target.valid) {
+    return {
+      message: target.message,
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("events")
+    .update(buildEventUpdate(parsed.data))
+    .eq("id", idParsed.data.id)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return formatEventDatabaseError(error.message);
+  }
+
+  if (!data) {
+    return {
+      message: "We could not find that event.",
+    };
+  }
+
+  revalidateEventViews();
+
+  return {
+    message: "Event updated.",
     success: true,
   };
 }
@@ -452,6 +627,48 @@ export async function deleteContactAction(
 
   return {
     message: "Contact deleted.",
+    success: true,
+  };
+}
+
+export async function deleteEventAction(
+  _previousState: EventDeleteState,
+  formData: FormData,
+): Promise<EventDeleteState> {
+  const idParsed = eventIdSchema.safeParse({ id: formData.get("id") });
+
+  if (!idParsed.success) {
+    return {
+      message: "Event id is invalid.",
+    };
+  }
+
+  const user = await requireUser("/targets");
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("events")
+    .delete()
+    .eq("id", idParsed.data.id)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return {
+      message: "We could not delete the event. Please try again.",
+    };
+  }
+
+  if (!data) {
+    return {
+      message: "We could not find that event.",
+    };
+  }
+
+  revalidateEventViews();
+
+  return {
+    message: "Event deleted.",
     success: true,
   };
 }

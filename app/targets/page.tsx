@@ -3,10 +3,13 @@ import { AlertCircle, ClipboardList } from "lucide-react";
 
 import {
   createContactAction,
+  createEventAction,
   createTargetAction,
   deleteContactAction,
+  deleteEventAction,
   deleteTargetAction,
   updateContactAction,
+  updateEventAction,
   updateTargetAction,
 } from "@/app/targets/actions";
 import { AppShell } from "@/components/recruit/app-shell";
@@ -15,6 +18,7 @@ import { Panel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth";
 import { contactSelect, freeContactLimit, normalizeContacts } from "@/lib/contacts";
+import { eventSelect, freeEventLimit, normalizeEvents } from "@/lib/events";
 import {
   freeTargetLimit,
   hasProTargets,
@@ -29,7 +33,7 @@ export const dynamic = "force-dynamic";
 export default async function TargetsPage() {
   const user = await requireUser("/targets");
   const supabase = await createClient();
-  const [targetsResult, contactsResult, subscriptionResult] = await Promise.all([
+  const [targetsResult, contactsResult, eventsResult, subscriptionResult] = await Promise.all([
     supabase
       .from("targets")
       .select(targetSelect)
@@ -41,6 +45,11 @@ export default async function TargetsPage() {
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false }),
     supabase
+      .from("events")
+      .select(eventSelect)
+      .eq("user_id", user.id)
+      .order("start_date", { ascending: true }),
+    supabase
       .from("subscriptions")
       .select("plan_name, status")
       .eq("user_id", user.id)
@@ -48,6 +57,7 @@ export default async function TargetsPage() {
   ]);
   const userTargets = normalizeTargets(targetsResult.data);
   const userContacts = normalizeContacts(contactsResult.data);
+  const userEvents = normalizeEvents(eventsResult.data);
   const subscription = normalizeSubscription(subscriptionResult.data);
   const isPro = hasProTargets(subscription);
 
@@ -74,7 +84,7 @@ export default async function TargetsPage() {
           </p>
         </div>
 
-        {targetsResult.error || contactsResult.error || subscriptionResult.error ? (
+        {targetsResult.error || contactsResult.error || eventsResult.error || subscriptionResult.error ? (
           <Panel className="border-amber-200 bg-amber-50">
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 size-5 text-amber-700" />
@@ -88,15 +98,20 @@ export default async function TargetsPage() {
         <TargetsBoard
           targets={userTargets}
           contacts={userContacts}
+          events={userEvents}
           isPro={isPro}
           freeTargetLimit={freeTargetLimit}
           freeContactLimit={freeContactLimit}
+          freeEventLimit={freeEventLimit}
           createAction={createTargetAction}
           updateAction={updateTargetAction}
           deleteAction={deleteTargetAction}
           createContactAction={createContactAction}
           updateContactAction={updateContactAction}
           deleteContactAction={deleteContactAction}
+          createEventAction={createEventAction}
+          updateEventAction={updateEventAction}
+          deleteEventAction={deleteEventAction}
         />
       </div>
     </AppShell>

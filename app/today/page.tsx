@@ -1,16 +1,63 @@
 import Link from "next/link";
-import { AlertCircle, ArrowRight, CheckCircle2, Circle, Target } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  Circle,
+  ExternalLink,
+  MapPin,
+  Target,
+} from "lucide-react";
 
 import { AppShell } from "@/components/recruit/app-shell";
 import { Panel, StatusPill } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth";
+import {
+  compareRecruitEvents,
+  eventSelect,
+  eventTypeLabels,
+  formatDateLabel,
+  formatEventDateRange,
+  normalizeEvents,
+  type RecruitEvent,
+} from "@/lib/events";
 import { todayPlan } from "@/lib/mock-data";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function TodayPage() {
   const user = await requireUser("/today");
+  const supabase = await createClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const [eventsResult, targetsResult] = await Promise.all([
+    supabase
+      .from("events")
+      .select(eventSelect)
+      .eq("user_id", user.id)
+      .order("start_date", { ascending: true }),
+    supabase.from("targets").select("id, name").eq("user_id", user.id),
+  ]);
+  const upcomingEvents = normalizeEvents(eventsResult.data)
+    .filter((event) => event.status !== "Canceled")
+    .filter(
+      (event) =>
+        event.start_date >= today ||
+        Boolean(event.registration_deadline && event.registration_deadline >= today),
+    )
+    .sort(compareRecruitEvents)
+    .slice(0, 6);
+  const targetNameById = new Map(
+    (targetsResult.data ?? [])
+      .map((target) => {
+        const id = typeof target.id === "string" ? target.id : "";
+        const name = typeof target.name === "string" ? target.name : "";
+        return id && name ? ([id, name] as const) : null;
+      })
+      .filter((target): target is readonly [string, string] => Boolean(target)),
+  );
 
   return (
     <AppShell
@@ -90,6 +137,51 @@ export default async function TodayPage() {
           </div>
         </section>
 
+        <section className="grid gap-4">
+          <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Upcoming dates</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Camps, tryouts, deadlines, calls, and visits coming up.
+              </p>
+            </div>
+            <StatusPill tone="cyan">{upcomingEvents.length} saved</StatusPill>
+          </div>
+
+          {eventsResult.error || targetsResult.error ? (
+            <Panel className="border-amber-200 bg-amber-50">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="mt-0.5 size-5 text-amber-700" />
+                <p className="text-sm leading-6 text-amber-900">
+                  We could not load upcoming dates. Try refreshing before making changes.
+                </p>
+              </div>
+            </Panel>
+          ) : null}
+
+          {upcomingEvents.length > 0 ? (
+            <div className="grid gap-4 xl:grid-cols-3">
+              {upcomingEvents.map((event) => (
+                <UpcomingEventCard
+                  key={event.id}
+                  event={event}
+                  targetName={event.target_id ? targetNameById.get(event.target_id) : undefined}
+                />
+              ))}
+            </div>
+          ) : (
+            <Panel className="border-dashed">
+              <p className="font-semibold text-slate-950">No upcoming dates saved yet.</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Add camps, deadlines, tryouts, calls, or visits from Targets when a date matters.
+              </p>
+              <Button asChild variant="outline" className="mt-4 w-fit rounded-md">
+                <Link href="/targets">Open Targets</Link>
+              </Button>
+            </Panel>
+          )}
+        </section>
+
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <Panel>
             <div className="flex items-center gap-2">
@@ -135,5 +227,58 @@ export default async function TodayPage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function UpcomingEventCard({
+  event,
+  targetName,
+}: {
+  event: RecruitEvent;
+  targetName: string | undefined;
+}) {
+  return (
+    <Panel className="flex flex-col">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <StatusPill tone="cyan">{eventTypeLabels[event.event_type]}</StatusPill>
+          <h3 className="mt-3 text-lg font-semibold tracking-tight">{event.title}</h3>
+          <p className="mt-1 text-sm text-slate-500">{targetName ? `Target: ${targetName}` : "No target"}</p>
+        </div>
+        <StatusPill tone={event.status === "Completed" ? "green" : "slate"}>{event.status}</StatusPill>
+      </div>
+
+      <div className="mt-4 grid flex-1 gap-2 text-sm leading-6 text-slate-600">
+        <p className="flex items-start gap-2 font-medium text-slate-800">
+          <CalendarDays className="mt-1 size-4 shrink-0 text-cyan-700" />
+          {formatEventDateRange(event)}
+        </p>
+        {event.registration_deadline ? (
+          <p>Register by {formatDateLabel(event.registration_deadline)}</p>
+        ) : null}
+        {event.location ? (
+          <p className="flex items-start gap-2">
+            <MapPin className="mt-1 size-4 shrink-0 text-slate-400" />
+            {event.location}
+          </p>
+        ) : null}
+        {event.notes ? <p className="whitespace-pre-wrap break-words text-slate-700">{event.notes}</p> : null}
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        <Button asChild className="w-fit bg-[#071a2f] text-white hover:bg-[#0b2745]">
+          <Link href="/targets">
+            Open Targets <ArrowRight />
+          </Link>
+        </Button>
+        {event.url ? (
+          <Button asChild variant="outline" className="w-fit rounded-md">
+            <a href={event.url} target="_blank" rel="noreferrer">
+              Event link <ExternalLink />
+            </a>
+          </Button>
+        ) : null}
+      </div>
+    </Panel>
   );
 }

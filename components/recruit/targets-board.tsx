@@ -22,12 +22,25 @@ import {
 import type {
   ContactDeleteState,
   ContactMutationState,
+  EventDeleteState,
+  EventMutationState,
   TargetDeleteState,
   TargetMutationState,
 } from "@/app/targets/actions";
 import { Panel, StatusPill } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 import type { Contact, ContactFormFieldName } from "@/lib/contacts";
+import {
+  compareRecruitEvents,
+  eventStatusOptions,
+  eventTypeLabels,
+  eventTypeOptions,
+  formatDateLabel,
+  formatEventCost,
+  formatEventDateRange,
+  type EventFormFieldName,
+  type RecruitEvent,
+} from "@/lib/events";
 import { cn } from "@/lib/utils";
 import {
   targetPriorityOptions,
@@ -53,6 +66,14 @@ const initialContactDeleteState: ContactDeleteState = {
   message: "",
 };
 
+const initialEventMutationState: EventMutationState = {
+  message: "",
+};
+
+const initialEventDeleteState: EventDeleteState = {
+  message: "",
+};
+
 type TargetMutationAction = (
   previousState: TargetMutationState,
   formData: FormData,
@@ -73,6 +94,16 @@ type ContactDeleteAction = (
   formData: FormData,
 ) => Promise<ContactDeleteState>;
 
+type EventMutationAction = (
+  previousState: EventMutationState,
+  formData: FormData,
+) => Promise<EventMutationState>;
+
+type EventDeleteAction = (
+  previousState: EventDeleteState,
+  formData: FormData,
+) => Promise<EventDeleteState>;
+
 type DrawerMode =
   | "create"
   | "detail"
@@ -81,20 +112,28 @@ type DrawerMode =
   | "create-contact"
   | "edit-contact"
   | "contact-upgrade"
+  | "create-event"
+  | "edit-event"
+  | "event-upgrade"
   | null;
 
 type TargetsBoardProps = {
   targets: Target[];
   contacts: Contact[];
+  events: RecruitEvent[];
   isPro: boolean;
   freeTargetLimit: number;
   freeContactLimit: number;
+  freeEventLimit: number;
   createAction: TargetMutationAction;
   updateAction: TargetMutationAction;
   deleteAction: TargetDeleteAction;
   createContactAction: ContactMutationAction;
   updateContactAction: ContactMutationAction;
   deleteContactAction: ContactDeleteAction;
+  createEventAction: EventMutationAction;
+  updateEventAction: EventMutationAction;
+  deleteEventAction: EventDeleteAction;
 };
 
 type FieldState<FieldName extends string> = {
@@ -106,7 +145,9 @@ type FormFieldProps<FieldName extends string> = {
   label: string;
   defaultValue?: string | null;
   required?: boolean;
-  type?: "text" | "url" | "date" | "email" | "tel";
+  type?: "text" | "url" | "date" | "email" | "tel" | "number";
+  min?: string;
+  step?: string;
   placeholder?: string;
   state: FieldState<FieldName>;
 };
@@ -142,6 +183,8 @@ function TextField<FieldName extends string>({
   defaultValue,
   required,
   type = "text",
+  min,
+  step,
   placeholder,
   state,
 }: FormFieldProps<FieldName>) {
@@ -158,6 +201,8 @@ function TextField<FieldName extends string>({
         id={name}
         name={name}
         type={type}
+        min={min}
+        step={step}
         defaultValue={defaultValue ?? ""}
         required={required}
         placeholder={placeholder}
@@ -261,24 +306,33 @@ function TextAreaField<FieldName extends string>({
 export function TargetsBoard({
   targets,
   contacts,
+  events,
   isPro,
   freeTargetLimit,
   freeContactLimit,
+  freeEventLimit,
   createAction,
   updateAction,
   deleteAction,
   createContactAction,
   updateContactAction,
   deleteContactAction,
+  createEventAction,
+  updateEventAction,
+  deleteEventAction,
 }: TargetsBoardProps) {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
   const [selectedId, setSelectedId] = useState<string | null>(targets[0]?.id ?? null);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(contacts[0]?.id ?? null);
   const [contactTargetId, setContactTargetId] = useState<string | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(events[0]?.id ?? null);
+  const [eventTargetId, setEventTargetId] = useState<string | null>(null);
   const selectedTarget = targets.find((target) => target.id === selectedId) ?? null;
   const selectedContact = contacts.find((contact) => contact.id === selectedContactId) ?? null;
+  const selectedEvent = events.find((event) => event.id === selectedEventId) ?? null;
   const limitReached = !isPro && targets.length >= freeTargetLimit;
   const contactLimitReached = !isPro && contacts.length >= freeContactLimit;
+  const eventLimitReached = !isPro && events.length >= freeEventLimit;
   const targetNameById = useMemo(
     () => new Map(targets.map((target) => [target.id, target.name])),
     [targets],
@@ -296,9 +350,28 @@ export function TargetsBoard({
 
     return counts;
   }, [contacts]);
+  const eventCountByTarget = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    events.forEach((event) => {
+      if (!event.target_id) {
+        return;
+      }
+
+      counts.set(event.target_id, (counts.get(event.target_id) ?? 0) + 1);
+    });
+
+    return counts;
+  }, [events]);
   const selectedTargetContacts = selectedTarget
     ? contacts.filter((contact) => contact.target_id === selectedTarget.id)
     : [];
+  const selectedTargetEvents = selectedTarget
+    ? [...events]
+        .filter((event) => event.target_id === selectedTarget.id)
+        .sort(compareRecruitEvents)
+    : [];
+  const sortedEvents = useMemo(() => [...events].sort(compareRecruitEvents), [events]);
   const targetsByStatus = useMemo(
     () =>
       targetStatusOptions.map((column) => ({
@@ -334,6 +407,23 @@ export function TargetsBoard({
     setDrawerMode("edit-contact");
   }
 
+  function openCreateEventDrawer(targetId: string | null = null) {
+    setEventTargetId(targetId);
+    setSelectedEventId(null);
+    setDrawerMode(eventLimitReached ? "event-upgrade" : "create-event");
+  }
+
+  function openEditEventDrawer(event: RecruitEvent) {
+    setSelectedEventId(event.id);
+    setEventTargetId(event.target_id);
+
+    if (event.target_id) {
+      setSelectedId(event.target_id);
+    }
+
+    setDrawerMode("edit-event");
+  }
+
   function closeDrawer() {
     setDrawerMode(null);
   }
@@ -351,6 +441,26 @@ export function TargetsBoard({
   function handleContactEdited(contact: Contact) {
     if (contact.target_id) {
       setSelectedId(contact.target_id);
+      setDrawerMode("detail");
+      return;
+    }
+
+    closeDrawer();
+  }
+
+  function handleEventSaved() {
+    if (eventTargetId) {
+      setSelectedId(eventTargetId);
+      setDrawerMode("detail");
+      return;
+    }
+
+    closeDrawer();
+  }
+
+  function handleEventEdited(event: RecruitEvent) {
+    if (event.target_id) {
+      setSelectedId(event.target_id);
       setDrawerMode("detail");
       return;
     }
@@ -394,6 +504,7 @@ export function TargetsBoard({
                       key={target.id}
                       target={target}
                       contactCount={contactCountByTarget.get(target.id) ?? 0}
+                      eventCount={eventCountByTarget.get(target.id) ?? 0}
                       isSelected={target.id === selectedTarget?.id}
                       onClick={() => openDetailDrawer(target)}
                     />
@@ -408,6 +519,16 @@ export function TargetsBoard({
           ))}
         </div>
       </div>
+
+      <EventsSection
+        events={sortedEvents}
+        targetNameById={targetNameById}
+        isPro={isPro}
+        freeEventLimit={freeEventLimit}
+        onAddEvent={() => openCreateEventDrawer()}
+        onEditEvent={openEditEventDrawer}
+        deleteEventAction={deleteEventAction}
+      />
 
       <ContactsSection
         contacts={contacts}
@@ -435,15 +556,21 @@ export function TargetsBoard({
             <TargetDetail
               target={selectedTarget}
               contacts={selectedTargetContacts}
+              events={selectedTargetEvents}
               contactsUsed={contacts.length}
+              eventsUsed={events.length}
               isPro={isPro}
               freeContactLimit={freeContactLimit}
+              freeEventLimit={freeEventLimit}
               onEdit={() => setDrawerMode("edit")}
               onClose={closeDrawer}
               onAddContact={() => openCreateContactDrawer(selectedTarget.id)}
               onEditContact={openEditContactDrawer}
+              onAddEvent={() => openCreateEventDrawer(selectedTarget.id)}
+              onEditEvent={openEditEventDrawer}
               deleteAction={deleteAction}
               deleteContactAction={deleteContactAction}
+              deleteEventAction={deleteEventAction}
             />
           ) : null}
 
@@ -484,8 +611,36 @@ export function TargetsBoard({
             />
           ) : null}
 
+          {drawerMode === "create-event" ? (
+            <EventForm
+              key={`create-event-${eventTargetId ?? "none"}`}
+              targets={targets}
+              defaultTargetId={eventTargetId}
+              action={createEventAction}
+              submitLabel="Add event"
+              pendingLabel="Adding..."
+              onSuccess={handleEventSaved}
+            />
+          ) : null}
+
+          {drawerMode === "edit-event" && selectedEvent ? (
+            <EventForm
+              key={`edit-event-${selectedEvent.id}`}
+              event={selectedEvent}
+              targets={targets}
+              action={updateEventAction}
+              submitLabel="Save event"
+              pendingLabel="Saving..."
+              onSuccess={() => handleEventEdited(selectedEvent)}
+            />
+          ) : null}
+
           {drawerMode === "contact-upgrade" ? (
             <ContactUpgradePrompt used={contacts.length} limit={freeContactLimit} />
+          ) : null}
+
+          {drawerMode === "event-upgrade" ? (
+            <EventUpgradePrompt used={events.length} limit={freeEventLimit} />
           ) : null}
         </TargetDrawer>
       ) : null}
@@ -518,17 +673,31 @@ function drawerTitle(mode: DrawerMode, target: Target | null, contact: Contact |
     return "Upgrade contact limit";
   }
 
+  if (mode === "create-event") {
+    return "Add event";
+  }
+
+  if (mode === "edit-event") {
+    return "Edit event";
+  }
+
+  if (mode === "event-upgrade") {
+    return "Upgrade event limit";
+  }
+
   return target?.name ?? "Target details";
 }
 
 function TargetCard({
   target,
   contactCount,
+  eventCount,
   isSelected,
   onClick,
 }: {
   target: Target;
   contactCount: number;
+  eventCount: number;
   isSelected: boolean;
   onClick: () => void;
 }) {
@@ -560,6 +729,12 @@ function TargetCard({
         <p className="mt-3 flex items-center gap-2 text-sm text-slate-600">
           <UserRound className="size-4 text-slate-400" /> {contactCount}{" "}
           {contactCount === 1 ? "contact" : "contacts"}
+        </p>
+      ) : null}
+      {eventCount > 0 ? (
+        <p className="mt-3 flex items-center gap-2 text-sm text-slate-600">
+          <CalendarDays className="size-4 text-slate-400" /> {eventCount}{" "}
+          {eventCount === 1 ? "date" : "dates"}
         </p>
       ) : null}
       {target.connected_path ? (
@@ -860,30 +1035,198 @@ function ContactForm({
   );
 }
 
+function EventForm({
+  event,
+  targets,
+  defaultTargetId,
+  action,
+  submitLabel,
+  pendingLabel,
+  onSuccess,
+}: {
+  event?: RecruitEvent;
+  targets: Target[];
+  defaultTargetId?: string | null;
+  action: EventMutationAction;
+  submitLabel: string;
+  pendingLabel: string;
+  onSuccess: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, initialEventMutationState);
+  const targetOptions = targets.map((target) => ({ value: target.id, label: target.name }));
+  const typeOptions = eventTypeOptions.map((option) => ({
+    value: option,
+    label: eventTypeLabels[option],
+  }));
+  const statusOptions = eventStatusOptions.map((option) => ({ value: option, label: option }));
+
+  useEffect(() => {
+    if (state.success) {
+      onSuccess();
+    }
+  }, [onSuccess, state.success]);
+
+  return (
+    <form action={formAction} className="grid gap-5">
+      {event ? <input type="hidden" name="id" value={event.id} /> : null}
+
+      <SelectField<EventFormFieldName>
+        name="target_id"
+        label="Target"
+        defaultValue={event?.target_id ?? defaultTargetId ?? ""}
+        options={targetOptions}
+        placeholder="No target"
+        state={state}
+      />
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <TextField<EventFormFieldName>
+          name="title"
+          label="Title"
+          defaultValue={event?.title}
+          required
+          placeholder="Summer showcase"
+          state={state}
+        />
+        <SelectField<EventFormFieldName>
+          name="event_type"
+          label="Type"
+          defaultValue={event?.event_type ?? "camp"}
+          required
+          options={typeOptions}
+          state={state}
+        />
+        <TextField<EventFormFieldName>
+          name="start_date"
+          label="Start date"
+          type="date"
+          defaultValue={event?.start_date}
+          required
+          state={state}
+        />
+        <TextField<EventFormFieldName>
+          name="end_date"
+          label="End date"
+          type="date"
+          defaultValue={event?.end_date}
+          state={state}
+        />
+        <TextField<EventFormFieldName>
+          name="registration_deadline"
+          label="Registration deadline"
+          type="date"
+          defaultValue={event?.registration_deadline}
+          state={state}
+        />
+        <TextField<EventFormFieldName>
+          name="cost"
+          label="Cost"
+          type="number"
+          min="0"
+          step="0.01"
+          defaultValue={event?.cost === null || event?.cost === undefined ? "" : String(event.cost)}
+          placeholder="450"
+          state={state}
+        />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <TextField<EventFormFieldName>
+          name="location"
+          label="Location"
+          defaultValue={event?.location}
+          placeholder="Rink, city, state"
+          state={state}
+        />
+        <SelectField<EventFormFieldName>
+          name="status"
+          label="Status"
+          defaultValue={event?.status ?? "Planned"}
+          required
+          options={statusOptions}
+          state={state}
+        />
+      </div>
+
+      <TextField<EventFormFieldName>
+        name="url"
+        label="URL"
+        type="url"
+        defaultValue={event?.url}
+        placeholder="Registration or event page"
+        state={state}
+      />
+
+      <TextAreaField<EventFormFieldName>
+        name="notes"
+        label="Notes"
+        defaultValue={event?.notes}
+        rows={5}
+        placeholder="Registration details, questions, or what to prepare."
+        state={state}
+      />
+
+      {state.message ? (
+        <p
+          className={
+            state.success
+              ? "rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm leading-6 text-emerald-800"
+              : "rounded-md border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-800"
+          }
+        >
+          {state.message}
+        </p>
+      ) : null}
+
+      {state.upgradeRequired ? <InlineEventUpgradePrompt /> : null}
+
+      <Button
+        type="submit"
+        disabled={pending}
+        className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]"
+      >
+        <Save /> {pending ? pendingLabel : submitLabel}
+      </Button>
+    </form>
+  );
+}
+
 function TargetDetail({
   target,
   contacts,
+  events,
   contactsUsed,
+  eventsUsed,
   isPro,
   freeContactLimit,
+  freeEventLimit,
   onEdit,
   onClose,
   onAddContact,
   onEditContact,
+  onAddEvent,
+  onEditEvent,
   deleteAction,
   deleteContactAction,
+  deleteEventAction,
 }: {
   target: Target;
   contacts: Contact[];
+  events: RecruitEvent[];
   contactsUsed: number;
+  eventsUsed: number;
   isPro: boolean;
   freeContactLimit: number;
+  freeEventLimit: number;
   onEdit: () => void;
   onClose: () => void;
   onAddContact: () => void;
   onEditContact: (contact: Contact) => void;
+  onAddEvent: () => void;
+  onEditEvent: (event: RecruitEvent) => void;
   deleteAction: TargetDeleteAction;
   deleteContactAction: ContactDeleteAction;
+  deleteEventAction: EventDeleteAction;
 }) {
   return (
     <div className="grid gap-5">
@@ -910,6 +1253,31 @@ function TargetDetail({
         <DetailBlock title="Connected path">{target.connected_path ?? "Not set"}</DetailBlock>
         <DetailBlock title="Follow-up date">{target.follow_up_date ?? "Not set"}</DetailBlock>
       </div>
+
+      <section className="rounded-md bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div>
+            <p className="font-semibold text-slate-950">Dates and events</p>
+            <p className="mt-1 text-slate-500">
+              {isPro
+                ? "Pro plan: unlimited events"
+                : `${eventsUsed} of ${freeEventLimit} free events used`}
+            </p>
+          </div>
+          <Button type="button" variant="outline" onClick={onAddEvent} className="h-8 w-fit rounded-md">
+            <Plus /> Add date
+          </Button>
+        </div>
+        <div className="mt-3">
+          <EventList
+            events={events}
+            emptyText="No dates saved for this target."
+            showTarget={false}
+            onEditEvent={onEditEvent}
+            deleteEventAction={deleteEventAction}
+          />
+        </div>
+      </section>
 
       <section className="rounded-md bg-slate-50 p-3 text-sm leading-6 text-slate-600">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
@@ -980,6 +1348,186 @@ function DeleteTargetForm({
     >
       <input type="hidden" name="id" value={target.id} />
       <Button type="submit" disabled={pending} variant="destructive" className="rounded-md">
+        <Trash2 /> {pending ? "Deleting..." : "Delete"}
+      </Button>
+      {state.message && !state.success ? <p className="mt-2 text-sm text-red-700">{state.message}</p> : null}
+    </form>
+  );
+}
+
+function EventsSection({
+  events,
+  targetNameById,
+  isPro,
+  freeEventLimit,
+  onAddEvent,
+  onEditEvent,
+  deleteEventAction,
+}: {
+  events: RecruitEvent[];
+  targetNameById: Map<string, string>;
+  isPro: boolean;
+  freeEventLimit: number;
+  onAddEvent: () => void;
+  onEditEvent: (event: RecruitEvent) => void;
+  deleteEventAction: EventDeleteAction;
+}) {
+  return (
+    <Panel>
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Camps, dates, and events</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            {isPro ? "Pro plan: unlimited events" : `${events.length} of ${freeEventLimit} free events used`}
+          </p>
+        </div>
+        <Button
+          type="button"
+          onClick={onAddEvent}
+          className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]"
+        >
+          <Plus /> Add date
+        </Button>
+      </div>
+
+      <div className="mt-4">
+        <EventList
+          events={events}
+          targetNameById={targetNameById}
+          emptyText="No camps, dates, or events yet."
+          showTarget
+          onEditEvent={onEditEvent}
+          deleteEventAction={deleteEventAction}
+        />
+      </div>
+    </Panel>
+  );
+}
+
+function EventList({
+  events,
+  targetNameById,
+  emptyText,
+  showTarget,
+  onEditEvent,
+  deleteEventAction,
+}: {
+  events: RecruitEvent[];
+  targetNameById?: Map<string, string>;
+  emptyText: string;
+  showTarget: boolean;
+  onEditEvent: (event: RecruitEvent) => void;
+  deleteEventAction: EventDeleteAction;
+}) {
+  if (events.length === 0) {
+    return (
+      <div className="rounded-md border border-dashed border-slate-200 bg-white p-4 text-sm leading-6 text-slate-500">
+        {emptyText}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {events.map((event) => (
+        <EventItem
+          key={event.id}
+          event={event}
+          targetName={event.target_id ? targetNameById?.get(event.target_id) : undefined}
+          showTarget={showTarget}
+          onEdit={() => onEditEvent(event)}
+          deleteEventAction={deleteEventAction}
+        />
+      ))}
+    </div>
+  );
+}
+
+function EventItem({
+  event,
+  targetName,
+  showTarget,
+  onEdit,
+  deleteEventAction,
+}: {
+  event: RecruitEvent;
+  targetName?: string;
+  showTarget: boolean;
+  onEdit: () => void;
+  deleteEventAction: EventDeleteAction;
+}) {
+  const cost = formatEventCost(event.cost);
+
+  return (
+    <section className="rounded-md border border-slate-200 bg-white p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex flex-wrap gap-2">
+            <StatusPill tone="cyan">{eventTypeLabels[event.event_type]}</StatusPill>
+            <StatusPill tone={event.status === "Completed" ? "green" : "slate"}>{event.status}</StatusPill>
+          </div>
+          <p className="mt-3 font-semibold tracking-tight text-slate-950">{event.title}</p>
+          {showTarget ? (
+            <p className="mt-1 text-sm text-slate-500">{targetName ? `Target: ${targetName}` : "No target"}</p>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 flex-wrap justify-end gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={onEdit} className="rounded-md">
+            <Pencil /> Edit
+          </Button>
+          <DeleteEventForm event={event} action={deleteEventAction} />
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-2 text-sm leading-6 text-slate-600">
+        <p className="flex items-start gap-2 font-medium text-slate-700">
+          <CalendarDays className="mt-1 size-4 shrink-0 text-cyan-700" /> {formatEventDateRange(event)}
+        </p>
+        {event.registration_deadline ? (
+          <p>Register by {formatDateLabel(event.registration_deadline)}</p>
+        ) : null}
+        {cost ? <p>Cost: {cost}</p> : null}
+        {event.location ? (
+          <p className="flex items-start gap-2">
+            <MapPin className="mt-1 size-4 shrink-0 text-slate-400" /> {event.location}
+          </p>
+        ) : null}
+        {event.url ? (
+          <a
+            href={event.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-start gap-2 break-all font-medium text-cyan-800 hover:text-cyan-900"
+          >
+            <ExternalLink className="mt-1 size-4 shrink-0" /> {event.url}
+          </a>
+        ) : null}
+        {event.notes ? <p className="whitespace-pre-wrap break-words text-slate-700">{event.notes}</p> : null}
+      </div>
+    </section>
+  );
+}
+
+function DeleteEventForm({
+  event,
+  action,
+}: {
+  event: RecruitEvent;
+  action: EventDeleteAction;
+}) {
+  const [state, formAction, pending] = useActionState(action, initialEventDeleteState);
+
+  return (
+    <form
+      action={formAction}
+      onSubmit={(submitEvent) => {
+        if (!window.confirm(`Delete ${event.title}?`)) {
+          submitEvent.preventDefault();
+        }
+      }}
+    >
+      <input type="hidden" name="id" value={event.id} />
+      <Button type="submit" disabled={pending} variant="destructive" size="sm" className="rounded-md">
         <Trash2 /> {pending ? "Deleting..." : "Delete"}
       </Button>
       {state.message && !state.success ? <p className="mt-2 text-sm text-red-700">{state.message}</p> : null}
@@ -1232,6 +1780,27 @@ function ContactUpgradePrompt({ used, limit }: { used: number; limit: number }) 
   );
 }
 
+function EventUpgradePrompt({ used, limit }: { used: number; limit: number }) {
+  return (
+    <div className="grid gap-5">
+      <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="mt-0.5 size-5 text-amber-700" />
+          <div>
+            <h3 className="font-semibold text-amber-950">Free event limit reached</h3>
+            <p className="mt-1 text-sm leading-6 text-amber-900">
+              You are tracking {used} of {limit} free events or dates. Pro unlocks unlimited events.
+            </p>
+          </div>
+        </div>
+      </div>
+      <Button asChild className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
+        <Link href="/pricing">View Pro options</Link>
+      </Button>
+    </div>
+  );
+}
+
 function InlineUpgradePrompt() {
   return (
     <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
@@ -1239,6 +1808,22 @@ function InlineUpgradePrompt() {
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
           Free accounts include 5 targets.{" "}
+          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
+            View Pro options
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function InlineEventUpgradePrompt() {
+  return (
+    <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+      <div className="flex items-start gap-2">
+        <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
+        <p>
+          Free accounts include 3 events or dates.{" "}
           <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
             View Pro options
           </Link>

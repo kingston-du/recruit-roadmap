@@ -13,6 +13,7 @@ import { MyPlanWorkspace } from "@/components/recruit/my-plan-workspace";
 import { Panel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth";
+import { eventSelect, normalizeEvents } from "@/lib/events";
 import {
   groupTargetsByConnectedPath,
   mainPlanSelect,
@@ -28,7 +29,7 @@ export const dynamic = "force-dynamic";
 export default async function MyPlanPage() {
   const user = await requireUser("/my-plan");
   const supabase = await createClient();
-  const [planResult, targetsResult] = await Promise.all([
+  const [planResult, targetsResult, eventsResult] = await Promise.all([
     supabase
       .from("plans")
       .select(mainPlanSelect)
@@ -41,6 +42,11 @@ export default async function MyPlanPage() {
       .eq("user_id", user.id)
       .order("connected_path", { ascending: true })
       .order("updated_at", { ascending: false }),
+    supabase
+      .from("events")
+      .select(eventSelect)
+      .eq("user_id", user.id)
+      .order("start_date", { ascending: true }),
   ]);
   const plan = normalizeMainPlan(planResult.data);
 
@@ -62,6 +68,7 @@ export default async function MyPlanPage() {
 
   const paths = normalizePlanPaths(pathRows);
   const targetGroups = groupTargetsByConnectedPath(normalizeTargets(targetsResult.data));
+  const targetEvents = normalizeEvents(eventsResult.data);
 
   return (
     <AppShell
@@ -78,7 +85,7 @@ export default async function MyPlanPage() {
       }
     >
       <div className="grid gap-6">
-        {planResult.error || pathError || targetsResult.error ? (
+        {planResult.error || pathError || targetsResult.error || eventsResult.error ? (
           <Panel className="border-amber-200 bg-amber-50">
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 size-5 text-amber-700" />
@@ -93,6 +100,7 @@ export default async function MyPlanPage() {
           plan={plan}
           paths={paths}
           targetGroups={targetGroups}
+          targetEvents={targetEvents}
           saveMainPlanAction={saveMainPlanAction}
           createPlanPathAction={createPlanPathAction}
           updatePlanPathAction={updatePlanPathAction}

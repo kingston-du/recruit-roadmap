@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import {
   AlertCircle,
+  CalendarDays,
   CheckCircle2,
   Circle,
+  ExternalLink,
   Pencil,
   Plus,
   Save,
@@ -23,6 +25,13 @@ import type {
 } from "@/app/my-plan/actions";
 import { Panel, StatusPill } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
+import {
+  compareRecruitEvents,
+  eventTypeLabels,
+  formatEventCost,
+  formatEventDateRange,
+  type RecruitEvent,
+} from "@/lib/events";
 import {
   defaultPlanPathExamples,
   type ConnectedTargetGroup,
@@ -186,6 +195,7 @@ export function MyPlanWorkspace({
   plan,
   paths,
   targetGroups,
+  targetEvents,
   saveMainPlanAction,
   createPlanPathAction,
   updatePlanPathAction,
@@ -195,6 +205,7 @@ export function MyPlanWorkspace({
   plan: MainPlan | null;
   paths: PlanPath[];
   targetGroups: ConnectedTargetGroup[];
+  targetEvents: RecruitEvent[];
   saveMainPlanAction: MainPlanAction;
   createPlanPathAction: PlanPathAction;
   updatePlanPathAction: PlanPathAction;
@@ -221,7 +232,12 @@ export function MyPlanWorkspace({
 
   return (
     <div className="grid gap-6">
-      <PlanSummary plan={plan} pathCount={paths.length} targetGroupCount={targetGroups.length} />
+      <PlanSummary
+        plan={plan}
+        pathCount={paths.length}
+        targetGroupCount={targetGroups.length}
+        eventCount={targetEvents.length}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
         <div className="grid gap-6">
@@ -280,7 +296,7 @@ export function MyPlanWorkspace({
 
         <aside className="grid gap-6 xl:h-fit xl:sticky xl:top-28">
           <DefaultPathsPanel action={addDefaultPlanPathsAction} />
-          <TargetGroupsPanel targetGroups={targetGroups} />
+          <TargetGroupsPanel targetGroups={targetGroups} targetEvents={targetEvents} />
         </aside>
       </div>
 
@@ -316,10 +332,12 @@ function PlanSummary({
   plan,
   pathCount,
   targetGroupCount,
+  eventCount,
 }: {
   plan: MainPlan | null;
   pathCount: number;
   targetGroupCount: number;
+  eventCount: number;
 }) {
   return (
     <Panel className="bg-[#071a2f] text-white">
@@ -340,6 +358,7 @@ function PlanSummary({
           <div className="mt-3 grid gap-3 text-sm text-slate-300">
             <p>{pathCount} saved paths</p>
             <p>{targetGroupCount} target groups</p>
+            <p>{eventCount} linked dates</p>
             <p>{plan?.season ?? "Season not set"}</p>
           </div>
         </div>
@@ -738,7 +757,34 @@ function DefaultPathsPanel({ action }: { action: DefaultPathsAction }) {
   );
 }
 
-function TargetGroupsPanel({ targetGroups }: { targetGroups: ConnectedTargetGroup[] }) {
+function TargetGroupsPanel({
+  targetGroups,
+  targetEvents,
+}: {
+  targetGroups: ConnectedTargetGroup[];
+  targetEvents: RecruitEvent[];
+}) {
+  const eventsByTargetId = useMemo(() => {
+    const groupedEvents = new Map<string, RecruitEvent[]>();
+
+    targetEvents.forEach((event) => {
+      if (!event.target_id) {
+        return;
+      }
+
+      groupedEvents.set(event.target_id, [
+        ...(groupedEvents.get(event.target_id) ?? []),
+        event,
+      ]);
+    });
+
+    groupedEvents.forEach((events, targetId) => {
+      groupedEvents.set(targetId, [...events].sort(compareRecruitEvents));
+    });
+
+    return groupedEvents;
+  }, [targetEvents]);
+
   return (
     <Panel>
       <div className="flex items-center gap-2">
@@ -762,23 +808,28 @@ function TargetGroupsPanel({ targetGroups }: { targetGroups: ConnectedTargetGrou
                 <span className="ml-2 text-sm text-slate-500">{group.targets.length} options</span>
               </summary>
               <div className="mt-3 grid gap-2">
-                {group.targets.map((target) => (
-                  <div key={target.id} className="rounded-md bg-slate-50 p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-950">{target.name}</p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          {targetTypeLabels[target.target_type]}
-                          {target.level ? ` - ${target.level}` : ""}
-                        </p>
+                {group.targets.map((target) => {
+                  const events = eventsByTargetId.get(target.id) ?? [];
+
+                  return (
+                    <div key={target.id} className="rounded-md bg-slate-50 p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-950">{target.name}</p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {targetTypeLabels[target.target_type]}
+                            {target.level ? ` - ${target.level}` : ""}
+                          </p>
+                        </div>
+                        <StatusPill>{target.status}</StatusPill>
                       </div>
-                      <StatusPill>{target.status}</StatusPill>
+                      {target.next_step ? (
+                        <p className="mt-3 text-sm leading-6 text-slate-600">{target.next_step}</p>
+                      ) : null}
+                      {events.length > 0 ? <TargetEventList events={events} /> : null}
                     </div>
-                    {target.next_step ? (
-                      <p className="mt-3 text-sm leading-6 text-slate-600">{target.next_step}</p>
-                    ) : null}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </details>
           ))
@@ -800,5 +851,43 @@ function TargetGroupsPanel({ targetGroups }: { targetGroups: ConnectedTargetGrou
         )}
       </div>
     </Panel>
+  );
+}
+
+function TargetEventList({ events }: { events: RecruitEvent[] }) {
+  return (
+    <div className="mt-3 rounded-md bg-white p-3">
+      <div className="flex items-center gap-2">
+        <CalendarDays className="size-4 text-cyan-700" />
+        <p className="text-sm font-semibold text-slate-950">Linked dates</p>
+      </div>
+      <div className="mt-3 grid gap-2">
+        {events.map((event) => {
+          const cost = formatEventCost(event.cost);
+
+          return (
+            <div key={event.id} className="rounded-md border border-slate-200 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusPill tone="cyan">{eventTypeLabels[event.event_type]}</StatusPill>
+                <StatusPill tone={event.status === "Completed" ? "green" : "slate"}>{event.status}</StatusPill>
+              </div>
+              <p className="mt-2 text-sm font-semibold text-slate-950">{event.title}</p>
+              <p className="mt-1 text-sm leading-6 text-slate-600">{formatEventDateRange(event)}</p>
+              {cost ? <p className="mt-1 text-sm leading-6 text-slate-600">Cost: {cost}</p> : null}
+              {event.url ? (
+                <a
+                  href={event.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 flex items-center gap-2 break-all text-sm font-medium text-cyan-800 hover:text-cyan-900"
+                >
+                  <ExternalLink className="size-4 shrink-0" /> Event link
+                </a>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

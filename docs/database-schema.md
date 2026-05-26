@@ -46,7 +46,12 @@ while Pro accounts can create unlimited contacts.
 
 ### `events`
 
-Important dates such as camps, showcases, visits, tryouts, application deadlines, or follow-up dates. Events can optionally connect to a target.
+Important dates such as camps, showcases, visits, tryouts, calls,
+registration deadlines, or follow-up dates. Events can optionally connect to a
+target, store date range, registration deadline, cost, location, URL, notes, and
+status. RLS keeps events user-owned, a trigger ensures an event can only point
+at one of the user's own targets, and a trigger prevents free accounts from
+creating more than 3 events while Pro accounts can create unlimited events.
 
 ### `outreach_logs`
 
@@ -68,7 +73,7 @@ Requests for the optional paid setup assist. Signed-in users can create and mana
 
 - RLS is on for all 11 tables.
 - Most tables have one owner policy: the user can select, insert, update, and delete only rows where `user_id = auth.uid()`.
-- Contacts have an extra trigger-level guard so `target_id` cannot point to another user's target.
+- Contacts and events have extra trigger-level guards so `target_id` cannot point to another user's target.
 - `setup_assist_requests` also allows admins to view and update requests.
 - `subscriptions` allows users to view their own row and admins to view or update subscription rows.
 - The service role key should stay server-only. It is not needed in client code and should never be committed.
