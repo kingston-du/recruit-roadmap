@@ -3,6 +3,14 @@ export type SupabaseConfig = {
   publishableKey: string;
 };
 
+function normalizeSupabaseUrl(value: string) {
+  try {
+    return new URL(value).origin;
+  } catch {
+    return value;
+  }
+}
+
 export function getSupabaseConfig(): SupabaseConfig | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -11,7 +19,7 @@ export function getSupabaseConfig(): SupabaseConfig | null {
     return null;
   }
 
-  return { url, publishableKey };
+  return { url: normalizeSupabaseUrl(url), publishableKey };
 }
 
 export function getSupabaseConfigOrThrow(): SupabaseConfig {
