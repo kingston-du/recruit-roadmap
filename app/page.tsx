@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
+import { ImageBackdrop, ImagePanel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 
 const productPages: Array<{
@@ -280,7 +281,13 @@ export default function HomePage() {
               </ul>
             </div>
 
-            <div className="rounded-md border border-slate-200 bg-[#071a2f] p-6 text-white shadow-sm">
+            <ImagePanel
+              imageSrc="/images/hockey/sticks-detail.jpg"
+              imagePosition="center"
+              overlayClassName="bg-[#071a2f]/88"
+              gradientClassName="bg-gradient-to-br from-[#071a2f]/95 via-[#071a2f]/86 to-[#071a2f]/72"
+              className="border-slate-900/10 p-6"
+            >
               <p className="text-sm font-semibold text-cyan-100">Pro plan</p>
               <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
                 <h3 className="text-3xl font-semibold">$5/month</h3>
@@ -308,7 +315,7 @@ export default function HomePage() {
               >
                 <Link href="/pricing">View Pro options</Link>
               </Button>
-            </div>
+            </ImagePanel>
           </div>
         </div>
       </section>
@@ -349,8 +356,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-[#071a2f] text-white">
-        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-14 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:px-8">
+      <section className="relative overflow-hidden bg-[#071a2f] text-white">
+        <ImageBackdrop
+          imageSrc="/images/hockey/skates-lineup.jpg"
+          imagePosition="center 58%"
+          overlayClassName="bg-[#071a2f]/88"
+          gradientClassName="bg-gradient-to-r from-[#071a2f]/96 via-[#071a2f]/90 to-[#071a2f]/76"
+        />
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-5 py-14 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:px-8">
           <div>
             <p className="text-sm font-semibold text-cyan-100">Plain-English disclaimer</p>
             <h2 className="mt-3 text-3xl font-semibold">

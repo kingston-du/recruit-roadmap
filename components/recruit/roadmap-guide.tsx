@@ -19,6 +19,29 @@ import { StatusPill } from "@/components/recruit/ui";
 import { cn } from "@/lib/utils";
 import type { RoadmapCard, RoadmapSection } from "@/lib/mock-data";
 
+const sectionVisuals = [
+  {
+    imageSrc: "/images/hockey/skates-lineup.jpg",
+    imagePosition: "center 58%",
+  },
+  {
+    imageSrc: "/images/hockey/on-ice-action.jpg",
+    imagePosition: "center",
+  },
+  {
+    imageSrc: "/images/hockey/sticks-detail.jpg",
+    imagePosition: "center 52%",
+  },
+  {
+    imageSrc: "/images/hockey/empty-rink.jpg",
+    imagePosition: "center 48%",
+  },
+  {
+    imageSrc: "/images/hockey/on-ice-action.jpg",
+    imagePosition: "center 58%",
+  },
+];
+
 export function RoadmapGuide({ sections }: { sections: RoadmapSection[] }) {
   return (
     <section id="roadmap-guide" className="grid gap-5">
@@ -60,6 +83,24 @@ export function RoadmapGuide({ sections }: { sections: RoadmapSection[] }) {
           <section key={section.title} className="grid gap-4">
             <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
               <div className="md:sticky md:top-28">
+                <div className="relative mb-3 hidden h-24 overflow-hidden rounded-md border border-slate-200 bg-slate-100 shadow-sm md:block">
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url("${
+                        sectionVisuals[sectionIndex]?.imageSrc ?? sectionVisuals[0].imageSrc
+                      }")`,
+                      backgroundPosition:
+                        sectionVisuals[sectionIndex]?.imagePosition ??
+                        sectionVisuals[0].imagePosition,
+                    }}
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-[#071a2f]/62 via-[#071a2f]/14 to-white/0"
+                  />
+                </div>
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-cyan-800">
                   Row {sectionIndex + 1}
                 </p>

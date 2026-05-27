@@ -1,5 +1,72 @@
 import { cn } from "@/lib/utils";
 
+export function ImageBackdrop({
+  imageSrc,
+  imagePosition = "center",
+  overlayClassName,
+  gradientClassName,
+}: {
+  imageSrc: string;
+  imagePosition?: string;
+  overlayClassName?: string;
+  gradientClassName?: string;
+}) {
+  return (
+    <>
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `url("${imageSrc}")`,
+          backgroundPosition: imagePosition,
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className={cn("absolute inset-0 bg-[#071a2f]/82", overlayClassName)}
+      />
+      {gradientClassName ? (
+        <div aria-hidden="true" className={cn("absolute inset-0", gradientClassName)} />
+      ) : null}
+    </>
+  );
+}
+
+export function ImagePanel({
+  children,
+  className,
+  contentClassName,
+  imageSrc,
+  imagePosition,
+  overlayClassName,
+  gradientClassName,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  contentClassName?: string;
+  imageSrc: string;
+  imagePosition?: string;
+  overlayClassName?: string;
+  gradientClassName?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-md border border-slate-200 bg-[#071a2f] text-white shadow-sm",
+        className,
+      )}
+    >
+      <ImageBackdrop
+        imageSrc={imageSrc}
+        imagePosition={imagePosition}
+        overlayClassName={overlayClassName}
+        gradientClassName={gradientClassName}
+      />
+      <div className={cn("relative", contentClassName)}>{children}</div>
+    </div>
+  );
+}
+
 export function Panel({
   children,
   className,

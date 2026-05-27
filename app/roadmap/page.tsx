@@ -3,7 +3,7 @@ import { ClipboardList, Map, Target } from "lucide-react";
 
 import { AppShell } from "@/components/recruit/app-shell";
 import { RoadmapGuide } from "@/components/recruit/roadmap-guide";
-import { Panel } from "@/components/recruit/ui";
+import { ImagePanel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 import { roadmapSections } from "@/lib/mock-data";
 
@@ -47,7 +47,13 @@ export default function RoadmapPage() {
       }
     >
       <div className="grid gap-6">
-        <Panel className="overflow-hidden bg-[#071a2f] text-white">
+        <ImagePanel
+          imageSrc="/images/hockey/empty-rink.jpg"
+          imagePosition="center 48%"
+          overlayClassName="bg-[#071a2f]/84"
+          gradientClassName="bg-gradient-to-r from-[#071a2f]/96 via-[#071a2f]/88 to-[#071a2f]/70"
+          className="p-5"
+        >
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
             <div className="max-w-3xl">
               <div className="flex items-center gap-2 text-cyan-100">
@@ -102,7 +108,7 @@ export default function RoadmapPage() {
               </p>
             </div>
           </div>
-        </Panel>
+        </ImagePanel>
 
         <RoadmapGuide sections={roadmapSections} />
       </div>
