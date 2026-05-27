@@ -17,7 +17,7 @@ export default async function SettingsPage() {
         <Panel>
           <h2 className="text-xl font-semibold tracking-tight">Account</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            This is the email used to log in to Recruit Roadmap.
+            This is the email used to log in to Hockey Pathway.
           </p>
           <div className="mt-5 rounded-md border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm font-medium text-slate-500">Email</p>

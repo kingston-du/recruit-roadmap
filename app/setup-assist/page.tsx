@@ -78,7 +78,7 @@ export default async function SetupAssistPage() {
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
                 Setup Assist is for organizing user-provided targets, contacts, dates,
-                and profile links inside Recruit Roadmap. It is optional.
+                and profile links inside Hockey Pathway. It is optional.
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-white/5 p-5">

@@ -27,10 +27,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <section className="max-w-xl">
           <Link href="/" className="inline-flex items-center gap-3">
             <span className="flex size-10 items-center justify-center rounded-md bg-[#071a2f] text-sm font-semibold text-white">
-              RR
+              HP
             </span>
             <span>
-              <span className="block text-sm font-semibold">Recruit Roadmap</span>
+              <span className="block text-sm font-semibold">Hockey Pathway</span>
               <span className="block text-xs text-slate-500">Hockey family plan</span>
             </span>
           </Link>

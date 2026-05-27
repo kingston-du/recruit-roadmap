@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Recruit Roadmap Hockey",
+  title: "Hockey Pathway",
   description:
-    "A freemium hockey recruiting roadmap and planning app for families.",
+    "A freemium hockey recruiting pathway and planning app for families.",
 };
 
 export default function RootLayout({

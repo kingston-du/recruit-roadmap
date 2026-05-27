@@ -45,10 +45,10 @@ export function AppShell({
         <div className="flex h-full flex-col p-5">
           <Link href="/today" className="flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-md bg-cyan-100 text-sm font-semibold text-[#071a2f]">
-              RR
+              HP
             </div>
             <div>
-              <p className="text-sm font-semibold">Recruit Roadmap</p>
+              <p className="text-sm font-semibold">Hockey Pathway</p>
               <p className="text-xs text-slate-300">Hockey family plan</p>
             </div>
           </Link>
@@ -151,7 +151,7 @@ export function AppShell({
 
         <footer className="border-t border-slate-200 bg-white px-5 py-5 text-sm text-slate-600 lg:px-8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <p>Recruit Roadmap is a planning tool, not a recruiting service.</p>
+            <p>Hockey Pathway is a planning tool, not a recruiting service.</p>
             <LegalFooterLinks
               className="flex flex-wrap gap-4"
               linkClassName="hover:text-cyan-800"

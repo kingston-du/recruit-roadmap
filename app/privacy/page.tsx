@@ -27,7 +27,7 @@ const privacySections = [
   {
     title: "Your responsibility",
     body: [
-      "Users must verify team, league, school, NCAA, and eligibility information independently. Information saved in Recruit Roadmap may become outdated or may be entered incorrectly.",
+      "Users must verify team, league, school, NCAA, and eligibility information independently. Information saved in Hockey Pathway may become outdated or may be entered incorrectly.",
       "This is not a recruiting agency, scouting service, or legal/eligibility advisor.",
     ],
   },
@@ -45,13 +45,13 @@ export default function PrivacyPage() {
       <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-3xl flex-col">
         <article className="flex-1">
           <Link href="/" className="text-sm font-semibold text-cyan-800">
-            Recruit Roadmap
+            Hockey Pathway
           </Link>
           <p className="mt-8 text-sm font-semibold text-cyan-800">Last updated May 26, 2026</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight">Privacy</h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            This early MVP privacy page explains, in plain language, what Recruit
-            Roadmap is trying to collect and why.
+            This early MVP privacy page explains, in plain language, what Hockey
+            Pathway is trying to collect and why.
           </p>
 
           <div className="mt-10 grid gap-8">

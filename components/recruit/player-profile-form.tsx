@@ -333,7 +333,7 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           defaultValue={profile?.video_links.join("\n")}
           rows={4}
           placeholder="One URL per line"
-          helperText="Optional while you get started. Paste links your family already has. Recruit Roadmap does not scrape video or profile sites."
+          helperText="Optional while you get started. Paste links your family already has. Hockey Pathway does not scrape video or profile sites."
           state={state}
         />
         <div className="grid gap-4 md:grid-cols-2">

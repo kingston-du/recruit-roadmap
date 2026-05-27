@@ -81,7 +81,7 @@ export default function PricingPage() {
       <div className="mx-auto max-w-6xl px-5 py-10 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between gap-4">
           <Link href="/" className="font-semibold text-[#071a2f]">
-            Recruit Roadmap
+            Hockey Pathway
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" className="hidden rounded-md sm:inline-flex">
@@ -199,7 +199,7 @@ export default function PricingPage() {
 
         <footer className="mt-10 border-t border-slate-200 pt-6">
           <div className="flex flex-col gap-3 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
-            <p>Recruit Roadmap is a planning tool for hockey families.</p>
+            <p>Hockey Pathway is a planning tool for hockey families.</p>
             <LegalFooterLinks
               className="flex flex-wrap gap-4"
               linkClassName="hover:text-cyan-800"

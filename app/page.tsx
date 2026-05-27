@@ -132,10 +132,10 @@ export default function HomePage() {
           <header className="flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-3">
               <span className="flex size-10 items-center justify-center rounded-md bg-white text-sm font-semibold text-[#071a2f]">
-                RR
+                HP
               </span>
               <span>
-                <span className="block text-sm font-semibold">Recruit Roadmap</span>
+                <span className="block text-sm font-semibold">Hockey Pathway</span>
                 <span className="block text-xs text-cyan-100">Hockey family plan</span>
               </span>
             </Link>
@@ -165,7 +165,7 @@ export default function HomePage() {
                 Organize your hockey recruiting path without messy spreadsheets.
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-100">
-                Recruit Roadmap helps parents and players keep targets, coach contacts,
+                Hockey Pathway helps parents and players keep targets, coach contacts,
                 camps, videos, dates, and next steps together so the week feels clear.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -253,7 +253,7 @@ export default function HomePage() {
             eyebrow="Start free"
             title="Begin with 5 targets before you decide to upgrade."
           >
-            Recruit Roadmap is built for families who want to get organized first.
+            Hockey Pathway is built for families who want to get organized first.
             Start with the free plan, then move to Pro only when tracking grows.
           </SectionHeading>
 
@@ -358,7 +358,7 @@ export default function HomePage() {
             </h2>
           </div>
           <p className="text-base leading-8 text-slate-200">
-            Recruit Roadmap is not a recruiting agency, scouting service, coach/player
+            Hockey Pathway is not a recruiting agency, scouting service, coach/player
             marketplace, or guarantee of roster spots, scholarships, coach responses,
             or outcomes. It helps your family stay organized while you do your own
             research and outreach.
@@ -387,7 +387,7 @@ export default function HomePage() {
 
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-8 text-sm text-slate-600 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <p>Recruit Roadmap is a planning tool for hockey families.</p>
+          <p>Hockey Pathway is a planning tool for hockey families.</p>
           <LegalFooterLinks
             className="flex flex-wrap gap-4"
             linkClassName="hover:text-cyan-800"

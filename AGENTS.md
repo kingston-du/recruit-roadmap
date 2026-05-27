@@ -5,7 +5,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- END:nextjs-agent-rules -->
 
 
-# Hockey Recruiting Roadmap App
+# Hockey Pathway App
 
 ## Product direction
 

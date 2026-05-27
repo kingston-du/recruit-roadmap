@@ -1,4 +1,4 @@
--- Freemium MVP schema for the Hockey Recruiting Roadmap app.
+-- Freemium MVP schema for the Hockey Pathway app.
 -- This migration keeps the data model intentionally simple: UUID primary keys,
 -- user-owned rows, text status fields, and RLS policies for every private table.
 

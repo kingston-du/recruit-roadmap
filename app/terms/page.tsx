@@ -6,7 +6,7 @@ const termsSections = [
   {
     title: "What this service is",
     body: [
-      "Recruit Roadmap is a planning and organization tool for hockey families. It helps users track their own player profile details, target teams or schools, coach contact notes, camps, dates, links, and next steps.",
+      "Hockey Pathway is a planning and organization tool for hockey families. It helps users track their own player profile details, target teams or schools, coach contact notes, camps, dates, links, and next steps.",
       "This is not a recruiting agency, scouting service, or legal/eligibility advisor.",
     ],
   },
@@ -46,13 +46,13 @@ export default function TermsPage() {
       <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-3xl flex-col">
         <article className="flex-1">
           <Link href="/" className="text-sm font-semibold text-cyan-800">
-            Recruit Roadmap
+            Hockey Pathway
           </Link>
           <p className="mt-8 text-sm font-semibold text-cyan-800">Last updated May 26, 2026</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight">Terms</h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
             These early MVP terms are written for hockey families, not lawyers. By
-            using Recruit Roadmap, you agree to use it as an organization tool and
+            using Hockey Pathway, you agree to use it as an organization tool and
             to verify important recruiting information yourself.
           </p>
 

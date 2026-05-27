@@ -6,7 +6,7 @@ const disclaimerSections = [
   {
     title: "Planning tool only",
     body: [
-      "Recruit Roadmap helps families organize targets, dates, contacts, profile links, notes, and next steps. This is not a recruiting agency, scouting service, or legal/eligibility advisor.",
+      "Hockey Pathway helps families organize targets, dates, contacts, profile links, notes, and next steps. This is not a recruiting agency, scouting service, or legal/eligibility advisor.",
       "The app does not evaluate players, rank players, decide where players should go, send messages to coaches, or scrape recruiting websites.",
     ],
   },
@@ -44,12 +44,12 @@ export default function DisclaimerPage() {
       <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-3xl flex-col">
         <article className="flex-1">
           <Link href="/" className="text-sm font-semibold text-cyan-800">
-            Recruit Roadmap
+            Hockey Pathway
           </Link>
           <p className="mt-8 text-sm font-semibold text-cyan-800">Last updated May 26, 2026</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight">Disclaimer</h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            This page keeps the boundary clear: Recruit Roadmap is for organizing
+            This page keeps the boundary clear: Hockey Pathway is for organizing
             family recruiting work, not for promising or deciding recruiting results.
           </p>
 
