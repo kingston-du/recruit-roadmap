@@ -167,7 +167,6 @@ export const playerProfileFormSchema = z.object({
     .trim()
     .max(2000, "Video links must be 2,000 characters or fewer.")
     .transform(splitVideoLinks)
-    .refine((links) => links.length > 0, "Add at least one video link.")
     .refine((links) => links.length <= 12, "Add 12 or fewer video links.")
     .refine((links) => links.every(isValidUrl), "Enter one valid URL per line."),
   elite_prospects_url: optionalUrl("Elite Prospects URL"),

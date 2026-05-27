@@ -396,6 +396,17 @@ function revalidateEventViews() {
   revalidatePath("/my-plan");
 }
 
+function revalidateTargetViews() {
+  revalidatePath("/targets");
+  revalidatePath("/today");
+  revalidatePath("/my-plan");
+}
+
+function revalidateContactViews() {
+  revalidatePath("/targets");
+  revalidatePath("/today");
+}
+
 function revalidateOutreachViews() {
   revalidatePath("/targets");
   revalidatePath("/today");
@@ -433,7 +444,7 @@ export async function createTargetAction(
     return formatDatabaseError(error.message);
   }
 
-  revalidatePath("/targets");
+  revalidateTargetViews();
 
   return {
     message: "Target added.",
@@ -481,7 +492,7 @@ export async function createContactAction(
     return formatContactDatabaseError(error.message);
   }
 
-  revalidatePath("/targets");
+  revalidateContactViews();
 
   return {
     message: "Contact added.",
@@ -633,7 +644,7 @@ export async function updateTargetAction(
     };
   }
 
-  revalidatePath("/targets");
+  revalidateTargetViews();
 
   return {
     message: "Target updated.",
@@ -689,7 +700,7 @@ export async function updateContactAction(
     };
   }
 
-  revalidatePath("/targets");
+  revalidateContactViews();
 
   return {
     message: "Contact updated.",
@@ -855,7 +866,7 @@ export async function deleteTargetAction(
     };
   }
 
-  revalidatePath("/targets");
+  revalidateTargetViews();
 
   return {
     message: "Target deleted.",
@@ -897,7 +908,7 @@ export async function deleteContactAction(
     };
   }
 
-  revalidatePath("/targets");
+  revalidateContactViews();
 
   return {
     message: "Contact deleted.",

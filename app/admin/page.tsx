@@ -522,8 +522,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <div className="flex items-start gap-3">
             <ClipboardList className="mt-0.5 size-5 text-cyan-800" />
             <p className="text-sm leading-6 text-cyan-950">
-              Admin access is checked on the server against ADMIN_EMAILS before any dashboard data or plan
-              action runs.
+              Admin access is checked on the server against Supabase Auth app metadata before any
+              dashboard data or plan action runs.
             </p>
           </div>
         </Panel>

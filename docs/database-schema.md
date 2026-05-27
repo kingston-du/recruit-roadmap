@@ -75,8 +75,8 @@ The freemium/pro account state. Each user gets a default `free` subscription row
 
 Requests for the optional paid setup assist. Signed-in users can submit their
 parent/player name, email, player name, help needed, goals, pasted target list,
-coach contacts, camp/date links, and notes. Owners and admins can view requests;
-admins can update the request status and internal notes.
+coach contacts, camp/date links, and notes. Admins can view requests and update
+the request status and internal notes.
 
 ## Security Model
 

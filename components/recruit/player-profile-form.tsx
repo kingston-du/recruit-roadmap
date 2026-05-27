@@ -31,6 +31,9 @@ type TextFieldProps = {
   defaultValue?: string | null;
   required?: boolean;
   type?: "text" | "number" | "url";
+  min?: string;
+  max?: string;
+  step?: string;
   placeholder?: string;
   helperText?: string;
   autoComplete?: string;
@@ -68,6 +71,9 @@ function TextField({
   defaultValue,
   required,
   type = "text",
+  min,
+  max,
+  step,
   placeholder,
   helperText,
   autoComplete,
@@ -86,6 +92,9 @@ function TextField({
         id={name}
         name={name}
         type={type}
+        min={min}
+        max={max}
+        step={step}
         defaultValue={defaultValue ?? ""}
         required={required}
         placeholder={placeholder}
@@ -290,6 +299,9 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           label="GPA"
           defaultValue={profile?.gpa}
           type="number"
+          min="0"
+          max="5"
+          step="0.01"
           placeholder="3.7"
           helperText="Optional. Add it only if your family wants academics visible here."
           state={state}
@@ -319,10 +331,9 @@ export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
           name="video_links_text"
           label="Video links"
           defaultValue={profile?.video_links.join("\n")}
-          required
           rows={4}
           placeholder="One URL per line"
-          helperText="Paste links your family already has. Recruit Roadmap does not scrape video or profile sites."
+          helperText="Optional while you get started. Paste links your family already has. Recruit Roadmap does not scrape video or profile sites."
           state={state}
         />
         <div className="grid gap-4 md:grid-cols-2">

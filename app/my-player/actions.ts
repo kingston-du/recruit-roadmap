@@ -43,6 +43,7 @@ export async function savePlayerProfileAction(
   }
 
   revalidatePath("/my-player");
+  revalidatePath("/today");
 
   return {
     message: "Player profile saved.",

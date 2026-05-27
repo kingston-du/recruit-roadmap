@@ -42,6 +42,11 @@ export type DefaultPathsState = {
   success?: boolean;
 };
 
+function revalidatePlanViews() {
+  revalidatePath("/my-plan");
+  revalidatePath("/today");
+}
+
 async function findMainPlanId(userId: string) {
   const supabase = await createClient();
   const { data: mainPlan, error: mainError } = await supabase
@@ -210,7 +215,7 @@ export async function saveMainPlanAction(
     }
   }
 
-  revalidatePath("/my-plan");
+  revalidatePlanViews();
 
   return {
     message: "Plan saved.",
@@ -256,7 +261,7 @@ export async function createPlanPathAction(
     };
   }
 
-  revalidatePath("/my-plan");
+  revalidatePlanViews();
 
   return {
     message: "Path added.",
@@ -294,7 +299,7 @@ export async function updatePlanPathAction(
     };
   }
 
-  revalidatePath("/my-plan");
+  revalidatePlanViews();
 
   return {
     message: "Path saved.",
@@ -330,7 +335,7 @@ export async function deletePlanPathAction(
     };
   }
 
-  revalidatePath("/my-plan");
+  revalidatePlanViews();
 
   return {
     message: "Path deleted.",
@@ -390,7 +395,7 @@ export async function addDefaultPlanPathsAction(): Promise<DefaultPathsState> {
     };
   }
 
-  revalidatePath("/my-plan");
+  revalidatePlanViews();
 
   return {
     message: "Path examples added.",

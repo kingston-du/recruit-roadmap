@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { Dialog } from "radix-ui";
 import {
   AlertCircle,
   CalendarDays,
@@ -590,33 +591,35 @@ function PathDrawer({
   children: ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50">
-      <button
-        type="button"
-        aria-label="Close path drawer"
-        onClick={onClose}
-        className="absolute inset-0 bg-slate-950/35"
-      />
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className="absolute inset-y-0 right-0 flex w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl"
-      >
-        <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-950">{title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close path drawer"
-            className="flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-5 py-5">{children}</div>
-      </section>
-    </div>
+    <Dialog.Root
+      open
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose();
+        }
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-slate-950/35" />
+        <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl outline-none">
+          <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
+            <Dialog.Title className="text-xl font-semibold tracking-tight text-slate-950">
+              {title}
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                aria-label="Close path drawer"
+                className="flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+              >
+                <X className="size-4" />
+              </button>
+            </Dialog.Close>
+          </div>
+          <div className="flex-1 overflow-y-auto px-5 py-5">{children}</div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
