@@ -37,10 +37,41 @@ const sectionVisuals = [
     imagePosition: "center 48%",
   },
   {
-    imageSrc: "/images/hockey/on-ice-action.jpg",
-    imagePosition: "center 58%",
+    imageSrc: "/images/hockey/outcomes-celebration.jpg",
+    imagePosition: "center 34%",
   },
 ];
+
+const juniorBadgeVisuals: Record<string, { label: string; className: string }> = {
+  ushl: {
+    label: "US",
+    className: "border-cyan-200 bg-cyan-50 text-cyan-800",
+  },
+  chl: {
+    label: "CA",
+    className: "border-rose-200 bg-rose-50 text-rose-800",
+  },
+  nahl: {
+    label: "NA",
+    className: "border-sky-200 bg-sky-50 text-sky-800",
+  },
+  ncdc: {
+    label: "NC",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  },
+  ehl: {
+    label: "EH",
+    className: "border-violet-200 bg-violet-50 text-violet-800",
+  },
+  "usphl-premier": {
+    label: "UP",
+    className: "border-amber-200 bg-amber-50 text-amber-800",
+  },
+  na3hl: {
+    label: "N3",
+    className: "border-slate-300 bg-slate-100 text-slate-700",
+  },
+};
 
 export function RoadmapGuide({ sections }: { sections: RoadmapSection[] }) {
   return (
@@ -144,19 +175,22 @@ function RoadmapCardDialog({
           type="button"
           aria-label={`Open ${card.name} details`}
           className={cn(
-            "group flex min-h-44 flex-col rounded-md border border-slate-200 bg-white p-4 text-left shadow-sm transition",
+            "smooth-card group flex min-h-44 flex-col rounded-md border border-slate-200 bg-white p-4 text-left shadow-sm",
             "hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-cyan-50/40 hover:shadow-md",
             "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200",
           )}
         >
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-lg font-semibold tracking-tight text-slate-950">{card.name}</p>
-              <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
-                {card.label}
-              </p>
+            <div className="flex min-w-0 items-start gap-3">
+              <JuniorLeagueBadge cardId={card.id} />
+              <div className="min-w-0">
+                <p className="text-lg font-semibold tracking-tight text-slate-950">{card.name}</p>
+                <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                  {card.label}
+                </p>
+              </div>
             </div>
-            <ArrowRight className="size-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-cyan-700" />
+            <ArrowRight className="size-4 text-slate-400 transition-[color,transform] duration-200 ease-out group-hover:translate-x-0.5 group-hover:text-cyan-700" />
           </div>
 
           <p className="mt-3 text-sm leading-6 text-slate-600">{card.description}</p>
@@ -196,7 +230,7 @@ function RoadmapCardDialog({
               <button
                 type="button"
                 aria-label="Close details"
-                className="flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
+                className="smooth-action flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
               >
                 <X className="size-4" />
               </button>
@@ -252,6 +286,26 @@ function RoadmapCardDialog({
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+}
+
+function JuniorLeagueBadge({ cardId }: { cardId: string }) {
+  const badge = juniorBadgeVisuals[cardId];
+
+  if (!badge) {
+    return null;
+  }
+
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex size-10 shrink-0 items-center justify-center rounded-md border text-xs font-bold",
+        badge.className,
+      )}
+    >
+      {badge.label}
+    </span>
   );
 }
 

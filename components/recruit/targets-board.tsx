@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Dialog } from "radix-ui";
 import {
@@ -197,7 +197,7 @@ function fieldError<FieldName extends string>(state: FieldState<FieldName>, name
 
 function fieldClass(hasError: boolean) {
   return cn(
-    "min-h-10 rounded-md border bg-white px-3 text-base text-slate-950 outline-none ring-cyan-700/20 focus:border-cyan-700 focus:ring-4",
+    "smooth-field min-h-10 rounded-md border bg-white px-3 text-base text-slate-950 outline-none ring-cyan-700/20 focus:border-cyan-700 focus:ring-4",
     hasError ? "border-red-300" : "border-slate-300",
   );
 }
@@ -377,6 +377,8 @@ export function TargetsBoard({
   deleteOutreachLogAction,
 }: TargetsBoardProps) {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(targets[0]?.id ?? null);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(contacts[0]?.id ?? null);
   const [contactTargetId, setContactTargetId] = useState<string | null>(null);
@@ -481,19 +483,37 @@ export function TargetsBoard({
     },
   ].filter((prompt) => prompt.reached);
 
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+    };
+  }, []);
+
+  function openDrawer(mode: NonNullable<DrawerMode>) {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+
+    setDrawerMode(mode);
+    setDrawerOpen(true);
+  }
+
   function openCreateDrawer() {
-    setDrawerMode(limitReached ? "upgrade" : "create");
+    openDrawer(limitReached ? "upgrade" : "create");
   }
 
   function openDetailDrawer(target: Target) {
     setSelectedId(target.id);
-    setDrawerMode("detail");
+    openDrawer("detail");
   }
 
   function openCreateContactDrawer(targetId: string | null = null) {
     setContactTargetId(targetId);
     setSelectedContactId(null);
-    setDrawerMode(contactLimitReached ? "contact-upgrade" : "create-contact");
+    openDrawer(contactLimitReached ? "contact-upgrade" : "create-contact");
   }
 
   function openEditContactDrawer(contact: Contact) {
@@ -504,13 +524,13 @@ export function TargetsBoard({
       setSelectedId(contact.target_id);
     }
 
-    setDrawerMode("edit-contact");
+    openDrawer("edit-contact");
   }
 
   function openCreateEventDrawer(targetId: string | null = null) {
     setEventTargetId(targetId);
     setSelectedEventId(null);
-    setDrawerMode(eventLimitReached ? "event-upgrade" : "create-event");
+    openDrawer(eventLimitReached ? "event-upgrade" : "create-event");
   }
 
   function openEditEventDrawer(event: RecruitEvent) {
@@ -521,30 +541,39 @@ export function TargetsBoard({
       setSelectedId(event.target_id);
     }
 
-    setDrawerMode("edit-event");
+    openDrawer("edit-event");
   }
 
   function openCreateOutreachLogDrawer(targetId: string) {
     setOutreachTargetId(targetId);
     setSelectedOutreachLogId(null);
-    setDrawerMode(outreachLogLimitReached ? "outreach-upgrade" : "create-outreach");
+    openDrawer(outreachLogLimitReached ? "outreach-upgrade" : "create-outreach");
   }
 
   function openEditOutreachLogDrawer(outreachLog: OutreachLog) {
     setSelectedOutreachLogId(outreachLog.id);
     setOutreachTargetId(outreachLog.target_id);
     setSelectedId(outreachLog.target_id);
-    setDrawerMode("edit-outreach");
+    openDrawer("edit-outreach");
   }
 
   function closeDrawer() {
-    setDrawerMode(null);
+    setDrawerOpen(false);
+
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+    }
+
+    closeTimerRef.current = setTimeout(() => {
+      setDrawerMode(null);
+      closeTimerRef.current = null;
+    }, 200);
   }
 
   function handleContactSaved() {
     if (contactTargetId) {
       setSelectedId(contactTargetId);
-      setDrawerMode("detail");
+      openDrawer("detail");
       return;
     }
 
@@ -554,7 +583,7 @@ export function TargetsBoard({
   function handleContactEdited(contact: Contact) {
     if (contact.target_id) {
       setSelectedId(contact.target_id);
-      setDrawerMode("detail");
+      openDrawer("detail");
       return;
     }
 
@@ -564,7 +593,7 @@ export function TargetsBoard({
   function handleEventSaved() {
     if (eventTargetId) {
       setSelectedId(eventTargetId);
-      setDrawerMode("detail");
+      openDrawer("detail");
       return;
     }
 
@@ -574,7 +603,7 @@ export function TargetsBoard({
   function handleEventEdited(event: RecruitEvent) {
     if (event.target_id) {
       setSelectedId(event.target_id);
-      setDrawerMode("detail");
+      openDrawer("detail");
       return;
     }
 
@@ -584,7 +613,7 @@ export function TargetsBoard({
   function handleOutreachLogSaved() {
     if (outreachTargetId) {
       setSelectedId(outreachTargetId);
-      setDrawerMode("detail");
+      openDrawer("detail");
       return;
     }
 
@@ -593,7 +622,7 @@ export function TargetsBoard({
 
   function handleOutreachLogEdited(outreachLog: OutreachLog) {
     setSelectedId(outreachLog.target_id);
-    setDrawerMode("detail");
+    openDrawer("detail");
   }
 
   return (
@@ -695,7 +724,11 @@ export function TargetsBoard({
       />
 
       {drawerMode ? (
-        <TargetDrawer title={drawerTitle(drawerMode, selectedTarget, selectedContact)} onClose={closeDrawer}>
+        <TargetDrawer
+          open={drawerOpen}
+          title={drawerTitle(drawerMode, selectedTarget, selectedContact)}
+          onClose={closeDrawer}
+        >
           {drawerMode === "create" ? (
             <TargetForm
               key="create-target"
@@ -717,7 +750,7 @@ export function TargetsBoard({
               isPro={isPro}
               freeContactLimit={freeContactLimit}
               freeEventLimit={freeEventLimit}
-              onEdit={() => setDrawerMode("edit")}
+              onEdit={() => openDrawer("edit")}
               onClose={closeDrawer}
               onAddContact={() => openCreateContactDrawer(selectedTarget.id)}
               onEditContact={openEditContactDrawer}
@@ -907,11 +940,12 @@ function TargetCard({
       type="button"
       aria-pressed={isSelected}
       onClick={onClick}
-      className={
+      className={cn(
+        "smooth-card rounded-md bg-white p-4 text-left shadow-sm focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200",
         isSelected
-          ? "rounded-md border border-cyan-500 bg-white p-4 text-left shadow-sm ring-2 ring-cyan-100"
-          : "rounded-md border border-slate-200 bg-white p-4 text-left shadow-sm hover:border-cyan-200 hover:bg-cyan-50/40"
-      }
+          ? "border border-cyan-500 ring-2 ring-cyan-100"
+          : "border border-slate-200 hover:border-cyan-200 hover:bg-cyan-50/40 hover:shadow-md",
+      )}
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="font-semibold tracking-tight text-slate-950">{target.name}</h3>
@@ -959,17 +993,19 @@ function TargetCard({
 }
 
 function TargetDrawer({
+  open,
   title,
   onClose,
   children,
 }: {
+  open: boolean;
   title: string;
   onClose: () => void;
   children: ReactNode;
 }) {
   return (
     <Dialog.Root
-      open
+      open={open}
       onOpenChange={(open) => {
         if (!open) {
           onClose();
@@ -977,8 +1013,14 @@ function TargetDrawer({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-slate-950/35" />
-        <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl outline-none">
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-slate-950/35 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0" />
+        <Dialog.Content
+          className={cn(
+            "fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100vh-1.5rem)] flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-2xl outline-none",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom-6 data-[state=closed]:slide-out-to-bottom-6",
+            "md:inset-y-3 md:left-auto md:right-3 md:w-[min(672px,calc(100vw-2rem))] md:max-h-none md:data-[state=open]:slide-in-from-right-6 md:data-[state=closed]:slide-out-to-right-6",
+          )}
+        >
           <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
             <Dialog.Title className="text-xl font-semibold tracking-tight text-slate-950">
               {title}
@@ -987,7 +1029,7 @@ function TargetDrawer({
               <button
                 type="button"
                 aria-label="Close drawer"
-                className="flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                className="smooth-action flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
               >
                 <X className="size-4" />
               </button>
@@ -1858,7 +1900,7 @@ function EventItem({
   const cost = formatEventCost(event.cost);
 
   return (
-    <section className="rounded-md border border-slate-200 bg-white p-3">
+    <section className="smooth-card rounded-md border border-slate-200 bg-white p-3 hover:border-cyan-200 hover:shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap gap-2">
@@ -1896,7 +1938,7 @@ function EventItem({
             href={event.url}
             target="_blank"
             rel="noreferrer"
-            className="flex items-start gap-2 break-all font-medium text-cyan-800 hover:text-cyan-900"
+            className="flex items-start gap-2 break-all font-medium text-cyan-800 underline-offset-4 hover:text-cyan-900 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
           >
             <ExternalLink className="mt-1 size-4 shrink-0" /> {event.url}
           </a>
@@ -1982,7 +2024,7 @@ function OutreachLogItem({
   deleteOutreachLogAction: OutreachLogDeleteAction;
 }) {
   return (
-    <section className="rounded-md border border-slate-200 bg-white p-3">
+    <section className="smooth-card rounded-md border border-slate-200 bg-white p-3 hover:border-cyan-200 hover:shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap gap-2">
@@ -2150,7 +2192,7 @@ function ContactItem({
   deleteContactAction: ContactDeleteAction;
 }) {
   return (
-    <section className="rounded-md border border-slate-200 bg-white p-3">
+    <section className="smooth-card rounded-md border border-slate-200 bg-white p-3 hover:border-cyan-200 hover:shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-semibold tracking-tight text-slate-950">{contact.name}</p>
@@ -2181,7 +2223,7 @@ function ContactItem({
             href={contact.source_url}
             target="_blank"
             rel="noreferrer"
-            className="flex items-start gap-2 break-all font-medium text-cyan-800 hover:text-cyan-900"
+            className="flex items-start gap-2 break-all font-medium text-cyan-800 underline-offset-4 hover:text-cyan-900 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
           >
             <Link2 className="mt-1 size-4 shrink-0" /> Source: {contact.source_url}
           </a>
@@ -2244,7 +2286,7 @@ function TargetLink({ label, href }: { label: string; href: string | null }) {
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="flex items-center gap-2 break-all text-sm font-medium text-cyan-800 hover:text-cyan-900"
+      className="flex items-center gap-2 break-all text-sm font-medium text-cyan-800 underline-offset-4 hover:text-cyan-900 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
     >
       <ExternalLink className="size-4 shrink-0" /> {label}: {href}
     </a>
@@ -2343,7 +2385,7 @@ function InlineUpgradePrompt() {
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
           Free accounts include 5 targets. Upgrade when your family needs more room.{" "}
-          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
+          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300">
             View Pro options
           </Link>
         </p>
@@ -2359,7 +2401,7 @@ function InlineEventUpgradePrompt() {
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
           Free accounts include 3 events or dates. Upgrade when you need more room for camps, deadlines, or visits.{" "}
-          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
+          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300">
             View Pro options
           </Link>
         </p>
@@ -2375,7 +2417,7 @@ function InlineOutreachUpgradePrompt() {
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
           Outreach history and follow-up reminders are included with Pro.{" "}
-          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
+          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300">
             View Pro options
           </Link>
         </p>
@@ -2391,7 +2433,7 @@ function InlineContactUpgradePrompt() {
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
           Free accounts include 3 coach contacts. Upgrade when your contact list grows.{" "}
-          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline">
+          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300">
             View Pro options
           </Link>
         </p>

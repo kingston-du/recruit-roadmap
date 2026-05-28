@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Dialog } from "radix-ui";
 import {
@@ -92,7 +92,7 @@ function fieldError<FieldName extends string>(state: FieldState<FieldName>, name
 
 function fieldClass(hasError: boolean) {
   return cn(
-    "min-h-10 rounded-md border bg-white px-3 text-base text-slate-950 outline-none ring-cyan-700/20 focus:border-cyan-700 focus:ring-4",
+    "smooth-field min-h-10 rounded-md border bg-white px-3 text-base text-slate-950 outline-none ring-cyan-700/20 focus:border-cyan-700 focus:ring-4",
     hasError ? "border-red-300" : "border-slate-300",
   );
 }
@@ -129,16 +129,18 @@ function TextField<FieldName extends string>({
   state: FieldState<FieldName>;
 }) {
   const error = fieldError(state, name);
-  const errorId = `${name}-error`;
+  const reactId = useId();
+  const fieldId = `${name}-${reactId}`;
+  const errorId = `${fieldId}-error`;
 
   return (
     <div className="grid gap-2">
-      <label htmlFor={name} className="text-sm font-medium text-slate-700">
+      <label htmlFor={fieldId} className="text-sm font-medium text-slate-700">
         {label}
         {required ? null : <span className="text-slate-400"> optional</span>}
       </label>
       <input
-        id={name}
+        id={fieldId}
         name={name}
         defaultValue={defaultValue ?? ""}
         required={required}
@@ -173,16 +175,18 @@ function TextAreaField<FieldName extends string>({
   state: FieldState<FieldName>;
 }) {
   const error = fieldError(state, name);
-  const errorId = `${name}-error`;
+  const reactId = useId();
+  const fieldId = `${name}-${reactId}`;
+  const errorId = `${fieldId}-error`;
 
   return (
     <div className="grid gap-2">
-      <label htmlFor={name} className="text-sm font-medium text-slate-700">
+      <label htmlFor={fieldId} className="text-sm font-medium text-slate-700">
         {label}
         {required ? null : <span className="text-slate-400"> optional</span>}
       </label>
       <textarea
-        id={name}
+        id={fieldId}
         name={name}
         defaultValue={defaultValue ?? ""}
         required={required}
@@ -220,21 +224,50 @@ export function MyPlanWorkspace({
   addDefaultPlanPathsAction: DefaultPathsAction;
 }) {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedPathId, setSelectedPathId] = useState<string | null>(null);
   const selectedPath = paths.find((path) => path.id === selectedPathId) ?? null;
 
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+    };
+  }, []);
+
+  function openDrawer(mode: NonNullable<DrawerMode>) {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+
+    setDrawerMode(mode);
+    setDrawerOpen(true);
+  }
+
   function openCreateDrawer() {
     setSelectedPathId(null);
-    setDrawerMode("create");
+    openDrawer("create");
   }
 
   function openEditDrawer(path: PlanPath) {
     setSelectedPathId(path.id);
-    setDrawerMode("edit");
+    openDrawer("edit");
   }
 
   function closeDrawer() {
-    setDrawerMode(null);
+    setDrawerOpen(false);
+
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+    }
+
+    closeTimerRef.current = setTimeout(() => {
+      setDrawerMode(null);
+      closeTimerRef.current = null;
+    }, 200);
   }
 
   return (
@@ -307,7 +340,11 @@ export function MyPlanWorkspace({
       </div>
 
       {drawerMode ? (
-        <PathDrawer title={drawerMode === "create" ? "Add path" : "Edit path"} onClose={closeDrawer}>
+        <PathDrawer
+          open={drawerOpen}
+          title={drawerMode === "create" ? "Add path" : "Edit path"}
+          onClose={closeDrawer}
+        >
           {drawerMode === "create" ? (
             <PlanPathForm
               key="create-path"
@@ -466,7 +503,7 @@ function PathCard({
   deleteAction: PlanPathDeleteAction;
 }) {
   return (
-    <Panel className="flex flex-col">
+    <Panel className="smooth-card flex flex-col hover:border-cyan-200 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div>
           <StatusPill tone="cyan">Path</StatusPill>
@@ -475,7 +512,7 @@ function PathCard({
         <button
           type="button"
           onClick={onEdit}
-          className="flex size-8 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+          className="smooth-action flex size-8 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
           aria-label={`Edit ${path.title}`}
           title="Edit path"
         >
@@ -582,17 +619,19 @@ function DeletePathForm({
 }
 
 function PathDrawer({
+  open,
   title,
   onClose,
   children,
 }: {
+  open: boolean;
   title: string;
   onClose: () => void;
   children: ReactNode;
 }) {
   return (
     <Dialog.Root
-      open
+      open={open}
       onOpenChange={(open) => {
         if (!open) {
           onClose();
@@ -600,8 +639,14 @@ function PathDrawer({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-slate-950/35" />
-        <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col overflow-hidden bg-white shadow-xl outline-none">
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-slate-950/35 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0" />
+        <Dialog.Content
+          className={cn(
+            "fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100vh-1.5rem)] flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-2xl outline-none",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom-6 data-[state=closed]:slide-out-to-bottom-6",
+            "md:inset-y-3 md:left-auto md:right-3 md:w-[min(672px,calc(100vw-2rem))] md:max-h-none md:data-[state=open]:slide-in-from-right-6 md:data-[state=closed]:slide-out-to-right-6",
+          )}
+        >
           <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
             <Dialog.Title className="text-xl font-semibold tracking-tight text-slate-950">
               {title}
@@ -610,7 +655,7 @@ function PathDrawer({
               <button
                 type="button"
                 aria-label="Close path drawer"
-                className="flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                className="smooth-action flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
               >
                 <X className="size-4" />
               </button>
@@ -817,10 +862,10 @@ function TargetGroupsPanel({
           targetGroups.map((group) => (
             <details
               key={group.connectedPath}
-              className="rounded-md border border-slate-200 p-3"
+              className="rounded-md border border-slate-200 p-3 transition-[border-color,box-shadow] duration-200 ease-out hover:border-cyan-200 hover:shadow-sm"
               open={group.connectedPath !== "No connected path"}
             >
-              <summary className="cursor-pointer">
+              <summary className="cursor-pointer rounded-sm outline-none transition-colors duration-200 ease-out hover:text-cyan-800 focus-visible:ring-3 focus-visible:ring-cyan-200">
                 <span className="font-semibold text-slate-950">{group.connectedPath}</span>
                 <span className="ml-2 text-sm text-slate-500">{group.targets.length} options</span>
               </summary>
@@ -829,7 +874,7 @@ function TargetGroupsPanel({
                   const events = eventsByTargetId.get(target.id) ?? [];
 
                   return (
-                    <div key={target.id} className="rounded-md bg-slate-50 p-3">
+                    <div key={target.id} className="smooth-card rounded-md bg-slate-50 p-3 hover:bg-cyan-50/40">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-semibold text-slate-950">{target.name}</p>
@@ -883,7 +928,7 @@ function TargetEventList({ events }: { events: RecruitEvent[] }) {
           const cost = formatEventCost(event.cost);
 
           return (
-            <div key={event.id} className="rounded-md border border-slate-200 p-3">
+            <div key={event.id} className="smooth-card rounded-md border border-slate-200 p-3 hover:border-cyan-200 hover:shadow-sm">
               <div className="flex flex-wrap items-center gap-2">
                 <StatusPill tone="cyan">{eventTypeLabels[event.event_type]}</StatusPill>
                 <StatusPill tone={event.status === "Completed" ? "green" : "slate"}>{event.status}</StatusPill>
@@ -896,7 +941,7 @@ function TargetEventList({ events }: { events: RecruitEvent[] }) {
                   href={event.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-2 flex items-center gap-2 break-all text-sm font-medium text-cyan-800 hover:text-cyan-900"
+                  className="mt-2 flex items-center gap-2 break-all text-sm font-medium text-cyan-800 underline-offset-4 hover:text-cyan-900 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
                 >
                   <ExternalLink className="size-4 shrink-0" /> Event link
                 </a>

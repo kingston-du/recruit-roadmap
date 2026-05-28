@@ -34,7 +34,7 @@ export function AuthForm({ mode, action, nextPath }: AuthFormProps) {
           type="email"
           autoComplete="email"
           required
-          className="h-11 rounded-md border border-slate-300 bg-white px-3 text-base text-slate-950 outline-none ring-cyan-700/20 focus:border-cyan-700 focus:ring-4"
+          className="smooth-field h-11 rounded-md border border-slate-300 bg-white px-3 text-base text-slate-950 outline-none ring-cyan-700/20 focus:border-cyan-700 focus:ring-4"
         />
         {state.fieldErrors?.email ? (
           <p className="text-sm text-red-700">{state.fieldErrors.email[0]}</p>
@@ -52,7 +52,7 @@ export function AuthForm({ mode, action, nextPath }: AuthFormProps) {
           autoComplete={isLogin ? "current-password" : "new-password"}
           required
           minLength={6}
-          className="h-11 rounded-md border border-slate-300 bg-white px-3 text-base text-slate-950 outline-none ring-cyan-700/20 focus:border-cyan-700 focus:ring-4"
+          className="smooth-field h-11 rounded-md border border-slate-300 bg-white px-3 text-base text-slate-950 outline-none ring-cyan-700/20 focus:border-cyan-700 focus:ring-4"
         />
         {state.fieldErrors?.password ? (
           <p className="text-sm text-red-700">{state.fieldErrors.password[0]}</p>
@@ -85,7 +85,7 @@ export function AuthForm({ mode, action, nextPath }: AuthFormProps) {
         {isLogin ? "Need an account?" : "Already have an account?"}{" "}
         <Link
           href={isLogin ? `/signup?next=${encodeURIComponent(nextPath)}` : `/login?next=${encodeURIComponent(nextPath)}`}
-          className="font-semibold text-cyan-800 hover:text-cyan-900"
+          className="font-semibold text-cyan-800 underline-offset-4 hover:text-cyan-900 hover:underline"
         >
           {isLogin ? "Sign up" : "Log in"}
         </Link>

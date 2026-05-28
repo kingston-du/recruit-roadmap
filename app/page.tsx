@@ -142,16 +142,16 @@ export default function HomePage() {
             </Link>
 
             <nav className="hidden items-center gap-5 text-sm font-medium text-cyan-50 md:flex">
-              <Link href="#product" className="hover:text-white">
+              <Link href="#product" className="underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200/40">
                 Product
               </Link>
-              <Link href="/pricing" className="hover:text-white">
+              <Link href="/pricing" className="underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200/40">
                 Plans
               </Link>
-              <Link href="/roadmap" className="hover:text-white">
+              <Link href="/roadmap" className="underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200/40">
                 Roadmap
               </Link>
-              <Link href="/login" className="hover:text-white">
+              <Link href="/login" className="underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200/40">
                 Log in
               </Link>
             </nav>
@@ -230,7 +230,7 @@ export default function HomePage() {
               <Link
                 key={page.name}
                 href={page.href}
-                className="group flex min-h-56 flex-col rounded-md border border-slate-200 bg-white p-5 shadow-sm hover:border-cyan-300 hover:bg-cyan-50/40"
+                className="smooth-card group flex min-h-56 flex-col rounded-md border border-slate-200 bg-white p-5 shadow-sm hover:border-cyan-300 hover:bg-cyan-50/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
               >
                 <span className="flex size-11 items-center justify-center rounded-md bg-[#071a2f] text-white">
                   <page.icon className="size-5" />
@@ -259,7 +259,7 @@ export default function HomePage() {
           </SectionHeading>
 
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
-            <div className="rounded-md border border-cyan-200 bg-white p-6 shadow-sm">
+            <div className="smooth-card rounded-md border border-cyan-200 bg-white p-6 shadow-sm hover:shadow-md">
               <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                 <div>
                   <p className="text-sm font-semibold text-cyan-800">Free plan</p>
@@ -331,7 +331,7 @@ export default function HomePage() {
             those details into the tracker.
           </SectionHeading>
 
-          <div className="rounded-md border border-[#f5c2c5] bg-[#fff7f7] p-6">
+          <div className="smooth-card rounded-md border border-[#f5c2c5] bg-[#fff7f7] p-6 hover:shadow-md">
             <h3 className="text-xl font-semibold text-slate-950">What it can help with</h3>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {["Targets", "Coach contacts", "Important dates", "Video and profile links"].map(

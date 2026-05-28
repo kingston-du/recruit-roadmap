@@ -80,7 +80,10 @@ export default function PricingPage() {
     <main className="min-h-screen bg-[#f7fafc] text-slate-950">
       <div className="mx-auto max-w-6xl px-5 py-10 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between gap-4">
-          <Link href="/" className="font-semibold text-[#071a2f]">
+          <Link
+            href="/"
+            className="font-semibold text-[#071a2f] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
+          >
             Hockey Pathway
           </Link>
           <div className="flex items-center gap-2">
@@ -105,7 +108,7 @@ export default function PricingPage() {
         </section>
 
         <section className="grid gap-5 lg:grid-cols-3">
-          <div className="flex flex-col rounded-md border border-cyan-200 bg-white p-6 shadow-sm">
+          <div className="smooth-card flex flex-col rounded-md border border-cyan-200 bg-white p-6 shadow-sm hover:shadow-md">
             <p className="text-sm font-semibold text-cyan-800">Free</p>
             <h2 className="mt-2 text-3xl font-semibold">$0</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -126,7 +129,7 @@ export default function PricingPage() {
             </Button>
           </div>
 
-          <div className="flex flex-col rounded-md border border-slate-200 bg-[#071a2f] p-6 text-white shadow-sm">
+          <div className="smooth-card flex flex-col rounded-md border border-slate-200 bg-[#071a2f] p-6 text-white shadow-sm hover:shadow-md">
             <p className="text-sm font-semibold text-cyan-100">Pro</p>
             <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
               <h2 className="text-3xl font-semibold">$5/month</h2>
@@ -161,7 +164,7 @@ export default function PricingPage() {
             </div>
           </div>
 
-          <div className="flex flex-col rounded-md border border-[#f5c2c5] bg-[#fff7f7] p-6 shadow-sm">
+          <div className="smooth-card flex flex-col rounded-md border border-[#f5c2c5] bg-[#fff7f7] p-6 shadow-sm hover:shadow-md">
             <div className="flex items-start gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-white text-[#d71920]">
                 <Wrench className="size-5" />

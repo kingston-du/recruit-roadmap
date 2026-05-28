@@ -431,7 +431,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           id={`plan-tier-${user.userId}`}
                           name="plan_tier"
                           defaultValue={user.planTier}
-                          className="h-9 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm outline-none focus:border-cyan-700 focus:ring-2 focus:ring-cyan-100"
+                          className="smooth-field h-9 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm outline-none focus:border-cyan-700 focus:ring-2 focus:ring-cyan-100"
                         >
                           <option value="free">free</option>
                           <option value="pro">pro</option>

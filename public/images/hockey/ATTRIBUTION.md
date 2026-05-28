@@ -6,5 +6,6 @@ These static assets are used as low-contrast decorative backgrounds in the publi
 - `sticks-detail.jpg` - Photo by Ron Lach on Pexels, image ID 8972136.
 - `on-ice-action.jpg` - Photo by Tony Schnagl on Pexels, image ID 6468922.
 - `skates-lineup.jpg` - Photo by Tony Schnagl on Pexels, image ID 6468598.
+- `outcomes-celebration.jpg` - Photo by Luke Miller on Pexels, image ID 13978855.
 
 Pexels license: https://www.pexels.com/legal-pages/license

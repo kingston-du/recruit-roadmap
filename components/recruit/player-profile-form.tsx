@@ -46,7 +46,7 @@ function fieldError(state: PlayerProfileFormState, name: PlayerProfileFieldName)
 
 function fieldClass(hasError: boolean) {
   return cn(
-    "min-h-11 rounded-md border bg-white px-3 text-base text-slate-950 outline-none ring-cyan-700/20 focus:border-cyan-700 focus:ring-4",
+    "smooth-field min-h-11 rounded-md border bg-white px-3 text-base text-slate-950 outline-none ring-cyan-700/20 focus:border-cyan-700 focus:ring-4",
     hasError ? "border-red-300" : "border-slate-300",
   );
 }

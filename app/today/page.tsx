@@ -603,7 +603,7 @@ export default async function TodayPage() {
 
 function TodayActionCard({ action }: { action: TodayAction }) {
   return (
-    <Panel className="flex flex-col">
+    <Panel className="smooth-card flex flex-col hover:border-cyan-200 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-lg font-semibold tracking-tight">{action.title}</h3>
         <StatusPill tone={action.tone}>{action.urgency}</StatusPill>
@@ -620,7 +620,7 @@ function TodayActionCard({ action }: { action: TodayAction }) {
 
 function AttentionItem({ action }: { action: TodayAction }) {
   return (
-    <Panel className="p-4">
+    <Panel className="smooth-card p-4 hover:border-cyan-200 hover:shadow-md">
       <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -641,7 +641,7 @@ function AttentionItem({ action }: { action: TodayAction }) {
 
 function LimitPromptCard({ prompt }: { prompt: LimitPrompt }) {
   return (
-    <Panel className="border-amber-200 bg-amber-50 p-4">
+    <Panel className="smooth-card border-amber-200 bg-amber-50 p-4 hover:shadow-md">
       <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
         <div className="flex items-start gap-3">
           <AlertCircle className="mt-0.5 size-5 text-amber-700" />
@@ -666,7 +666,7 @@ function UpcomingEventCard({
   targetName: string | undefined;
 }) {
   return (
-    <Panel className="flex flex-col">
+    <Panel className="smooth-card flex flex-col hover:border-cyan-200 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div>
           <StatusPill tone="cyan">{eventTypeLabels[event.event_type]}</StatusPill>
