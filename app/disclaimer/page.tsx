@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
+import { LogoMark } from "@/components/recruit/logo";
 
 const disclaimerSections = [
   {
@@ -43,8 +44,12 @@ export default function DisclaimerPage() {
     <main className="min-h-screen bg-white px-5 py-12 text-slate-950">
       <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-3xl flex-col">
         <article className="flex-1">
-          <Link href="/" className="text-sm font-semibold text-cyan-800">
-            Hockey Pathway
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-md text-sm font-semibold text-cyan-800 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
+          >
+            <LogoMark size={28} />
+            <span>Hockey Pathway</span>
           </Link>
           <p className="mt-8 text-sm font-semibold text-cyan-800">Last updated May 26, 2026</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight">Disclaimer</h1>

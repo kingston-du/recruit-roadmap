@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
+import { LogoMark } from "@/components/recruit/logo";
 import { ImageBackdrop, ImagePanel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 
@@ -132,9 +133,7 @@ export default function HomePage() {
         <div className="relative mx-auto flex w-full max-w-7xl flex-col px-5 py-5 sm:px-6 lg:px-8">
           <header className="flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-3">
-              <span className="flex size-10 items-center justify-center rounded-md bg-white text-sm font-semibold text-[#071a2f]">
-                HP
-              </span>
+              <LogoMark size={40} className="ring-1 ring-white/20" />
               <span>
                 <span className="block text-sm font-semibold">Hockey Pathway</span>
                 <span className="block text-xs text-cyan-100">Hockey family plan</span>

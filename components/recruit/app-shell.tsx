@@ -12,6 +12,7 @@ import {
 
 import { logoutAction } from "@/app/auth/actions";
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
+import { LogoMark } from "@/components/recruit/logo";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -47,9 +48,7 @@ export function AppShell({
             href="/today"
             className="flex items-center gap-3 transition-[color,transform] duration-200 ease-out hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200/40 motion-reduce:hover:translate-x-0"
           >
-            <div className="flex size-9 items-center justify-center rounded-md bg-cyan-100 text-sm font-semibold text-[#071a2f]">
-              HP
-            </div>
+            <LogoMark size={36} className="ring-1 ring-white/15" />
             <div>
               <p className="text-sm font-semibold">Hockey Pathway</p>
               <p className="text-xs text-slate-300">Hockey family plan</p>
@@ -101,13 +100,22 @@ export function AppShell({
       <div className="flex min-h-screen flex-col lg:pl-64">
         <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="flex items-center justify-between gap-4 px-5 py-4 lg:px-8">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.16em] text-cyan-800">
-                {eyebrow}
-              </p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                {title}
-              </h1>
+            <div className="flex min-w-0 items-center gap-3">
+              <Link
+                href="/today"
+                className="shrink-0 rounded-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200 lg:hidden"
+                aria-label="Hockey Pathway home"
+              >
+                <LogoMark size={40} />
+              </Link>
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-cyan-800">
+                  {eyebrow}
+                </p>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                  {title}
+                </h1>
+              </div>
             </div>
             <div className="hidden items-center gap-2 md:flex">
               {action}

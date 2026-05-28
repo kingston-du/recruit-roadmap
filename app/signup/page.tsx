@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { signupAction } from "@/app/auth/actions";
 import { AuthForm } from "@/components/recruit/auth-form";
+import { LogoMark } from "@/components/recruit/logo";
 import { getCurrentUser, getSafeRedirectPath } from "@/lib/auth";
 
 type SignupPageProps = {
@@ -25,9 +26,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
       <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
         <section className="max-w-xl">
           <Link href="/" className="inline-flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-md bg-[#071a2f] text-sm font-semibold text-white">
-              HP
-            </span>
+            <LogoMark size={40} />
             <span>
               <span className="block text-sm font-semibold">Hockey Pathway</span>
               <span className="block text-xs text-slate-500">Hockey family plan</span>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, LockKeyhole, Wrench } from "lucide-react";
 
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
+import { LogoMark } from "@/components/recruit/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -82,9 +83,10 @@ export default function PricingPage() {
         <header className="flex items-center justify-between gap-4">
           <Link
             href="/"
-            className="font-semibold text-[#071a2f] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
+            className="inline-flex items-center gap-2 rounded-md font-semibold text-[#071a2f] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
           >
-            Hockey Pathway
+            <LogoMark size={32} />
+            <span>Hockey Pathway</span>
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" className="hidden rounded-md sm:inline-flex">
