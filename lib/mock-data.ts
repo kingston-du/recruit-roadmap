@@ -775,12 +775,13 @@ export const roadmapSections: RoadmapSection[] = [
           "Showcase or tournament calendar",
           "Player role and coaching fit",
           "School workload during travel weeks",
+      
         ],
         misconceptions: [
           "AAA alone does not guarantee future junior or college options.",
           "The strongest name on the jersey is not always the best development fit.",
         ],
-        examples: ["Regional AAA programs", "Tier 1 tournaments", "Major showcase weekends"],
+        examples: ["Little Caesars", "LA Jr. Kings", "Chicago Mission"],
       },
       {
         id: "high-school-hockey",
@@ -790,7 +791,7 @@ export const roadmapSections: RoadmapSection[] = [
         bestFor: "Players who want school stability while continuing to develop.",
         commonNextStep: "Compare the school season with any outside training or exposure options.",
         whatItIs:
-          "High school hockey keeps the player connected to school while providing meaningful team competition.",
+          "High school hockey keeps the player connected to school while providing meaningful team competition. Competition level depends on the area.",
         usuallyFor:
           "Players whose local school program is a good athletic, academic, and social fit.",
         howPlayersGetThere:
@@ -805,7 +806,7 @@ export const roadmapSections: RoadmapSection[] = [
           "High school hockey is not automatically too low or automatically enough.",
           "Families may still need to track video, academics, and selected outside events.",
         ],
-        examples: ["Varsity high school teams", "Split-season programs", "Summer showcases"],
+        examples: ["Minnesota high school teams", "Local public high school teams"],
       },
       {
         id: "prep-school",
@@ -817,7 +818,7 @@ export const roadmapSections: RoadmapSection[] = [
         whatItIs:
           "Prep school hockey combines a school decision with a hockey decision. The process usually includes admissions, financial planning, and coach conversations.",
         usuallyFor:
-          "Players who may benefit from a structured school setting, strong academics, and a serious hockey schedule.",
+          "Players who may benefit from a structured school setting, strong academics, and a serious hockey schedule. Great college exposure, especially from good colleges.",
         howPlayersGetThere:
           "Players usually connect through coach outreach, visits, admissions conversations, showcases, and current-coach references.",
         whatToResearch: [
@@ -830,13 +831,13 @@ export const roadmapSections: RoadmapSection[] = [
           "A prep coach conversation is not the same as admission.",
           "A strong hockey fit still needs to make sense for school and family life.",
         ],
-        examples: ["NEPSAC programs", "Independent prep programs", "Post-grad options"],
+        examples: ["Cushing Academy", "Avon Old Farms", "NEPSAC"],
       },
       {
         id: "academy",
         name: "Academy",
         label: "Training-heavy",
-        description: "A hockey-focused setting built around frequent training, games, and school planning.",
+        description: "A hockey-focused setting built around frequent training, games, and school planning. Could play AAA, or Independent Prep.",
         bestFor: "Players who need a more concentrated daily development environment.",
         commonNextStep: "Compare schedule, school support, housing, cost, and player role.",
         whatItIs:
@@ -855,7 +856,7 @@ export const roadmapSections: RoadmapSection[] = [
           "More ice time is not automatically better if school, rest, or role are unclear.",
           "Families should not assume every academy has the same academic structure.",
         ],
-        examples: ["Hockey academies", "Training-centered school programs", "Residential programs"],
+        examples: ["South Kent", "Shattucks St. Mary's", "Cardigan Mountain"],
       },
     ],
   },
@@ -942,7 +943,7 @@ export const roadmapSections: RoadmapSection[] = [
           "Being noticed is not the same as having a clear roster role.",
           "The best path for one player may not fit another player.",
         ],
-        examples: ["USHL clubs", "USHL combines", "Team main camps"],
+        examples: ["Chicago Steel", "Greenbay Gamblers", "Dubuque Fighting Saints"],
       },
       {
         id: "chl",
@@ -992,7 +993,7 @@ export const roadmapSections: RoadmapSection[] = [
           "A tender or camp conversation still needs careful context.",
           "Team fit matters as much as league label.",
         ],
-        examples: ["NAHL teams", "NAHL combines", "Team camps"],
+        examples: ["Danbury Hattricks", "Austin Bruins", "Anchorage Wolverines"],
       },
       {
         id: "ncdc",
@@ -1008,22 +1009,22 @@ export const roadmapSections: RoadmapSection[] = [
         howPlayersGetThere:
           "Players usually connect through tryouts, camps, coach outreach, showcases, and referrals.",
         whatToResearch: [
-          "Team structure",
+          "Team structure and level",
           "Cost and housing",
           "Game schedule",
           "College placement support",
         ],
         misconceptions: [
-          "Families should not assume every team experience is the same.",
+          "Families should not assume every team in the league is the same.",
           "A junior path still needs a school and life plan.",
         ],
-        examples: ["NCDC teams", "NCDC combines", "Affiliate programs"],
+        examples: ["South Shore Kings", "New Jersey Rockets", "Jersey Hitmen"],
       },
       {
         id: "ehl",
         name: "EHL",
         label: "Junior path",
-        description: "A college-focused junior path for players seeking fit and development.",
+        description: "A junior path for players seeking development.",
         bestFor: "Players targeting a realistic college hockey and academic fit.",
         commonNextStep: "Compare team role, academics, costs, and coach communication.",
         whatItIs:
@@ -1034,7 +1035,7 @@ export const roadmapSections: RoadmapSection[] = [
           "Players usually connect through showcases, team camps, referrals, and direct coach outreach.",
         whatToResearch: [
           "Team track record",
-          "Player role",
+          "Division Level",
           "Cost structure",
           "College conversations",
         ],
@@ -1042,13 +1043,13 @@ export const roadmapSections: RoadmapSection[] = [
           "A college-focused label does not replace individual research.",
           "The right team fit can matter more than a broad league impression.",
         ],
-        examples: ["EHL teams", "EHL Premier", "College showcase events"],
+        examples: ["New Hampshire Avalanche", "New England Wolves", "Vermont Lumberjacks"],
       },
       {
         id: "usphl-premier",
         name: "USPHL Premier",
         label: "Junior path",
-        description: "A broad junior option where team level and family fit need close review.",
+        description: "A broad junior option where team level and family fit need close review. A level below NCDC.",
         bestFor: "Players comparing regional junior opportunities and development roles.",
         commonNextStep: "Clarify team level, costs, housing, schedule, and what the coach expects.",
         whatItIs:
@@ -1067,7 +1068,7 @@ export const roadmapSections: RoadmapSection[] = [
           "A broad league requires team-by-team research.",
           "A roster offer should still be reviewed against school, cost, and role.",
         ],
-        examples: ["USPHL Premier teams", "USPHL showcases", "Team main camps"],
+        examples: ["West Chester Wolves", "Red Bank Generals", "Connecticut Jr. Rangers"],
       },
       {
         id: "na3hl",
@@ -1077,7 +1078,7 @@ export const roadmapSections: RoadmapSection[] = [
         bestFor: "Players who need more time, games, and structure before the next step.",
         commonNextStep: "Ask how the team develops players and what the realistic next step could be.",
         whatItIs:
-          "The NA3HL is a junior route families may consider when looking for continued development and structure.",
+          "The NA3HL is a junior route families may consider when looking for continued development, especially into the NAHL.",
         usuallyFor:
           "Players who are still maturing and need a clear team role, development plan, and family fit.",
         howPlayersGetThere:
@@ -1092,7 +1093,7 @@ export const roadmapSections: RoadmapSection[] = [
           "Lower-cost or local convenience should not be the only deciding factor.",
           "Families should ask what the path after the season could look like.",
         ],
-        examples: ["NA3HL teams", "Team tryouts", "Regional junior showcases"],
+        examples: ["Peoria Mustangs", "Rochester Grizzlies", "St. Louis Jr. Blues"],
       },
     ],
   },
@@ -1123,7 +1124,7 @@ export const roadmapSections: RoadmapSection[] = [
           "No app or event can guarantee a D1 opportunity.",
           "Attention from a program does not equal admission or a roster spot.",
         ],
-        examples: ["NCAA D1 programs", "College camps", "Junior/prep scouting"],
+        examples: ["Boston College", "Harvard University", "University of Michigan"],
       },
       {
         id: "ncaa-d3",
@@ -1148,7 +1149,7 @@ export const roadmapSections: RoadmapSection[] = [
           "D3 is not one single level of hockey.",
           "School fit should not be ignored for a hockey-only reason.",
         ],
-        examples: ["NCAA D3 programs", "NESCAC", "UCHC", "SUNYAC"],
+        examples: ["NESCAC", "UCHC", "SUNYAC"],
       },
       {
         id: "acha",
@@ -1229,7 +1230,7 @@ export const roadmapSections: RoadmapSection[] = [
           "A young player's roadmap should not be built around a pro promise.",
           "Education and life planning still matter.",
         ],
-        examples: ["Minor pro leagues", "College free-agent paths", "Major junior/pro pathways"],
+        examples: ["SHL", "NHL", "AHL", "European Pro"],
       },
     ],
   },
