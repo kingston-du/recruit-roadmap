@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { getSafeRedirectPath } from "@/lib/auth";
+import { appendSignupCompletedMarker } from "@/lib/analytics";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -130,7 +131,7 @@ export async function signupAction(
     };
   }
 
-  redirect(getSafeRedirectPath(parsed.data.next));
+  redirect(appendSignupCompletedMarker(getSafeRedirectPath(parsed.data.next)));
 }
 
 export async function logoutAction() {

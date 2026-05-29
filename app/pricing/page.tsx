@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, LockKeyhole, Wrench } from "lucide-react";
+import { ArrowRight, CheckCircle2, Wrench } from "lucide-react";
 
+import { CheckoutButton } from "@/components/recruit/checkout-button";
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
 import { LogoMark } from "@/components/recruit/logo";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 const freeItems = [
   "Public Roadmap",
@@ -32,46 +32,6 @@ const setupAssistItems = [
   "Important dates",
   "Helpful links",
 ];
-
-function CheckoutButton({
-  href,
-  children,
-  disabledLabel,
-  variant = "primary",
-}: {
-  href: string | undefined;
-  children: React.ReactNode;
-  disabledLabel: string;
-  variant?: "primary" | "secondary";
-}) {
-  const buttonClassName = cn(
-    "h-10 w-full rounded-md",
-    variant === "primary"
-      ? "bg-[#071a2f] text-white hover:bg-[#0b2745]"
-      : "border-slate-300 bg-white text-slate-950 hover:bg-slate-50",
-  );
-
-  if (!href) {
-    return (
-      <Button
-        type="button"
-        disabled
-        variant={variant === "secondary" ? "outline" : "default"}
-        className={buttonClassName}
-      >
-        <LockKeyhole /> {disabledLabel}
-      </Button>
-    );
-  }
-
-  return (
-    <Button asChild variant={variant === "secondary" ? "outline" : "default"} className={buttonClassName}>
-      <a href={href}>
-        {children} <ArrowRight />
-      </a>
-    </Button>
-  );
-}
 
 export default function PricingPage() {
   const proMonthlyLink = process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_LINK;
@@ -153,6 +113,7 @@ export default function PricingPage() {
                 href={proMonthlyLink}
                 disabledLabel="Monthly checkout not ready"
                 variant="secondary"
+                billingInterval="monthly"
               >
                 Upgrade monthly
               </CheckoutButton>
@@ -160,6 +121,7 @@ export default function PricingPage() {
                 href={proYearlyLink}
                 disabledLabel="Yearly checkout not ready"
                 variant="secondary"
+                billingInterval="yearly"
               >
                 Upgrade yearly
               </CheckoutButton>

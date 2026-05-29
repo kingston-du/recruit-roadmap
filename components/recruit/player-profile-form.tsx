@@ -10,6 +10,7 @@ import {
   type PlayerProfile,
   type PlayerProfileFieldName,
 } from "@/lib/player-profile";
+import { trackAnalyticsEvent } from "@/lib/analytics-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -202,7 +203,19 @@ function TextAreaField({
 }
 
 export function PlayerProfileForm({ profile, action }: PlayerProfileFormProps) {
-  const [state, formAction, pending] = useActionState(action, initialState);
+  async function trackedAction(previousState: PlayerProfileFormState, formData: FormData) {
+    const result = await action(previousState, formData);
+
+    if (result.success) {
+      trackAnalyticsEvent("player_profile_saved", {
+        source: "player_profile_form",
+      });
+    }
+
+    return result;
+  }
+
+  const [state, formAction, pending] = useActionState(trackedAction, initialState);
 
   return (
     <form id="player-profile-form" action={formAction} className="grid gap-6">

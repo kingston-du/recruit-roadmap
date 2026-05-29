@@ -16,6 +16,7 @@ import { Dialog } from "radix-ui";
 
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/recruit/ui";
+import { trackAnalyticsEvent } from "@/lib/analytics-client";
 import { cn } from "@/lib/utils";
 import type { RoadmapCard, RoadmapSection } from "@/lib/mock-data";
 
@@ -174,6 +175,12 @@ function RoadmapCardDialog({
         <button
           type="button"
           aria-label={`Open ${card.name} details`}
+          onClick={() => {
+            trackAnalyticsEvent("roadmap_card_clicked", {
+              page_name: "Roadmap",
+              source: "roadmap_card",
+            });
+          }}
           className={cn(
             "smooth-card group flex min-h-44 flex-col rounded-md border border-slate-200 bg-white p-4 text-left shadow-sm",
             "hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-cyan-50/40 hover:shadow-md",

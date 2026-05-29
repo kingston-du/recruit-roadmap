@@ -1,7 +1,14 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/analytics-client", () => ({
+  initializePostHog: vi.fn(),
+  trackAnalyticsEvent: vi.fn(),
+  trackPageView: vi.fn(),
+}));
+
+import { trackAnalyticsEvent } from "@/lib/analytics-client";
 import { TargetsBoard } from "@/components/recruit/targets-board";
 import {
   makeContact,
@@ -48,6 +55,10 @@ function renderBoard(overrides: Partial<Parameters<typeof TargetsBoard>[0]> = {}
 }
 
 describe("Targets board integration", () => {
+  beforeEach(() => {
+    vi.mocked(trackAnalyticsEvent).mockClear();
+  });
+
   // Validates empty board states for targets, coach contacts, and events are visible to a new family.
   it("renders empty states when no targets, contacts, or dates exist", () => {
     renderBoard({
@@ -105,10 +116,49 @@ describe("Targets board integration", () => {
     await user.click(within(dialog).getByRole("button", { name: /add target/i }));
 
     await waitFor(() => expect(createAction).toHaveBeenCalled());
+    expect(trackAnalyticsEvent).toHaveBeenCalledWith("target_created", {
+      plan_tier: "free",
+      source: "target_form",
+      target_count: 1,
+      target_type: "school",
+    });
     const formData = (createAction.mock.calls[0] as unknown[])[1] as FormData;
     expect(formData.get("name")).toBe("Shattuck-St. Mary's");
     expect(formData.get("status")).toBe("Planning to Contact");
     expect(formData.get("follow_up_date")).toBe("2026-06-15");
+  });
+
+  // Validates the third saved target milestone is tracked without sending target names.
+  it("tracks the third target milestone after adding a third target", async () => {
+    const user = userEvent.setup();
+    const createAction = success("Target added.");
+    renderBoard({
+      contacts: [],
+      createAction,
+      events: [],
+      outreachLogs: [],
+      targets: [
+        makeTarget({ name: "Target One" }),
+        makeTarget({
+          id: secondTargetId,
+          name: "Target Two",
+        }),
+      ],
+    });
+
+    await user.click(screen.getByRole("button", { name: /add target/i }));
+    const dialog = screen.getByRole("dialog", { name: /add target/i });
+    await user.type(within(dialog).getByLabelText("Team, school, camp, or league name"), "Target Three");
+    await user.selectOptions(within(dialog).getByLabelText("What kind of target is this?"), "team");
+    await user.click(within(dialog).getByRole("button", { name: /add target/i }));
+
+    await waitFor(() => expect(createAction).toHaveBeenCalled());
+    expect(trackAnalyticsEvent).toHaveBeenCalledWith("third_target_created", {
+      plan_tier: "free",
+      source: "target_form",
+      target_count: 3,
+      target_type: "team",
+    });
   });
 
   // Validates editing a target school can update the recruitment status and notes.
@@ -167,6 +217,11 @@ describe("Targets board integration", () => {
     await user.click(within(contactDialog).getByRole("button", { name: /add contact/i }));
 
     await waitFor(() => expect(createContactAction).toHaveBeenCalled());
+    expect(trackAnalyticsEvent).toHaveBeenCalledWith("contact_created", {
+      contact_count: 1,
+      plan_tier: "free",
+      source: "contact_form",
+    });
     const formData = (createContactAction.mock.calls[0] as unknown[])[1] as FormData;
     expect(formData.get("target_id")).toBe(targetId);
     expect(formData.get("email")).toBe("reed@example.com");
@@ -213,6 +268,12 @@ describe("Targets board integration", () => {
     await user.click(within(eventDialog).getByRole("button", { name: /add event/i }));
 
     await waitFor(() => expect(createEventAction).toHaveBeenCalled());
+    expect(trackAnalyticsEvent).toHaveBeenCalledWith("event_created", {
+      event_count: 1,
+      event_type: "camp",
+      plan_tier: "free",
+      source: "event_form",
+    });
     const formData = (createEventAction.mock.calls[0] as unknown[])[1] as FormData;
     expect(formData.get("target_id")).toBe(targetId);
     expect(formData.get("status")).toBe("Registered");
@@ -235,8 +296,36 @@ describe("Targets board integration", () => {
     });
 
     expect(screen.getByText("Free target limit reached:")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(trackAnalyticsEvent).toHaveBeenCalledWith("free_limit_hit", {
+        limit_count: 5,
+        limit_type: "target",
+        plan_tier: "free",
+        source: "target_limit_banner",
+        used_count: 5,
+      }),
+    );
     await user.click(screen.getByRole("button", { name: /add target/i }));
-    expect(screen.getByRole("dialog", { name: /free target limit reached/i })).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: /free target limit reached/i });
+    expect(dialog).toBeInTheDocument();
+    expect(trackAnalyticsEvent).toHaveBeenCalledWith("free_limit_hit", {
+      limit_count: 5,
+      limit_type: "target",
+      plan_tier: "free",
+      source: "target_add_button",
+      used_count: 5,
+    });
+
+    const upgradeLink = within(dialog).getByRole("link", { name: /view pro options/i });
+    upgradeLink.addEventListener("click", (event) => event.preventDefault());
+    await user.click(upgradeLink);
+    expect(trackAnalyticsEvent).toHaveBeenCalledWith("upgrade_clicked", {
+      limit_count: 5,
+      limit_type: "target",
+      plan_tier: "free",
+      source: "target_limit_drawer",
+      used_count: 5,
+    });
   });
 
   // Validates keyboard users can open the add-target drawer from the board command.

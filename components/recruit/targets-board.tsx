@@ -38,6 +38,7 @@ import {
   eventStatusOptions,
   eventTypeLabels,
   eventTypeOptions,
+  type EventType,
   formatDateLabel,
   formatEventCost,
   formatEventDateRange,
@@ -55,11 +56,18 @@ import {
 } from "@/lib/outreach";
 import { cn } from "@/lib/utils";
 import {
+  type AnalyticsLimitType,
+  type AnalyticsPlanTier,
+  type AnalyticsSource,
+} from "@/lib/analytics";
+import { trackAnalyticsEvent } from "@/lib/analytics-client";
+import {
   targetPriorityOptions,
   targetStatusOptions,
   targetTypeLabels,
   targetTypeOptions,
   type Target,
+  type TargetType,
 } from "@/lib/targets";
 
 const initialMutationState: TargetMutationState = {
@@ -177,6 +185,66 @@ type TargetsBoardProps = {
 type FieldState<FieldName extends string> = {
   fieldErrors?: Partial<Record<FieldName, string[]>>;
 };
+
+function getPlanTier(isPro: boolean): AnalyticsPlanTier {
+  return isPro ? "pro" : "free";
+}
+
+function readTargetTypeMetadata(formData: FormData) {
+  const value = formData.get("target_type");
+
+  return typeof value === "string" && targetTypeOptions.includes(value as TargetType)
+    ? value
+    : undefined;
+}
+
+function readEventTypeMetadata(formData: FormData) {
+  const value = formData.get("event_type");
+
+  return typeof value === "string" && eventTypeOptions.includes(value as EventType)
+    ? value
+    : undefined;
+}
+
+function trackFreeLimitHit({
+  limitType,
+  limit,
+  source,
+  used,
+}: {
+  limitType: AnalyticsLimitType;
+  limit: number;
+  source: AnalyticsSource;
+  used: number;
+}) {
+  trackAnalyticsEvent("free_limit_hit", {
+    limit_count: limit,
+    limit_type: limitType,
+    plan_tier: "free",
+    source,
+    used_count: used,
+  });
+}
+
+function trackUpgradeClicked({
+  limitType,
+  limit,
+  source,
+  used,
+}: {
+  limitType: AnalyticsLimitType;
+  limit: number;
+  source: AnalyticsSource;
+  used: number;
+}) {
+  trackAnalyticsEvent("upgrade_clicked", {
+    limit_count: limit,
+    limit_type: limitType,
+    plan_tier: "free",
+    source,
+    used_count: used,
+  });
+}
 
 type FormFieldProps<FieldName extends string> = {
   name: FieldName;
@@ -379,6 +447,7 @@ export function TargetsBoard({
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const trackedLimitPromptIdsRef = useRef(new Set<string>());
   const [selectedId, setSelectedId] = useState<string | null>(targets[0]?.id ?? null);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(contacts[0]?.id ?? null);
   const [contactTargetId, setContactTargetId] = useState<string | null>(null);
@@ -491,6 +560,43 @@ export function TargetsBoard({
     };
   }, []);
 
+  useEffect(() => {
+    freeLimitPrompts.forEach((prompt) => {
+      if (trackedLimitPromptIdsRef.current.has(prompt.id)) {
+        return;
+      }
+
+      trackedLimitPromptIdsRef.current.add(prompt.id);
+
+      if (prompt.id === "target-limit") {
+        trackFreeLimitHit({
+          limit: freeTargetLimit,
+          limitType: "target",
+          source: "target_limit_banner",
+          used: targets.length,
+        });
+      }
+
+      if (prompt.id === "contact-limit") {
+        trackFreeLimitHit({
+          limit: freeContactLimit,
+          limitType: "contact",
+          source: "target_limit_banner",
+          used: contacts.length,
+        });
+      }
+
+      if (prompt.id === "event-limit") {
+        trackFreeLimitHit({
+          limit: freeEventLimit,
+          limitType: "event",
+          source: "target_limit_banner",
+          used: events.length,
+        });
+      }
+    });
+  }, [contacts.length, events.length, freeContactLimit, freeEventLimit, freeLimitPrompts, freeTargetLimit, targets.length]);
+
   function openDrawer(mode: NonNullable<DrawerMode>) {
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
@@ -502,6 +608,15 @@ export function TargetsBoard({
   }
 
   function openCreateDrawer() {
+    if (limitReached) {
+      trackFreeLimitHit({
+        limit: freeTargetLimit,
+        limitType: "target",
+        source: "target_add_button",
+        used: targets.length,
+      });
+    }
+
     openDrawer(limitReached ? "upgrade" : "create");
   }
 
@@ -513,6 +628,16 @@ export function TargetsBoard({
   function openCreateContactDrawer(targetId: string | null = null) {
     setContactTargetId(targetId);
     setSelectedContactId(null);
+
+    if (contactLimitReached) {
+      trackFreeLimitHit({
+        limit: freeContactLimit,
+        limitType: "contact",
+        source: "contact_add_button",
+        used: contacts.length,
+      });
+    }
+
     openDrawer(contactLimitReached ? "contact-upgrade" : "create-contact");
   }
 
@@ -530,6 +655,16 @@ export function TargetsBoard({
   function openCreateEventDrawer(targetId: string | null = null) {
     setEventTargetId(targetId);
     setSelectedEventId(null);
+
+    if (eventLimitReached) {
+      trackFreeLimitHit({
+        limit: freeEventLimit,
+        limitType: "event",
+        source: "event_add_button",
+        used: events.length,
+      });
+    }
+
     openDrawer(eventLimitReached ? "event-upgrade" : "create-event");
   }
 
@@ -547,7 +682,48 @@ export function TargetsBoard({
   function openCreateOutreachLogDrawer(targetId: string) {
     setOutreachTargetId(targetId);
     setSelectedOutreachLogId(null);
+
+    if (outreachLogLimitReached) {
+      trackFreeLimitHit({
+        limit: freeOutreachLogLimit,
+        limitType: "outreach",
+        source: "outreach_add_button",
+        used: outreachLogs.length,
+      });
+    }
+
     openDrawer(outreachLogLimitReached ? "outreach-upgrade" : "create-outreach");
+  }
+
+  function handleLimitBannerUpgradeClick() {
+    if (limitReached) {
+      trackUpgradeClicked({
+        limit: freeTargetLimit,
+        limitType: "target",
+        source: "target_limit_banner",
+        used: targets.length,
+      });
+      return;
+    }
+
+    if (contactLimitReached) {
+      trackUpgradeClicked({
+        limit: freeContactLimit,
+        limitType: "contact",
+        source: "target_limit_banner",
+        used: contacts.length,
+      });
+      return;
+    }
+
+    if (eventLimitReached) {
+      trackUpgradeClicked({
+        limit: freeEventLimit,
+        limitType: "event",
+        source: "target_limit_banner",
+        used: events.length,
+      });
+    }
   }
 
   function openEditOutreachLogDrawer(outreachLog: OutreachLog) {
@@ -646,7 +822,9 @@ export function TargetsBoard({
               </div>
             </div>
             <Button asChild className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
-              <Link href="/pricing">View Pro options</Link>
+              <Link href="/pricing" onClick={handleLimitBannerUpgradeClick}>
+                View Pro options
+              </Link>
             </Button>
           </div>
         </Panel>
@@ -733,8 +911,11 @@ export function TargetsBoard({
             <TargetForm
               key="create-target"
               action={createAction}
+              planTier={getPlanTier(isPro)}
+              targetLimit={freeTargetLimit}
               submitLabel="Add target"
               pendingLabel="Adding..."
+              targetCount={targets.length}
               onSuccess={closeDrawer}
             />
           ) : null}
@@ -784,6 +965,9 @@ export function TargetsBoard({
               targets={targets}
               defaultTargetId={contactTargetId}
               action={createContactAction}
+              contactCount={contacts.length}
+              contactLimit={freeContactLimit}
+              planTier={getPlanTier(isPro)}
               submitLabel="Add contact"
               pendingLabel="Adding..."
               onSuccess={handleContactSaved}
@@ -808,6 +992,9 @@ export function TargetsBoard({
               targets={targets}
               defaultTargetId={eventTargetId}
               action={createEventAction}
+              eventCount={events.length}
+              eventLimit={freeEventLimit}
+              planTier={getPlanTier(isPro)}
               submitLabel="Add event"
               pendingLabel="Adding..."
               onSuccess={handleEventSaved}
@@ -1045,17 +1232,59 @@ function TargetDrawer({
 function TargetForm({
   target,
   action,
+  planTier,
   submitLabel,
   pendingLabel,
+  targetCount = 0,
+  targetLimit,
   onSuccess,
 }: {
   target?: Target;
   action: TargetMutationAction;
+  planTier?: AnalyticsPlanTier;
   submitLabel: string;
   pendingLabel: string;
+  targetCount?: number;
+  targetLimit?: number;
   onSuccess: () => void;
 }) {
-  const [state, formAction, pending] = useActionState(action, initialMutationState);
+  async function trackedAction(previousState: TargetMutationState, formData: FormData) {
+    const result = await action(previousState, formData);
+
+    if (result.success && !target) {
+      const nextTargetCount = targetCount + 1;
+      const targetType = readTargetTypeMetadata(formData);
+
+      trackAnalyticsEvent("target_created", {
+        plan_tier: planTier,
+        source: "target_form",
+        target_count: nextTargetCount,
+        target_type: targetType,
+      });
+
+      if (nextTargetCount === 3) {
+        trackAnalyticsEvent("third_target_created", {
+          plan_tier: planTier,
+          source: "target_form",
+          target_count: nextTargetCount,
+          target_type: targetType,
+        });
+      }
+    }
+
+    if (result.upgradeRequired && targetLimit !== undefined) {
+      trackFreeLimitHit({
+        limit: targetLimit,
+        limitType: "target",
+        source: "target_form",
+        used: targetCount,
+      });
+    }
+
+    return result;
+  }
+
+  const [state, formAction, pending] = useActionState(trackedAction, initialMutationState);
   const typeOptions = targetTypeOptions.map((option) => ({
     value: option,
     label: targetTypeLabels[option],
@@ -1194,6 +1423,9 @@ function ContactForm({
   targets,
   defaultTargetId,
   action,
+  contactCount = 0,
+  contactLimit,
+  planTier,
   submitLabel,
   pendingLabel,
   onSuccess,
@@ -1202,11 +1434,37 @@ function ContactForm({
   targets: Target[];
   defaultTargetId?: string | null;
   action: ContactMutationAction;
+  contactCount?: number;
+  contactLimit?: number;
+  planTier?: AnalyticsPlanTier;
   submitLabel: string;
   pendingLabel: string;
   onSuccess: () => void;
 }) {
-  const [state, formAction, pending] = useActionState(action, initialContactMutationState);
+  async function trackedAction(previousState: ContactMutationState, formData: FormData) {
+    const result = await action(previousState, formData);
+
+    if (result.success && !contact) {
+      trackAnalyticsEvent("contact_created", {
+        contact_count: contactCount + 1,
+        plan_tier: planTier,
+        source: "contact_form",
+      });
+    }
+
+    if (result.upgradeRequired && contactLimit !== undefined) {
+      trackFreeLimitHit({
+        limit: contactLimit,
+        limitType: "contact",
+        source: "contact_form",
+        used: contactCount,
+      });
+    }
+
+    return result;
+  }
+
+  const [state, formAction, pending] = useActionState(trackedAction, initialContactMutationState);
   const targetOptions = targets.map((target) => ({ value: target.id, label: target.name }));
 
   useEffect(() => {
@@ -1311,6 +1569,9 @@ function EventForm({
   targets,
   defaultTargetId,
   action,
+  eventCount = 0,
+  eventLimit,
+  planTier,
   submitLabel,
   pendingLabel,
   onSuccess,
@@ -1319,11 +1580,38 @@ function EventForm({
   targets: Target[];
   defaultTargetId?: string | null;
   action: EventMutationAction;
+  eventCount?: number;
+  eventLimit?: number;
+  planTier?: AnalyticsPlanTier;
   submitLabel: string;
   pendingLabel: string;
   onSuccess: () => void;
 }) {
-  const [state, formAction, pending] = useActionState(action, initialEventMutationState);
+  async function trackedAction(previousState: EventMutationState, formData: FormData) {
+    const result = await action(previousState, formData);
+
+    if (result.success && !event) {
+      trackAnalyticsEvent("event_created", {
+        event_count: eventCount + 1,
+        event_type: readEventTypeMetadata(formData),
+        plan_tier: planTier,
+        source: "event_form",
+      });
+    }
+
+    if (result.upgradeRequired && eventLimit !== undefined) {
+      trackFreeLimitHit({
+        limit: eventLimit,
+        limitType: "event",
+        source: "event_form",
+        used: eventCount,
+      });
+    }
+
+    return result;
+  }
+
+  const [state, formAction, pending] = useActionState(trackedAction, initialEventMutationState);
   const targetOptions = targets.map((target) => ({ value: target.id, label: target.name }));
   const typeOptions = eventTypeOptions.map((option) => ({
     value: option,
@@ -2308,7 +2596,19 @@ function UpgradePrompt({ used, limit }: { used: number; limit: number }) {
         </div>
       </div>
       <Button asChild className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
-        <Link href="/pricing">View Pro options</Link>
+        <Link
+          href="/pricing"
+          onClick={() => {
+            trackUpgradeClicked({
+              limit,
+              limitType: "target",
+              source: "target_limit_drawer",
+              used,
+            });
+          }}
+        >
+          View Pro options
+        </Link>
       </Button>
     </div>
   );
@@ -2329,7 +2629,19 @@ function ContactUpgradePrompt({ used, limit }: { used: number; limit: number }) 
         </div>
       </div>
       <Button asChild className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
-        <Link href="/pricing">View Pro options</Link>
+        <Link
+          href="/pricing"
+          onClick={() => {
+            trackUpgradeClicked({
+              limit,
+              limitType: "contact",
+              source: "contact_limit_drawer",
+              used,
+            });
+          }}
+        >
+          View Pro options
+        </Link>
       </Button>
     </div>
   );
@@ -2350,7 +2662,19 @@ function EventUpgradePrompt({ used, limit }: { used: number; limit: number }) {
         </div>
       </div>
       <Button asChild className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
-        <Link href="/pricing">View Pro options</Link>
+        <Link
+          href="/pricing"
+          onClick={() => {
+            trackUpgradeClicked({
+              limit,
+              limitType: "event",
+              source: "event_limit_drawer",
+              used,
+            });
+          }}
+        >
+          View Pro options
+        </Link>
       </Button>
     </div>
   );
@@ -2372,7 +2696,19 @@ function OutreachUpgradePrompt({ used }: { used: number }) {
         </div>
       </div>
       <Button asChild className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
-        <Link href="/pricing">View Pro options</Link>
+        <Link
+          href="/pricing"
+          onClick={() => {
+            trackUpgradeClicked({
+              limit: 0,
+              limitType: "outreach",
+              source: "outreach_limit_drawer",
+              used,
+            });
+          }}
+        >
+          View Pro options
+        </Link>
       </Button>
     </div>
   );
@@ -2385,7 +2721,17 @@ function InlineUpgradePrompt() {
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
           Free accounts include 5 targets. Upgrade when your family needs more room.{" "}
-          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300">
+          <Link
+            href="/pricing"
+            onClick={() => {
+              trackAnalyticsEvent("upgrade_clicked", {
+                limit_type: "target",
+                plan_tier: "free",
+                source: "inline_target_limit",
+              });
+            }}
+            className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300"
+          >
             View Pro options
           </Link>
         </p>
@@ -2401,7 +2747,17 @@ function InlineEventUpgradePrompt() {
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
           Free accounts include 3 events or dates. Upgrade when you need more room for camps, deadlines, or visits.{" "}
-          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300">
+          <Link
+            href="/pricing"
+            onClick={() => {
+              trackAnalyticsEvent("upgrade_clicked", {
+                limit_type: "event",
+                plan_tier: "free",
+                source: "inline_event_limit",
+              });
+            }}
+            className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300"
+          >
             View Pro options
           </Link>
         </p>
@@ -2417,7 +2773,17 @@ function InlineOutreachUpgradePrompt() {
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
           Outreach history and follow-up reminders are included with Pro.{" "}
-          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300">
+          <Link
+            href="/pricing"
+            onClick={() => {
+              trackAnalyticsEvent("upgrade_clicked", {
+                limit_type: "outreach",
+                plan_tier: "free",
+                source: "inline_outreach_limit",
+              });
+            }}
+            className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300"
+          >
             View Pro options
           </Link>
         </p>
@@ -2433,7 +2799,17 @@ function InlineContactUpgradePrompt() {
         <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p>
           Free accounts include 3 coach contacts. Upgrade when your contact list grows.{" "}
-          <Link href="/pricing" className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300">
+          <Link
+            href="/pricing"
+            onClick={() => {
+              trackAnalyticsEvent("upgrade_clicked", {
+                limit_type: "contact",
+                plan_tier: "free",
+                source: "inline_contact_limit",
+              });
+            }}
+            className="font-semibold text-amber-950 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-amber-300"
+          >
             View Pro options
           </Link>
         </p>

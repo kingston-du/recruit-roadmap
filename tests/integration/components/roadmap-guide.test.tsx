@@ -1,11 +1,22 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/analytics-client", () => ({
+  initializePostHog: vi.fn(),
+  trackAnalyticsEvent: vi.fn(),
+  trackPageView: vi.fn(),
+}));
+
+import { trackAnalyticsEvent } from "@/lib/analytics-client";
 import { RoadmapGuide } from "@/components/recruit/roadmap-guide";
 import { roadmapSections } from "@/lib/mock-data";
 
 describe("Roadmap guide integration", () => {
+  beforeEach(() => {
+    vi.mocked(trackAnalyticsEvent).mockClear();
+  });
+
   // Validates the public roadmap renders the full pathway guide and major route cards.
   it("renders roadmap sections and route options", () => {
     render(<RoadmapGuide sections={roadmapSections} />);
@@ -23,6 +34,10 @@ describe("Roadmap guide integration", () => {
     await user.click(screen.getByRole("button", { name: /open USHL details/i }));
     const dialog = screen.getByRole("dialog", { name: "USHL" });
 
+    expect(trackAnalyticsEvent).toHaveBeenCalledWith("roadmap_card_clicked", {
+      page_name: "Roadmap",
+      source: "roadmap_card",
+    });
     expect(within(dialog).getByText("What to research")).toBeInTheDocument();
     expect(within(dialog).getByText("Common misconceptions")).toBeInTheDocument();
     expect(within(dialog).getByRole("link", { name: /start tracking your targets/i })).toHaveAttribute(

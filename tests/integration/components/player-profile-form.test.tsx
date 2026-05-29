@@ -1,11 +1,22 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/analytics-client", () => ({
+  initializePostHog: vi.fn(),
+  trackAnalyticsEvent: vi.fn(),
+  trackPageView: vi.fn(),
+}));
+
+import { trackAnalyticsEvent } from "@/lib/analytics-client";
 import { PlayerProfileForm } from "@/components/recruit/player-profile-form";
 import { makePlayerProfile } from "@/tests/helpers/recruit-fixtures";
 
 describe("Player profile form integration", () => {
+  beforeEach(() => {
+    vi.mocked(trackAnalyticsEvent).mockClear();
+  });
+
   // Validates an existing profile hydrates all visible inputs for editing.
   it("renders existing player profile values", () => {
     render(<PlayerProfileForm profile={makePlayerProfile()} action={vi.fn()} />);
@@ -35,6 +46,9 @@ describe("Player profile form integration", () => {
     await user.click(screen.getByRole("button", { name: /save player profile/i }));
 
     await waitFor(() => expect(action).toHaveBeenCalled());
+    expect(trackAnalyticsEvent).toHaveBeenCalledWith("player_profile_saved", {
+      source: "player_profile_form",
+    });
     const formData = (action.mock.calls[0] as unknown[])[1] as FormData;
     expect(formData.get("first_name")).toBe("Evan");
     expect(formData.get("target_path")).toBe("Prep to NCAA D3");

@@ -41,6 +41,7 @@ import {
   type PlanPath,
   type PlanPathFormFieldName,
 } from "@/lib/my-plan";
+import { trackAnalyticsEvent } from "@/lib/analytics-client";
 import { targetTypeLabels } from "@/lib/targets";
 import { cn } from "@/lib/utils";
 
@@ -411,7 +412,22 @@ function PlanSummary({
 }
 
 function MainPlanForm({ plan, action }: { plan: MainPlan | null; action: MainPlanAction }) {
-  const [state, formAction, pending] = useActionState(action, initialMainPlanState);
+  const planCreateTrackedRef = useRef(Boolean(plan));
+
+  async function trackedAction(previousState: MainPlanFormState, formData: FormData) {
+    const result = await action(previousState, formData);
+
+    if (result.success && !planCreateTrackedRef.current && !plan) {
+      planCreateTrackedRef.current = true;
+      trackAnalyticsEvent("my_plan_created", {
+        source: "my_plan_form",
+      });
+    }
+
+    return result;
+  }
+
+  const [state, formAction, pending] = useActionState(trackedAction, initialMainPlanState);
 
   return (
     <form id="main-plan-form" action={formAction} className="grid gap-5">

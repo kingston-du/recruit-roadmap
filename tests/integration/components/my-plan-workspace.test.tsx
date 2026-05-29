@@ -1,7 +1,14 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/analytics-client", () => ({
+  initializePostHog: vi.fn(),
+  trackAnalyticsEvent: vi.fn(),
+  trackPageView: vi.fn(),
+}));
+
+import { trackAnalyticsEvent } from "@/lib/analytics-client";
 import { MyPlanWorkspace } from "@/components/recruit/my-plan-workspace";
 import { makeEvent, makeMainPlan, makePlanPath, makeTarget } from "@/tests/helpers/recruit-fixtures";
 import { groupTargetsByConnectedPath } from "@/lib/my-plan";
@@ -26,6 +33,10 @@ function renderWorkspace(overrides: Partial<Parameters<typeof MyPlanWorkspace>[0
 }
 
 describe("My Plan workspace integration", () => {
+  beforeEach(() => {
+    vi.mocked(trackAnalyticsEvent).mockClear();
+  });
+
   // Validates the recruitment plan screen renders saved plan data, paths, targets, and linked dates.
   it("renders an existing recruitment plan and connected roadmap context", () => {
     renderWorkspace();
@@ -61,8 +72,29 @@ describe("My Plan workspace integration", () => {
     await user.click(screen.getByRole("button", { name: /save plan/i }));
 
     await waitFor(() => expect(saveMainPlanAction).toHaveBeenCalled());
+    expect(trackAnalyticsEvent).not.toHaveBeenCalledWith("my_plan_created", expect.anything());
     const formData = (saveMainPlanAction.mock.calls[0] as unknown[])[1] as FormData;
     expect(formData.get("pathway_goal")).toBe("Updated USHL to NCAA D1 research.");
+  });
+
+  // Validates first-time plan creation emits only safe analytics metadata.
+  it("tracks first main plan creation after a successful save", async () => {
+    const user = userEvent.setup();
+    const saveMainPlanAction = vi.fn(async () => ({ message: "Plan saved.", success: true }));
+    renderWorkspace({
+      plan: null,
+      paths: [],
+      targetGroups: [],
+      targetEvents: [],
+      saveMainPlanAction,
+    });
+
+    await user.click(screen.getByRole("button", { name: /create plan/i }));
+
+    await waitFor(() => expect(saveMainPlanAction).toHaveBeenCalled());
+    expect(trackAnalyticsEvent).toHaveBeenCalledWith("my_plan_created", {
+      source: "my_plan_form",
+    });
   });
 
   // Validates adding a pathway opens the drawer and submits the selected route fields.
