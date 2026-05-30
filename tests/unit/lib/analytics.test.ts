@@ -44,9 +44,20 @@ describe("analytics privacy helpers", () => {
   it("builds page view metadata without query strings", () => {
     expect(buildPageViewProperties("/targets?signup=completed", "https://example.com")).toEqual({
       "$current_url": "https://example.com/targets",
+      "$host": "example.com",
       "$pathname": "/targets",
       page_name: "Targets",
       page_path: "/targets",
+    });
+  });
+
+  it("includes localhost host metadata for local Web Analytics grouping", () => {
+    expect(buildPageViewProperties("/roadmap", "http://localhost:3000")).toEqual({
+      "$current_url": "http://localhost:3000/roadmap",
+      "$host": "localhost:3000",
+      "$pathname": "/roadmap",
+      page_name: "Roadmap",
+      page_path: "/roadmap",
     });
   });
 

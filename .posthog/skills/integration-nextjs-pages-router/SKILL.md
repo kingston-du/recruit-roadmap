@@ -1,14 +1,14 @@
 ---
-name: integration-nextjs-app-router
-description: PostHog integration for Next.js App Router applications
+name: integration-nextjs-pages-router
+description: PostHog integration for Next.js Pages Router applications
 metadata:
   author: PostHog
   version: 1.16.0
 ---
 
-# PostHog integration for Next.js App Router
+# PostHog integration for Next.js Pages Router
 
-This skill helps you add PostHog analytics to Next.js App Router applications.
+This skill helps you add PostHog analytics to Next.js Pages Router applications.
 
 ## Workflow
 
@@ -21,7 +21,7 @@ Follow these steps in order to complete the integration:
 
 ## Reference files
 
-- `references/EXAMPLE.md` - Next.js App Router example project code
+- `references/EXAMPLE.md` - Next.js Pages Router example project code
 - `references/next-js.md` - Next.js - docs
 - `references/identify-users.md` - Identify users - docs
 - `references/basic-integration-1.0-begin.md` - PostHog setup - begin
@@ -36,10 +36,6 @@ The example project shows the target implementation pattern. Consult the documen
 - **Environment variables**: Always use environment variables for PostHog keys. Never hardcode them.
 - **Minimal changes**: Add PostHog code alongside existing integrations. Don't replace or restructure existing code.
 - **Match the example**: Your implementation should follow the example project's patterns as closely as possible.
-
-## Hockey Pathway privacy override
-
-This project intentionally uses anonymous-only analytics. Do not add `posthog.identify()`, `$identify`, `posthog.reset()`, session replay, autocapture, error tracking, person properties, or server-side PostHog SDKs. Only send manual `$pageview` events and the approved custom events through `lib/analytics.ts`, and only with safe metadata such as counts, page name, plan tier, target type, source, and billing interval.
 
 ## Framework guidelines
 
@@ -56,8 +52,8 @@ This project intentionally uses anonymous-only analytics. Do not add `posthog.id
 
 ## Identifying users
 
-Do not identify users in this project. Keep analytics anonymous.
+Identify users during login and signup events. Refer to the example code and documentation for the correct identify pattern for this framework. If both frontend and backend code exist, pass the client-side session and distinct ID using `X-POSTHOG-DISTINCT-ID` and `X-POSTHOG-SESSION-ID` headers to maintain correlation.
 
 ## Error tracking
 
-Do not add PostHog error tracking in this project.
+Add PostHog error tracking to relevant files, particularly around critical user flows and API boundaries.

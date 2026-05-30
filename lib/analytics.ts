@@ -42,6 +42,7 @@ export type AnalyticsSource =
 
 export type AnalyticsProperties = {
   "$current_url"?: string;
+  "$host"?: string;
   "$pathname"?: string;
   billing_interval?: AnalyticsBillingInterval;
   contact_count?: number;
@@ -63,6 +64,7 @@ const analyticsEventNameSet = new Set<string>(analyticsEventNames);
 const allowedEventNames = new Set<string>(["$pageview", ...analyticsEventNames]);
 const allowedPropertyKeys = new Set<string>([
   "$current_url",
+  "$host",
   "$pathname",
   "billing_interval",
   "contact_count",
@@ -128,6 +130,18 @@ function sanitizeOrigin(value: string | undefined) {
   }
 }
 
+function sanitizeHost(value: string | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    return new URL(value).host;
+  } catch {
+    return undefined;
+  }
+}
+
 function hasSensitiveStringValue(value: string) {
   return emailValuePattern.test(value) || likelyPhoneValuePattern.test(value);
 }
@@ -158,6 +172,13 @@ function sanitizeScalarValue(key: string, value: unknown) {
   if (key === "$current_url" || key.toLowerCase().includes("url")) {
     const sanitizedUrl = sanitizeUrlValue(trimmed);
     return hasSensitiveStringValue(sanitizedUrl) ? undefined : sanitizedUrl;
+  }
+
+  if (key === "$host") {
+    const sanitizedHost = trimmed.includes("://")
+      ? sanitizeHost(trimmed)
+      : sanitizeHost(`https://${trimmed}`);
+    return sanitizedHost && !hasSensitiveStringValue(sanitizedHost) ? sanitizedHost : undefined;
   }
 
   if (key === "$pathname" || key === "page_path") {
@@ -273,9 +294,11 @@ export function pageNameFromPathname(pathname: string) {
 export function buildPageViewProperties(pathname: string, origin?: string) {
   const pagePath = sanitizeAnalyticsPath(pathname);
   const safeOrigin = sanitizeOrigin(origin);
+  const safeHost = sanitizeHost(safeOrigin);
 
   return sanitizeAnalyticsProperties({
     "$current_url": safeOrigin ? `${safeOrigin}${pagePath}` : pagePath,
+    "$host": safeHost,
     "$pathname": pagePath,
     page_name: pageNameFromPathname(pagePath),
     page_path: pagePath,

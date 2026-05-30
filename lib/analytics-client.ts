@@ -11,6 +11,20 @@ import {
 } from "@/lib/analytics";
 
 let initialized = false;
+let postHogReady = false;
+
+type PendingCapture = {
+  eventName: AnalyticsEventName | "$pageview";
+  properties: Record<string, string | number | boolean>;
+};
+
+const pendingCaptures: PendingCapture[] = [];
+
+function flushPendingCaptures() {
+  pendingCaptures.splice(0).forEach(({ eventName, properties }) => {
+    posthog.capture(eventName, properties);
+  });
+}
 
 export function isPostHogConfigured() {
   return Boolean(process.env.NEXT_PUBLIC_POSTHOG_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST);
@@ -39,10 +53,27 @@ export function initializePostHog() {
     disable_web_experiments: true,
     rageclick: false,
     before_send: sanitizePostHogCapture,
+    loaded: () => {
+      postHogReady = true;
+      flushPendingCaptures();
+    },
   });
 
   initialized = true;
   return true;
+}
+
+function captureWhenReady(eventName: PendingCapture["eventName"], properties: PendingCapture["properties"]) {
+  if (!initializePostHog()) {
+    return;
+  }
+
+  if (!postHogReady) {
+    pendingCaptures.push({ eventName, properties });
+    return;
+  }
+
+  posthog.capture(eventName, properties);
 }
 
 export function trackAnalyticsEvent(
@@ -53,7 +84,7 @@ export function trackAnalyticsEvent(
     return;
   }
 
-  posthog.capture(eventName, sanitizeAnalyticsProperties(properties));
+  captureWhenReady(eventName, sanitizeAnalyticsProperties(properties));
 }
 
 export function trackPageView(pathname: string) {
@@ -61,5 +92,5 @@ export function trackPageView(pathname: string) {
     return;
   }
 
-  posthog.capture("$pageview", buildPageViewProperties(pathname, window.location.origin));
+  captureWhenReady("$pageview", buildPageViewProperties(pathname, window.location.origin));
 }
