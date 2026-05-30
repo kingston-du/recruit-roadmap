@@ -42,6 +42,7 @@ import {
   targetIdSchema,
   type TargetFormFieldName,
 } from "@/lib/targets";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export type TargetMutationState = {
   message: string;
@@ -412,6 +413,16 @@ function revalidateOutreachViews() {
   revalidatePath("/today");
 }
 
+async function checkTargetMutationRateLimit(userId: string) {
+  return enforceRateLimit({
+    scope: "targets:mutation",
+    limit: 120,
+    windowSeconds: 10 * 60,
+    userId,
+    message: "Too many target changes. Wait a few minutes and try again.",
+  });
+}
+
 export async function createTargetAction(
   _previousState: TargetMutationState,
   formData: FormData,
@@ -426,6 +437,14 @@ export async function createTargetAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const limit = await canCreateAnotherTarget(user.id);
 
   if (!limit.allowed) {
@@ -466,6 +485,14 @@ export async function createContactAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const target = await validateOwnedTarget(user.id, parsed.data.target_id);
 
   if (!target.valid) {
@@ -514,6 +541,14 @@ export async function createEventAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const target = await validateOwnedTarget(user.id, parsed.data.target_id);
 
   if (!target.valid) {
@@ -562,6 +597,14 @@ export async function createOutreachLogAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const target = await validateRequiredOwnedTarget(user.id, parsed.data.target_id);
 
   if (!target.valid) {
@@ -625,6 +668,14 @@ export async function updateTargetAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("targets")
@@ -673,6 +724,14 @@ export async function updateContactAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const target = await validateOwnedTarget(user.id, parsed.data.target_id);
 
   if (!target.valid) {
@@ -729,6 +788,14 @@ export async function updateEventAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const target = await validateOwnedTarget(user.id, parsed.data.target_id);
 
   if (!target.valid) {
@@ -785,6 +852,14 @@ export async function updateOutreachLogAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const target = await validateRequiredOwnedTarget(user.id, parsed.data.target_id);
 
   if (!target.valid) {
@@ -845,6 +920,14 @@ export async function deleteTargetAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("targets")
@@ -887,6 +970,14 @@ export async function deleteContactAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("contacts")
@@ -929,6 +1020,14 @@ export async function deleteEventAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("events")
@@ -971,6 +1070,14 @@ export async function deleteOutreachLogAction(
   }
 
   const user = await requireUser("/targets");
+  const rateLimit = await checkTargetMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("outreach_logs")

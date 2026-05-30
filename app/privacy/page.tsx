@@ -7,35 +7,60 @@ const privacySections = [
   {
     title: "What we collect",
     body: [
-      "We collect only information needed to organize recruiting tracking. That can include account email, player profile details, target teams or schools, coach contact notes, camp or date links, reminders, and notes you choose to save.",
-      "We do not ask for information because we want to evaluate a player. We collect it so the signed-in family account can keep recruiting planning details in one place.",
+      "We collect only information needed to run Hockey Pathway and organize the recruiting details a family chooses to save. That can include account email, player profile details, target teams or schools, coach contact details, camp or date links, reminders, outreach history, setup assist requests, and notes.",
+      "If you pay for a plan or Setup Assist, Stripe handles payment processing. Hockey Pathway may receive payment status information, but it does not store full card numbers or bank account details.",
+      "We do not collect information to scout, rank, evaluate, or represent a player.",
     ],
   },
   {
-    title: "Minors and family accounts",
+    title: "Cookieless analytics",
     body: [
-      "Parent/guardian should manage accounts for minors. Do not use the service if the player is under 13 without parent/guardian involvement.",
-      "If a family uses the app for a minor player, the parent or guardian is responsible for deciding what information is appropriate to save.",
+      "We use PostHog only for limited product analytics, such as sanitized page views and app events. PostHog is configured in cookieless mode, with no PostHog cookies, no local storage, no session storage, no session replay, no surveys, no product tours, no web experiments, no automatic click/form capture, and no person profiles.",
+      "Analytics events are filtered before they leave the browser. The app allows only planned event names and limited metadata, such as page path, plan tier, feature source, count, or limit type. It strips emails, names, phone numbers, notes, player details, query strings, device IDs, session IDs, IP properties, and other browser or device metadata from client analytics events.",
+      "PostHog cookieless measurement may use a short-lived server-side hash to count visits without storing a browser identifier. We do not call PostHog identify, and analytics is not used to identify a family or player.",
+    ],
+  },
+  {
+    title: "Cookies",
+    body: [
+      "The current service uses essential cookies or similar storage only when needed for authentication, account security, checkout, or the basic operation of a feature the user requests.",
+      "Because the current analytics setup is cookieless and we do not use advertising, retargeting, or cross-site tracking cookies, we do not show an accept cookies banner. If optional tracking cookies are added later, they should be disclosed and consent-gated where required before they are used.",
     ],
   },
   {
     title: "How we use information",
     body: [
-      "We use saved information to run the app, keep each family's tracking private to their account, provide Setup Assist when requested, and improve basic product reliability.",
-      "We do not sell recruiting data. We do not scrape MyHockeyRankings, Elite Prospects, team sites, school sites, or league sites for user profiles.",
+      "We use saved information to run the app, keep each family's tracking private to their account, provide Setup Assist when requested, process payments or subscription status, prevent abuse, troubleshoot errors, and improve basic product reliability.",
+      "We do not sell personal information. We do not share personal information for cross-context behavioral advertising. We do not scrape MyHockeyRankings, Elite Prospects, team sites, school sites, or league sites for user profiles.",
     ],
   },
   {
-    title: "Your responsibility",
+    title: "Service providers",
+    body: [
+      "We use service providers to operate the product, including Supabase for authentication and database storage, Vercel for hosting, Stripe for payment processing, and PostHog for cookieless analytics when analytics environment variables are enabled.",
+      "These providers may process information only as needed to provide their services, secure the app, comply with law, or support operations.",
+    ],
+  },
+  {
+    title: "Minors and family accounts",
+    body: [
+      "Hockey Pathway is intended for parents, guardians, and hockey families. A parent or guardian should create and manage any account used for a player under 13.",
+      "Do not create or use an account for a child under 13 unless the parent or guardian is creating, managing, and consenting to the information saved in the account. Parents and guardians decide what information about a minor player is appropriate to save.",
+    ],
+  },
+  {
+    title: "Your choices",
+    body: [
+      "You can update most saved recruiting information in the app. You can delete your account from Settings. Account deletion removes private app records tied to that account, including player profile, plan, targets, contacts, dates, outreach history, and setup assist requests.",
+      "Some operational records may be retained only when required for legal, tax, payment, security, backup, or abuse-prevention purposes.",
+      "California residents and users in similar privacy-rights jurisdictions may have rights to know, access, correct, delete, or limit certain uses of personal information. Hockey Pathway does not sell or share personal information for targeted advertising.",
+    ],
+  },
+  {
+    title: "Important limits",
     body: [
       "Users must verify team, league, school, NCAA, and eligibility information independently. Information saved in Hockey Pathway may become outdated or may be entered incorrectly.",
-      "This is not a recruiting agency, scouting service, or legal/eligibility advisor.",
-    ],
-  },
-  {
-    title: "Deleting account data",
-    body: [
-      "Users can request deletion of account/data. We may use the account email to verify the request before deleting private account records.",
+      "This is not a recruiting agency, scouting service, coach/player marketplace, or legal/eligibility advisor. It does not guarantee roster spots, scholarships, coach responses, or recruiting outcomes.",
     ],
   },
 ];
@@ -52,11 +77,11 @@ export default function PrivacyPage() {
             <LogoMark size={28} />
             <span>Hockey Pathway</span>
           </Link>
-          <p className="mt-8 text-sm font-semibold text-cyan-800">Last updated May 26, 2026</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight">Privacy</h1>
+          <p className="mt-8 text-sm font-semibold text-cyan-800">Last updated May 30, 2026</p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight">Privacy Policy</h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            This early MVP privacy page explains, in plain language, what Hockey
-            Pathway is trying to collect and why.
+            This policy explains what Hockey Pathway collects, why it is used,
+            and how the current app avoids non-essential tracking cookies.
           </p>
 
           <div className="mt-10 grid gap-8">

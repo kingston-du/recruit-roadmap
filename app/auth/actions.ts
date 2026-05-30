@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { getSafeRedirectPath } from "@/lib/auth";
 import { appendSignupCompletedMarker } from "@/lib/analytics";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -74,6 +75,19 @@ export async function loginAction(
     return initialError;
   }
 
+  const rateLimit = await enforceRateLimit({
+    scope: "auth:login",
+    limit: 8,
+    windowSeconds: 15 * 60,
+    message: "Too many login attempts. Wait a few minutes and try again.",
+  });
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
@@ -106,6 +120,19 @@ export async function signupAction(
     return initialError;
   }
 
+  const rateLimit = await enforceRateLimit({
+    scope: "auth:signup",
+    limit: 4,
+    windowSeconds: 60 * 60,
+    message: "Too many signup attempts. Wait a bit and try again.",
+  });
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const {
     data: { session },
@@ -120,7 +147,7 @@ export async function signupAction(
 
   if (error) {
     return {
-      message: error.message,
+      message: "We could not create that account. Check the details and try again.",
     };
   }
 

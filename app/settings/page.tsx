@@ -1,6 +1,8 @@
 import { LogOut } from "lucide-react";
 
 import { logoutAction } from "@/app/auth/actions";
+import { deleteAccountAction } from "@/app/settings/actions";
+import { DeleteAccountForm } from "@/components/recruit/delete-account-form";
 import { AppShell } from "@/components/recruit/app-shell";
 import { Panel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
@@ -8,12 +10,35 @@ import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+type SettingsPageProps = {
+  searchParams: Promise<{
+    message?: string;
+  }>;
+};
+
+function getMessage(value: string | undefined) {
+  switch (value) {
+    case "delete-confirm":
+      return "Type DELETE before deleting the account.";
+    default:
+      return null;
+  }
+}
+
+export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const user = await requireUser("/settings");
+  const params = await searchParams;
+  const message = getMessage(params.message);
 
   return (
     <AppShell title="Settings" eyebrow="Account" activeHref="/settings" userEmail={user.email}>
       <div className="grid max-w-3xl gap-6">
+        {message ? (
+          <Panel className="border-amber-200 bg-amber-50">
+            <p className="text-sm leading-6 text-amber-900">{message}</p>
+          </Panel>
+        ) : null}
+
         <Panel>
           <h2 className="text-xl font-semibold tracking-tight">Account</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -35,6 +60,16 @@ export default async function SettingsPage() {
               <LogOut /> Log out
             </Button>
           </form>
+        </Panel>
+
+        <Panel className="border-red-200 bg-red-50">
+          <h2 className="text-xl font-semibold tracking-tight text-red-950">Delete account</h2>
+          <p className="mt-2 text-sm leading-6 text-red-900">
+            This deletes the account and private app data tied to it, including player
+            profile, plan, targets, contacts, dates, outreach history, and setup assist
+            requests.
+          </p>
+          <DeleteAccountForm action={deleteAccountAction} />
         </Panel>
       </div>
     </AppShell>

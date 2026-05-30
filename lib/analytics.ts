@@ -41,6 +41,7 @@ export type AnalyticsSource =
   | "roadmap_card";
 
 export type AnalyticsProperties = {
+  "$cookieless_mode"?: boolean;
   "$current_url"?: string;
   "$host"?: string;
   "$pathname"?: string;
@@ -63,6 +64,7 @@ export type AnalyticsProperties = {
 const analyticsEventNameSet = new Set<string>(analyticsEventNames);
 const allowedEventNames = new Set<string>(["$pageview", ...analyticsEventNames]);
 const allowedPropertyKeys = new Set<string>([
+  "$cookieless_mode",
   "$current_url",
   "$host",
   "$pathname",
@@ -221,7 +223,7 @@ function sanitizePostHogProperties(properties: Properties | undefined) {
       return;
     }
 
-    if (!key.startsWith("$") && !isPlainSafeKey(key)) {
+    if (!isPlainSafeKey(key)) {
       return;
     }
 

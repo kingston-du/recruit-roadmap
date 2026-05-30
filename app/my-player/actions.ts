@@ -9,6 +9,7 @@ import {
   readPlayerProfileFormData,
   type PlayerProfileFieldName,
 } from "@/lib/player-profile";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 export type PlayerProfileFormState = {
@@ -31,6 +32,20 @@ export async function savePlayerProfileAction(
   }
 
   const user = await requireUser("/my-player");
+  const rateLimit = await enforceRateLimit({
+    scope: "my-player:save",
+    limit: 30,
+    windowSeconds: 10 * 60,
+    userId: user.id,
+    message: "Too many profile changes. Wait a few minutes and try again.",
+  });
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("player_profiles")

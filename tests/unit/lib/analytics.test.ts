@@ -67,7 +67,11 @@ describe("analytics privacy helpers", () => {
       event: "target_created",
       properties: {
         "$browser": "Chrome",
+        "$cookieless_mode": true,
         "$current_url": "https://example.com/targets?email=parent@example.com",
+        "$device_id": "browser-device-id",
+        "$ip": "203.0.113.10",
+        "$session_id": "session-id",
         coach_email: "coach@example.com",
         distinct_id: "anonymous-id",
         page_name: "Targets",
@@ -85,7 +89,7 @@ describe("analytics privacy helpers", () => {
       uuid: "event-id",
       event: "target_created",
       properties: {
-        "$browser": "Chrome",
+        "$cookieless_mode": true,
         "$current_url": "https://example.com/targets",
         distinct_id: "anonymous-id",
         page_name: "Targets",

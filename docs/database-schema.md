@@ -2,7 +2,7 @@
 
 This schema is the private data model for the freemium MVP. Every table uses a UUID primary key, every user-owned table has a `user_id` that points to `auth.users(id)`, and every table has `created_at` and `updated_at` timestamps.
 
-Row Level Security is enabled on every table. Normal signed-in users can only work with rows where `user_id` matches their own Supabase Auth user id. Admin-only access is checked through the Supabase Auth app metadata claim `role = "admin"` so users cannot make themselves admins by editing profile data.
+Row Level Security is enabled on every table. Normal signed-in users can only work with rows where `user_id` matches their own Supabase Auth user id. Admin-only access is checked through the Supabase Auth app metadata claim `role = "admin"` so users cannot make themselves admins by editing profile data. Rate limits are stored separately from profile and subscription data in `rate_limits`.
 
 ## Tables
 
@@ -78,9 +78,16 @@ parent/player name, email, player name, help needed, goals, pasted target list,
 coach contacts, camp/date links, and notes. Admins can view requests and update
 the request status and internal notes.
 
+### `rate_limits`
+
+Sliding-window request entries for abuse prevention. Rows store a rate-limit
+scope, identity type, hashed request identity, optional `user_id`, and timestamp.
+The app writes these rows through a server-only service-role RPC. Users cannot
+read or write this table through normal authenticated or anonymous access.
+
 ## Security Model
 
-- RLS is on for all 11 tables.
+- RLS is on for all 12 tables.
 - Most tables have one owner policy: the user can select, insert, update, and delete only rows where `user_id = auth.uid()`.
 - Contacts and events have extra trigger-level guards so `target_id` cannot point to another user's target.
 - Outreach logs have extra trigger-level guards so `target_id` is required and
@@ -88,6 +95,7 @@ the request status and internal notes.
   user.
 - `setup_assist_requests` also allows admins to view and update requests.
 - `subscriptions` allows users to view their own row and admins to view or update subscription rows.
+- `rate_limits` has no direct user policies. It is a separate abuse-prevention table and is not mixed into user identity rows.
 - The service role key should stay server-only. It is not needed in client code and should never be committed.
 
 ## Automatic Rows

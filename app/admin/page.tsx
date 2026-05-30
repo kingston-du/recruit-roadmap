@@ -146,6 +146,8 @@ function getMessage(value: string | undefined) {
       return { tone: "amber" as const, text: "Plan tier change was not valid." };
     case "plan-error":
       return { tone: "amber" as const, text: "Plan tier could not be updated." };
+    case "rate-limited":
+      return { tone: "amber" as const, text: "Too many admin changes. Wait a few minutes and try again." };
     default:
       return null;
   }

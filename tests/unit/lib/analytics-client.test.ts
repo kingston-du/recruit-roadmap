@@ -19,6 +19,53 @@ describe("analytics client", () => {
     window.history.replaceState(null, "", "http://localhost:3000/roadmap");
   });
 
+  it("initializes PostHog in cookieless non-identifying mode", async () => {
+    const { initializePostHog } = await import("@/lib/analytics-client");
+
+    expect(initializePostHog()).toBe(true);
+    expect(posthogMock.init).toHaveBeenCalledWith(
+      "test-token",
+      expect.objectContaining({
+        advanced_disable_decide: true,
+        advanced_disable_feature_flags: true,
+        advanced_disable_feature_flags_on_first_load: true,
+        autocapture: false,
+        capture_dead_clicks: false,
+        capture_exceptions: false,
+        capture_heatmaps: false,
+        capture_pageleave: false,
+        capture_pageview: false,
+        capture_performance: false,
+        cookieless_mode: "always",
+        defaults: "2026-01-30",
+        disable_conversations: true,
+        disable_external_dependency_loading: true,
+        disable_persistence: true,
+        disable_product_tours: true,
+        disable_scroll_properties: true,
+        disable_session_recording: true,
+        disable_surveys: true,
+        disable_surveys_automatic_display: true,
+        disable_web_experiments: true,
+        internal_or_test_user_hostname: null,
+        persistence: "memory",
+        person_profiles: "never",
+        property_denylist: expect.arrayContaining([
+          "$browser",
+          "$device_id",
+          "$ip",
+          "$session_id",
+          "$user_agent",
+        ]),
+        rageclick: false,
+        save_campaign_params: false,
+        save_referrer: false,
+      }),
+    );
+    expect(posthogMock.init.mock.calls[0][1].before_send).toEqual(expect.any(Function));
+    expect(posthogMock.init.mock.calls[0][1].loaded).toEqual(expect.any(Function));
+  });
+
   it("queues page views until PostHog finishes loading", async () => {
     let loaded: (() => void) | undefined;
     posthogMock.init.mockImplementation((_token: string, config: { loaded: () => void }) => {

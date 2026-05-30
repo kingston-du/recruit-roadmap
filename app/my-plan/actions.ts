@@ -18,6 +18,7 @@ import {
   type MainPlanFormFieldName,
   type PlanPathFormFieldName,
 } from "@/lib/my-plan";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 export type MainPlanFormState = {
@@ -45,6 +46,16 @@ export type DefaultPathsState = {
 function revalidatePlanViews() {
   revalidatePath("/my-plan");
   revalidatePath("/today");
+}
+
+async function checkPlanMutationRateLimit(userId: string) {
+  return enforceRateLimit({
+    scope: "my-plan:mutation",
+    limit: 80,
+    windowSeconds: 10 * 60,
+    userId,
+    message: "Too many plan changes. Wait a few minutes and try again.",
+  });
 }
 
 async function findMainPlanId(userId: string) {
@@ -156,6 +167,14 @@ export async function saveMainPlanAction(
   }
 
   const user = await requireUser("/my-plan");
+  const rateLimit = await checkPlanMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const rawId = formData.get("id");
   const planId =
@@ -237,6 +256,14 @@ export async function createPlanPathAction(
   }
 
   const user = await requireUser("/my-plan");
+  const rateLimit = await checkPlanMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const mainPlan = await getOrCreateMainPlanId(user.id);
 
@@ -284,6 +311,14 @@ export async function updatePlanPathAction(
   }
 
   const user = await requireUser("/my-plan");
+  const rateLimit = await checkPlanMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("plan_paths")
@@ -320,6 +355,14 @@ export async function deletePlanPathAction(
   }
 
   const user = await requireUser("/my-plan");
+  const rateLimit = await checkPlanMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("plan_paths")
@@ -345,6 +388,14 @@ export async function deletePlanPathAction(
 
 export async function addDefaultPlanPathsAction(): Promise<DefaultPathsState> {
   const user = await requireUser("/my-plan");
+  const rateLimit = await checkPlanMutationRateLimit(user.id);
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const mainPlan = await getOrCreateMainPlanId(user.id);
 

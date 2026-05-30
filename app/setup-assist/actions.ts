@@ -9,6 +9,7 @@ import {
   setupAssistRequestFormSchema,
   type SetupAssistRequestFieldName,
 } from "@/lib/setup-assist";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 export type SetupAssistRequestFormState = {
@@ -33,6 +34,20 @@ export async function createSetupAssistRequestAction(
   }
 
   const user = await requireUser("/setup-assist");
+  const rateLimit = await enforceRateLimit({
+    scope: "setup-assist:create",
+    limit: 5,
+    windowSeconds: 60 * 60,
+    userId: user.id,
+    message: "Too many setup requests. Wait a bit and try again.",
+  });
+
+  if (!rateLimit.allowed) {
+    return {
+      message: rateLimit.message,
+    };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("setup_assist_requests")

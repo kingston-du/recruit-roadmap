@@ -36,7 +36,7 @@ const termsSections = [
     title: "Data and deletion",
     body: [
       "We collect only information needed to organize recruiting tracking and operate the account.",
-      "Users can request deletion of account/data. We may verify the request through the account email before deleting private account records.",
+      "Users can delete their account from Settings. Deletion removes private app data tied to the account, subject to any limited retention required for legal, tax, payment, security, or abuse-prevention purposes.",
     ],
   },
 ];
