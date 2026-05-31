@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
@@ -13,9 +14,17 @@ import {
 } from "lucide-react";
 
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
+import { JsonLd } from "@/components/recruit/json-ld";
 import { LogoMark } from "@/components/recruit/logo";
 import { ImageBackdrop, ImagePanel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
+import { createPageMetadata, createWebApplicationJsonLd, siteConfig } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: siteConfig.title,
+  description: siteConfig.description,
+  path: "/",
+});
 
 const productPages: Array<{
   name: string;
@@ -119,6 +128,7 @@ function SectionHeading({
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-white text-slate-950">
+      <JsonLd data={createWebApplicationJsonLd()} />
       <section
         className="relative flex min-h-[84svh] overflow-hidden bg-[#071a2f] text-white"
         style={{

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { AlertCircle, ClipboardList } from "lucide-react";
 
 import {
@@ -31,8 +32,15 @@ import {
   targetSelect,
 } from "@/lib/targets";
 import { createClient } from "@/lib/supabase/server";
+import { createNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = createNoIndexMetadata({
+  title: "Targets",
+  description: "Private Hockey Pathway targets, coach contacts, dates, and outreach workspace.",
+  path: "/targets",
+});
 
 export default async function TargetsPage() {
   const user = await requireUser("/targets");

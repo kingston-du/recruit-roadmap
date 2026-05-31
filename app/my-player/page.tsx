@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { AlertCircle, Lock, Save, UserRound } from "lucide-react";
 
 import { savePlayerProfileAction } from "@/app/my-player/actions";
@@ -14,8 +15,15 @@ import {
   type PlayerProfileCompletenessItem,
 } from "@/lib/player-profile";
 import { createClient } from "@/lib/supabase/server";
+import { createNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = createNoIndexMetadata({
+  title: "My Player",
+  description: "Private Hockey Pathway player profile details for one family account.",
+  path: "/my-player",
+});
 
 function itemTone(item: PlayerProfileCompletenessItem) {
   if (item.value) {

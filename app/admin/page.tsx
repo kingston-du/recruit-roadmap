@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { AlertCircle, ClipboardList, Save, ShieldCheck, Target, UserRound, Wrench } from "lucide-react";
 
 import { updatePlanTierAction } from "@/app/admin/actions";
@@ -5,8 +6,15 @@ import { AppShell } from "@/components/recruit/app-shell";
 import { Panel, StatusPill } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 import { createAdminClient, requireAdmin } from "@/lib/admin";
+import { createNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = createNoIndexMetadata({
+  title: "Admin",
+  description: "Private Hockey Pathway operations page.",
+  path: "/admin",
+});
 
 type AdminPageProps = {
   searchParams: Promise<{

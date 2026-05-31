@@ -1,7 +1,18 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
 import { LogoMark } from "@/components/recruit/logo";
+import { createPageMetadata } from "@/lib/seo";
+
+const disclaimerDescription =
+  "Understand Hockey Pathway's role as a planning tool, not a recruiting agency, scouting service, marketplace, or guarantee of outcomes.";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Disclaimer",
+  description: disclaimerDescription,
+  path: "/disclaimer",
+});
 
 const disclaimerSections = [
   {

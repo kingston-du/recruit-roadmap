@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { AlertCircle, Target } from "lucide-react";
 
 import {
@@ -23,8 +24,15 @@ import {
 } from "@/lib/my-plan";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeTargets, targetSelect } from "@/lib/targets";
+import { createNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = createNoIndexMetadata({
+  title: "My Plan",
+  description: "Private Hockey Pathway family recruiting plan workspace.",
+  path: "/my-plan",
+});
 
 export default async function MyPlanPage() {
   const user = await requireUser("/my-plan");

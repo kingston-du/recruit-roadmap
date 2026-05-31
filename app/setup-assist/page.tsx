@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowRight, CheckCircle2, CreditCard, LockKeyhole, Wrench } from "lucide-react";
 
 import { createSetupAssistRequestAction } from "@/app/setup-assist/actions";
@@ -7,8 +8,15 @@ import { SetupAssistForm } from "@/components/recruit/setup-assist-form";
 import { Panel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth";
+import { createNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = createNoIndexMetadata({
+  title: "Setup Assist",
+  description: "Private Setup Assist request form for Hockey Pathway account holders.",
+  path: "/setup-assist",
+});
 
 const setupAssistItems = [
   "Import user-provided targets and notes",

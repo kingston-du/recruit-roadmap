@@ -1,10 +1,31 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowRight, CheckCircle2, Wrench } from "lucide-react";
 
 import { CheckoutButton } from "@/components/recruit/checkout-button";
+import { JsonLd } from "@/components/recruit/json-ld";
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
 import { LogoMark } from "@/components/recruit/logo";
 import { Button } from "@/components/ui/button";
+import {
+  absoluteUrl,
+  createBreadcrumbJsonLd,
+  createOfferCatalogJsonLd,
+  createPageMetadata,
+} from "@/lib/seo";
+
+const pricingDescription =
+  "Start Hockey Pathway free, upgrade to Pro for unlimited tracking, or add optional Setup Assist for user-provided targets, contacts, dates, and links.";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Pricing",
+  description: pricingDescription,
+  path: "/pricing",
+  image: "/images/hockey/sticks-detail.jpg",
+  imageAlt: "Hockey sticks detail for Hockey Pathway pricing",
+  imageWidth: 1400,
+  imageHeight: 1200,
+});
 
 const freeItems = [
   "Public Roadmap",
@@ -33,12 +54,34 @@ const setupAssistItems = [
   "Helpful links",
 ];
 
+function createPricingJsonLd() {
+  return [
+    createBreadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Pricing", path: "/pricing" },
+    ]),
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": absoluteUrl("/pricing#webpage"),
+      name: "Hockey Pathway Pricing",
+      description: pricingDescription,
+      url: absoluteUrl("/pricing"),
+      isPartOf: {
+        "@id": absoluteUrl("/#website"),
+      },
+      mainEntity: createOfferCatalogJsonLd(),
+    },
+  ];
+}
+
 export default function PricingPage() {
   const proMonthlyLink = process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_LINK;
   const proYearlyLink = process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_LINK;
 
   return (
     <main className="min-h-screen bg-[#f7fafc] text-slate-950">
+      <JsonLd data={createPricingJsonLd()} />
       <div className="mx-auto max-w-6xl px-5 py-10 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between gap-4">
           <Link

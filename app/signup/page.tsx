@@ -1,10 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { signupAction } from "@/app/auth/actions";
 import { AuthForm } from "@/components/recruit/auth-form";
 import { LogoMark } from "@/components/recruit/logo";
 import { getCurrentUser, getSafeRedirectPath } from "@/lib/auth";
+import { createNoIndexMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createNoIndexMetadata({
+  title: "Sign Up",
+  description: "Create a free private Hockey Pathway account for My Plan, My Player, targets, and Today.",
+  path: "/signup",
+  follow: true,
+});
 
 type SignupPageProps = {
   searchParams: Promise<{

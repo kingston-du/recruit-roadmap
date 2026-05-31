@@ -1,10 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { loginAction } from "@/app/auth/actions";
 import { AuthForm } from "@/components/recruit/auth-form";
 import { LogoMark } from "@/components/recruit/logo";
 import { getCurrentUser, getSafeRedirectPath } from "@/lib/auth";
+import { createNoIndexMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createNoIndexMetadata({
+  title: "Log In",
+  description: "Log in to a private Hockey Pathway family recruiting workspace.",
+  path: "/login",
+  follow: true,
+});
 
 type LoginPageProps = {
   searchParams: Promise<{

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { LogOut } from "lucide-react";
 
 import { logoutAction } from "@/app/auth/actions";
@@ -7,8 +8,15 @@ import { AppShell } from "@/components/recruit/app-shell";
 import { Panel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth";
+import { createNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = createNoIndexMetadata({
+  title: "Settings",
+  description: "Private Hockey Pathway account settings page.",
+  path: "/settings",
+});
 
 type SettingsPageProps = {
   searchParams: Promise<{

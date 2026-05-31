@@ -1,8 +1,16 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 
 import { LogoMark } from "@/components/recruit/logo";
 import { Button } from "@/components/ui/button";
+import { createNoIndexMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createNoIndexMetadata({
+  title: "Page Not Found",
+  description: "The requested Hockey Pathway page was not found.",
+  path: "/404",
+});
 
 export default function NotFound() {
   return (

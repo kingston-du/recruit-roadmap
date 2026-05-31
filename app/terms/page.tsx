@@ -1,7 +1,18 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
 import { LogoMark } from "@/components/recruit/logo";
+import { createPageMetadata } from "@/lib/seo";
+
+const termsDescription =
+  "Review the terms for using Hockey Pathway as a hockey recruiting planning and organization tool for families.";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Terms",
+  description: termsDescription,
+  path: "/terms",
+});
 
 const termsSections = [
   {

@@ -1,7 +1,18 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
 import { LogoMark } from "@/components/recruit/logo";
+import { createPageMetadata } from "@/lib/seo";
+
+const privacyDescription =
+  "Read how Hockey Pathway protects private family recruiting details, player profile information, targets, contacts, dates, and account data.";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Privacy Policy",
+  description: privacyDescription,
+  path: "/privacy",
+});
 
 const privacySections = [
   {

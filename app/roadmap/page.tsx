@@ -1,11 +1,27 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ClipboardList, Map, Target } from "lucide-react";
 
 import { AppShell } from "@/components/recruit/app-shell";
+import { JsonLd } from "@/components/recruit/json-ld";
 import { RoadmapGuide } from "@/components/recruit/roadmap-guide";
 import { ImagePanel } from "@/components/recruit/ui";
 import { Button } from "@/components/ui/button";
 import { roadmapSections } from "@/lib/mock-data";
+import { absoluteUrl, createBreadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
+
+const roadmapDescription =
+  "Learn common boys hockey paths from youth, AAA, high school, prep, academy, junior hockey, college, and beyond before building your target list.";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Boys Hockey Roadmap",
+  description: roadmapDescription,
+  path: "/roadmap",
+  image: "/images/hockey/empty-rink.jpg",
+  imageAlt: "Empty hockey rink used for the Hockey Pathway boys hockey roadmap",
+  imageWidth: 1800,
+  imageHeight: 1100,
+});
 
 const pathExamples = [
   "AAA",
@@ -24,6 +40,39 @@ const pathExamples = [
   "ACHA",
   "Pro / Minor Pro",
 ];
+
+function createRoadmapJsonLd() {
+  return [
+    createBreadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Roadmap", path: "/roadmap" },
+    ]),
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "@id": absoluteUrl("/roadmap#collection"),
+      name: "Boys Hockey Roadmap",
+      description: roadmapDescription,
+      url: absoluteUrl("/roadmap"),
+      isPartOf: {
+        "@id": absoluteUrl("/#website"),
+      },
+      about: pathExamples.map((name) => ({
+        "@type": "Thing",
+        name,
+      })),
+      mainEntity: {
+        "@type": "ItemList",
+        itemListElement: roadmapSections.map((section, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: section.title,
+          description: section.intro,
+        })),
+      },
+    },
+  ];
+}
 
 export default function RoadmapPage() {
   return (
@@ -46,6 +95,7 @@ export default function RoadmapPage() {
         </div>
       }
     >
+      <JsonLd data={createRoadmapJsonLd()} />
       <div className="grid gap-6">
         <ImagePanel
           imageSrc="/images/hockey/empty-rink.jpg"

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   AlertCircle,
   ArrowRight,
@@ -37,6 +38,7 @@ import {
   planPathSelect,
 } from "@/lib/my-plan";
 import { createClient } from "@/lib/supabase/server";
+import { createNoIndexMetadata } from "@/lib/seo";
 import {
   freeTargetLimit,
   hasProTargets,
@@ -47,6 +49,12 @@ import {
 } from "@/lib/targets";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = createNoIndexMetadata({
+  title: "Today",
+  description: "Private Hockey Pathway Today checklist for one family account.",
+  path: "/today",
+});
 
 type TodayAction = {
   id: string;
