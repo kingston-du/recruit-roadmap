@@ -1,10 +1,12 @@
 import type { NextConfig } from "next";
 
 const isProduction = process.env.NODE_ENV === "production";
+const turnstileOrigin = "https://challenges.cloudflare.com";
 const scriptSources = [
   "'self'",
   "'unsafe-inline'",
   isProduction ? "" : "'unsafe-eval'",
+  turnstileOrigin,
   "https://*.posthog.com",
   "https://*.i.posthog.com",
 ]
@@ -25,7 +27,7 @@ const securityHeaders = [
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.posthog.com https://*.i.posthog.com",
-      "frame-src https://checkout.stripe.com",
+      `frame-src https://checkout.stripe.com ${turnstileOrigin}`,
       isProduction ? "upgrade-insecure-requests" : "",
     ]
       .filter(Boolean)

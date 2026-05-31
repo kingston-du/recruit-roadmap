@@ -1,5 +1,6 @@
 "use server";
 
+import { isAuthApiError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -21,6 +22,7 @@ export type AuthFormState = {
 const authSchema = z.object({
   email: z.string().trim().email("Enter a valid email address."),
   password: z.string().min(6, "Password must be at least 6 characters."),
+  captchaToken: z.string().trim().optional(),
   next: z.string().optional(),
 });
 
@@ -50,10 +52,51 @@ function buildEmailRedirectTo(next: string | undefined) {
   return callbackUrl.toString();
 }
 
+function readOptionalString(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const trimmedValue = value.trim();
+
+  return trimmedValue.length > 0 ? trimmedValue : undefined;
+}
+
+function isSignupCaptchaEnabled() {
+  return Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim());
+}
+
+function getSignupErrorMessage(error: unknown) {
+  if (isAuthApiError(error)) {
+    if (
+      error.status === 429 ||
+      error.code === "over_email_send_rate_limit" ||
+      error.code === "over_request_rate_limit"
+    ) {
+      return "Too many account confirmation emails were requested. Wait a few minutes and try again.";
+    }
+
+    if (error.code === "captcha_failed") {
+      return "The security check did not complete. Refresh the page and try again.";
+    }
+
+    if (error.code === "email_address_not_authorized") {
+      return "Account confirmation email is not ready for public signups yet.";
+    }
+
+    if (error.code === "signup_disabled" || error.code === "email_provider_disabled") {
+      return "Account creation is temporarily unavailable. Try again later.";
+    }
+  }
+
+  return "We could not create that account. Check the details and try again.";
+}
+
 function readAuthForm(formData: FormData) {
   return authSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
+    captchaToken: readOptionalString(formData.get("captchaToken")),
     next: formData.get("next") ?? undefined,
   });
 }
@@ -120,6 +163,12 @@ export async function signupAction(
     return initialError;
   }
 
+  if (isSignupCaptchaEnabled() && !parsed.data.captchaToken) {
+    return {
+      message: "Complete the security check and try again.",
+    };
+  }
+
   const rateLimit = await enforceRateLimit({
     scope: "auth:signup",
     limit: 4,
@@ -141,13 +190,14 @@ export async function signupAction(
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
+      captchaToken: parsed.data.captchaToken,
       emailRedirectTo: buildEmailRedirectTo(parsed.data.next),
     },
   });
 
   if (error) {
     return {
-      message: "We could not create that account. Check the details and try again.",
+      message: getSignupErrorMessage(error),
     };
   }
 

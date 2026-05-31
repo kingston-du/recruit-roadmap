@@ -1,7 +1,8 @@
 "use client";
 
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 
 import type { AuthFormState } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
@@ -14,14 +15,28 @@ type AuthFormProps = {
   mode: "login" | "signup";
   action: (previousState: AuthFormState, formData: FormData) => Promise<AuthFormState>;
   nextPath: string;
+  turnstileSiteKey?: string;
 };
 
-export function AuthForm({ mode, action, nextPath }: AuthFormProps) {
+export function AuthForm({ mode, action, nextPath, turnstileSiteKey }: AuthFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState);
+  const [captchaError, setCaptchaError] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const turnstileRef = useRef<TurnstileInstance>(null);
   const isLogin = mode === "login";
+  const hasTurnstile = !isLogin && Boolean(turnstileSiteKey);
+
+  function handleFormAction(formData: FormData) {
+    formAction(formData);
+
+    if (hasTurnstile) {
+      setCaptchaToken("");
+      turnstileRef.current?.reset();
+    }
+  }
 
   return (
-    <form action={formAction} className="mt-8 grid gap-5">
+    <form action={handleFormAction} className="mt-8 grid gap-5">
       <input type="hidden" name="next" value={nextPath} />
 
       <div className="grid gap-2">
@@ -61,6 +76,37 @@ export function AuthForm({ mode, action, nextPath }: AuthFormProps) {
         ) : null}
       </div>
 
+      {hasTurnstile && turnstileSiteKey ? (
+        <div className="grid min-h-[65px] gap-2 overflow-hidden">
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={turnstileSiteKey}
+            options={{
+              action: "signup",
+              size: "flexible",
+              theme: "light",
+            }}
+            onSuccess={(token) => {
+              setCaptchaError("");
+              setCaptchaToken(token);
+            }}
+            onExpire={() => {
+              setCaptchaToken("");
+            }}
+            onError={() => {
+              setCaptchaToken("");
+              setCaptchaError("Security check did not load. Refresh and try again.");
+            }}
+            onTimeout={() => {
+              setCaptchaToken("");
+              setCaptchaError("Security check timed out. Refresh and try again.");
+            }}
+          />
+          <input type="hidden" name="captchaToken" value={captchaToken} />
+          {captchaError ? <p className="text-sm text-red-700">{captchaError}</p> : null}
+        </div>
+      ) : null}
+
       {state.message ? (
         <p
           className={
@@ -75,7 +121,7 @@ export function AuthForm({ mode, action, nextPath }: AuthFormProps) {
 
       <Button
         type="submit"
-        disabled={pending}
+        disabled={pending || (hasTurnstile && !captchaToken)}
         className="h-11 rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]"
       >
         {pending ? (isLogin ? "Checking..." : "Creating...") : isLogin ? "Log in" : "Create account"}

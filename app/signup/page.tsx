@@ -15,6 +15,7 @@ type SignupPageProps = {
 export default async function SignupPage({ searchParams }: SignupPageProps) {
   const params = await searchParams;
   const nextPath = getSafeRedirectPath(params.next);
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim();
   const user = await getCurrentUser();
 
   if (user) {
@@ -47,7 +48,12 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           <h2 className="mt-2 text-2xl font-semibold tracking-tight">
             Create your free account
           </h2>
-          <AuthForm mode="signup" action={signupAction} nextPath={nextPath} />
+          <AuthForm
+            mode="signup"
+            action={signupAction}
+            nextPath={nextPath}
+            turnstileSiteKey={turnstileSiteKey}
+          />
         </section>
       </div>
     </main>
