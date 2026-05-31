@@ -46,7 +46,7 @@ set search_path = public
 as $$
 declare
   current_count integer;
-  window interval;
+  rate_window interval;
 begin
   if p_scope is null
     or char_length(p_scope) < 1
@@ -71,7 +71,7 @@ begin
       using errcode = 'P0001';
   end if;
 
-  window = make_interval(secs => p_window_seconds);
+  rate_window = make_interval(secs => p_window_seconds);
 
   perform pg_advisory_xact_lock(
     hashtext(p_scope || ':' || p_identity_type || ':' || p_identity_hash)
@@ -86,7 +86,7 @@ begin
   where scope = p_scope
     and identity_type = p_identity_type
     and identity_hash = p_identity_hash
-    and created_at > now() - window;
+    and created_at > now() - rate_window;
 
   if current_count >= p_limit then
     raise exception 'Rate limit exceeded'
