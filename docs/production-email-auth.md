@@ -15,6 +15,11 @@ Hockey Pathway keeps Supabase Auth for users, sessions, `auth.users`, and RLS. F
 5. In **Authentication > Bot and Abuse Protection**, enable CAPTCHA protection with Cloudflare Turnstile.
    - Store the Turnstile secret key in Supabase only.
    - Store the public Turnstile site key in Vercel as `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
+6. In **Authentication > URL Configuration**, set production URLs.
+   - **Site URL**: your live HTTPS site, not localhost.
+   - **Redirect URLs**: add the exact live callback URL, for example `https://your-domain.com/auth/callback`.
+   - Keep `http://localhost:3000/**` only as an additional local-development redirect URL.
+7. In Vercel, set `NEXT_PUBLIC_SITE_URL` to the same live HTTPS site. Do not set it to `localhost` for Production or Preview.
 
 ## App Behavior
 
@@ -24,6 +29,7 @@ Hockey Pathway keeps Supabase Auth for users, sessions, `auth.users`, and RLS. F
 - Cloudflare showing a successful Turnstile challenge only proves the browser solved the widget. Supabase still needs the matching Turnstile secret configured in **Authentication > Bot and Abuse Protection** before it will accept the token.
 - If signup repeatedly fails with CAPTCHA errors, check the Supabase CAPTCHA secret before retrying. Failed signup attempts can still consume app and Supabase rate-limit windows.
 - Confirmation links should be opened in the same browser used to sign up because the SSR email flow uses PKCE cookies.
+- Production confirmation emails should never point to `localhost`. If they do, check both Vercel `NEXT_PUBLIC_SITE_URL` and Supabase **Authentication > URL Configuration**.
 
 ## Verification
 

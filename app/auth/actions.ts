@@ -4,8 +4,9 @@ import { isAuthApiError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { getSafeRedirectPath } from "@/lib/auth";
 import { appendSignupCompletedMarker } from "@/lib/analytics";
+import { buildEmailRedirectTo } from "@/lib/auth-redirect";
+import { getSafeRedirectPath } from "@/lib/auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
@@ -30,27 +31,6 @@ const initialError = {
   message:
     "Login is not ready because the Supabase settings are missing.",
 } satisfies AuthFormState;
-
-function getConfiguredSiteOrigin() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-
-  if (!siteUrl) {
-    return "http://localhost:3000";
-  }
-
-  try {
-    return new URL(siteUrl).origin;
-  } catch {
-    return "http://localhost:3000";
-  }
-}
-
-function buildEmailRedirectTo(next: string | undefined) {
-  const callbackUrl = new URL("/auth/callback", getConfiguredSiteOrigin());
-  callbackUrl.searchParams.set("next", getSafeRedirectPath(next));
-
-  return callbackUrl.toString();
-}
 
 function readOptionalString(value: FormDataEntryValue | null) {
   if (typeof value !== "string") {
@@ -211,7 +191,7 @@ export async function signupAction(
     password: parsed.data.password,
     options: {
       captchaToken: parsed.data.captchaToken,
-      emailRedirectTo: buildEmailRedirectTo(parsed.data.next),
+      emailRedirectTo: await buildEmailRedirectTo(parsed.data.next),
     },
   });
 
