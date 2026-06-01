@@ -26,8 +26,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const nextPath = getSafeRedirectPath(params.next);
   const user = await getCurrentUser();
+  const shouldShowVerificationFailure = params.message === "verification-failed";
 
-  if (user) {
+  if (user && !shouldShowVerificationFailure) {
     redirect(nextPath);
   }
 
@@ -65,6 +66,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           {params.message === "account-deleted" ? (
             <p className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm leading-6 text-emerald-900">
               Account deleted. You can create a new account any time.
+            </p>
+          ) : null}
+          {shouldShowVerificationFailure ? (
+            <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+              We could not finish that email verification link. Open the newest
+              email in the same browser you used to sign up, then log in with that
+              account.
             </p>
           ) : null}
           <AuthForm mode="login" action={loginAction} nextPath={nextPath} />

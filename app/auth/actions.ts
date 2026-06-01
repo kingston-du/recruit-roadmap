@@ -92,6 +92,24 @@ function getSignupErrorMessage(error: unknown) {
   return "We could not create that account. Check the details and try again.";
 }
 
+function getLoginErrorMessage(error: unknown) {
+  if (isAuthApiError(error)) {
+    if (error.status === 429 || error.code === "over_request_rate_limit") {
+      return "Too many login attempts. Wait a few minutes and try again.";
+    }
+
+    if (error.code === "email_not_confirmed") {
+      return "Check your email to confirm this account before logging in.";
+    }
+
+    if (error.code === "invalid_credentials") {
+      return "We could not sign you in. Check the email and password, then try again.";
+    }
+  }
+
+  return "We could not sign you in. Check the email and password, then try again.";
+}
+
 function readAuthForm(formData: FormData) {
   return authSchema.safeParse({
     email: formData.get("email"),
@@ -139,7 +157,7 @@ export async function loginAction(
 
   if (error) {
     return {
-      message: "We could not sign you in. Check the email and password, then try again.",
+      message: getLoginErrorMessage(error),
     };
   }
 
