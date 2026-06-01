@@ -14,6 +14,7 @@ type RateLimitOptions = {
   windowSeconds: number;
   userId?: string | null;
   message?: string;
+  failOpen?: boolean;
 };
 
 type RateLimitResult = {
@@ -27,6 +28,10 @@ function sha256(value: string) {
 
 function firstForwardedIp(value: string | null) {
   return value?.split(",")[0]?.trim() || null;
+}
+
+function isRateLimitExceeded(error: { message?: string }) {
+  return error.message?.toLowerCase().includes("rate limit exceeded") ?? false;
 }
 
 async function requestFingerprintHash() {
@@ -48,12 +53,19 @@ export async function enforceRateLimit({
   windowSeconds,
   userId = null,
   message = defaultRateLimitMessage,
+  failOpen = false,
 }: RateLimitOptions): Promise<RateLimitResult> {
   if (!getSupabaseConfig()) {
     return { allowed: true, message: "" };
   }
 
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (failOpen) {
+      console.error(`Rate limit skipped for ${scope}: missing service role key.`);
+
+      return { allowed: true, message: "" };
+    }
+
     return process.env.NODE_ENV === "production"
       ? { allowed: false, message }
       : { allowed: true, message: "" };
@@ -87,6 +99,16 @@ export async function enforceRateLimit({
     });
 
     if (error) {
+      if (isRateLimitExceeded(error)) {
+        return { allowed: false, message };
+      }
+
+      console.error(`Rate limit skipped for ${scope}: ${error.message}`);
+
+      if (failOpen) {
+        return { allowed: true, message: "" };
+      }
+
       return { allowed: false, message };
     }
   }

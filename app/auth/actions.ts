@@ -138,9 +138,10 @@ export async function loginAction(
 
   const rateLimit = await enforceRateLimit({
     scope: "auth:login",
-    limit: 8,
+    limit: 20,
     windowSeconds: 15 * 60,
     message: "Too many login attempts. Wait a few minutes and try again.",
+    failOpen: true,
   });
 
   if (!rateLimit.allowed) {
@@ -189,9 +190,10 @@ export async function signupAction(
 
   const rateLimit = await enforceRateLimit({
     scope: "auth:signup",
-    limit: 4,
+    limit: 12,
     windowSeconds: 60 * 60,
-    message: "Too many signup attempts. Wait a bit and try again.",
+    message: "Too many signup attempts. Wait a few minutes, then try again.",
+    failOpen: true,
   });
 
   if (!rateLimit.allowed) {
@@ -221,7 +223,8 @@ export async function signupAction(
 
   if (!session) {
     return {
-      message: "Check your email to confirm your account, then come back to sign in.",
+      message:
+        "Check your email to confirm your account, then come back to sign in. If this email is already confirmed, use Log in instead.",
       success: true,
     };
   }
