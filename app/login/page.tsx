@@ -25,6 +25,7 @@ type LoginPageProps = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const nextPath = getSafeRedirectPath(params.next);
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim();
   const user = await getCurrentUser();
   const shouldShowVerificationFailure = params.message === "verification-failed";
 
@@ -75,7 +76,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               account.
             </p>
           ) : null}
-          <AuthForm mode="login" action={loginAction} nextPath={nextPath} />
+          <AuthForm
+            mode="login"
+            action={loginAction}
+            nextPath={nextPath}
+            turnstileSiteKey={turnstileSiteKey}
+          />
         </section>
       </div>
     </main>

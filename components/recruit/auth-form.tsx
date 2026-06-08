@@ -24,7 +24,7 @@ export function AuthForm({ mode, action, nextPath, turnstileSiteKey }: AuthFormP
   const [captchaToken, setCaptchaToken] = useState("");
   const turnstileRef = useRef<TurnstileInstance>(null);
   const isLogin = mode === "login";
-  const hasTurnstile = !isLogin && Boolean(turnstileSiteKey);
+  const hasTurnstile = Boolean(turnstileSiteKey);
 
   function handleFormAction(formData: FormData) {
     formAction(formData);
@@ -82,7 +82,7 @@ export function AuthForm({ mode, action, nextPath, turnstileSiteKey }: AuthFormP
             ref={turnstileRef}
             siteKey={turnstileSiteKey}
             options={{
-              action: "signup",
+              action: mode,
               size: "flexible",
               theme: "light",
             }}

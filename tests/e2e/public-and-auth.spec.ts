@@ -29,9 +29,15 @@ test.describe("Public routes and unauthenticated behavior", () => {
     await expect(page.getByLabel("Email")).toBeVisible();
     await expect(page.getByLabel("Password")).toBeVisible();
     await expect(page.getByRole("button", { name: "Log in" })).toBeVisible();
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+      await expect(page.locator('input[name="captchaToken"]')).toHaveCount(1);
+    }
     await page.getByRole("link", { name: "Sign up" }).click();
     await expect(page).toHaveURL(/\/signup\?next=%2Ftargets/);
     await expect(page.getByText("Use at least 6 characters.")).toBeVisible();
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+      await expect(page.locator('input[name="captchaToken"]')).toHaveCount(1);
+    }
   });
 
   // Validates the pricing page communicates missing Stripe links without crashing checkout buttons.

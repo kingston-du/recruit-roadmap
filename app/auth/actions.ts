@@ -42,7 +42,7 @@ function readOptionalString(value: FormDataEntryValue | null) {
   return trimmedValue.length > 0 ? trimmedValue : undefined;
 }
 
-function isSignupCaptchaEnabled() {
+function isAuthCaptchaEnabled() {
   return Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim());
 }
 
@@ -82,6 +82,10 @@ function getLoginErrorMessage(error: unknown) {
       return "Check your email to confirm this account before logging in.";
     }
 
+    if (error.code === "captcha_failed") {
+      return "The security check did not complete. Refresh the page and try again.";
+    }
+
     if (error.code === "invalid_credentials") {
       return "We could not sign you in. Check the email and password, then try again.";
     }
@@ -116,6 +120,12 @@ export async function loginAction(
     return initialError;
   }
 
+  if (isAuthCaptchaEnabled() && !parsed.data.captchaToken) {
+    return {
+      message: "Complete the security check and try again.",
+    };
+  }
+
   const rateLimit = await enforceRateLimit({
     scope: "auth:login",
     limit: 20,
@@ -134,6 +144,9 @@ export async function loginAction(
   const { error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
+    options: {
+      captchaToken: parsed.data.captchaToken,
+    },
   });
 
   if (error) {
@@ -162,7 +175,7 @@ export async function signupAction(
     return initialError;
   }
 
-  if (isSignupCaptchaEnabled() && !parsed.data.captchaToken) {
+  if (isAuthCaptchaEnabled() && !parsed.data.captchaToken) {
     return {
       message: "Complete the security check and try again.",
     };

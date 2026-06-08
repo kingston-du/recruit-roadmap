@@ -24,8 +24,9 @@ Hockey Pathway keeps Supabase Auth for users, sessions, `auth.users`, and RLS. F
 ## App Behavior
 
 - Signup still calls `supabase.auth.signUp(...)` so existing sessions, callback handling, `auth.users`, and RLS policies keep working.
-- When `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set, the signup form renders Turnstile and passes the token to Supabase as `options.captchaToken`.
+- When `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set, the signup and login forms render Turnstile and pass the token to Supabase as `options.captchaToken`.
 - The app shows friendly signup messages for email sender rate limits, CAPTCHA failures, disabled signup, and the default-SMTP "email address not authorized" failure.
+- Supabase CAPTCHA protection applies to password sign-in too. If login returns `captcha_failed`, the login form is missing or submitting an expired Turnstile token.
 - Cloudflare showing a successful Turnstile challenge only proves the browser solved the widget. Supabase still needs the matching Turnstile secret configured in **Authentication > Bot and Abuse Protection** before it will accept the token.
 - If signup repeatedly fails with CAPTCHA errors, check the Supabase CAPTCHA secret before retrying. Failed signup attempts can still consume app and Supabase rate-limit windows.
 - Confirmation links should be opened in the same browser used to sign up because the SSR email flow uses PKCE cookies.
