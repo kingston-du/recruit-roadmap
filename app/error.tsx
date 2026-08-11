@@ -25,7 +25,7 @@ export default function ErrorPage({
         </div>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight">Try that again</h1>
         <p className="mt-4 text-base leading-7 text-slate-600">
-          The app hit a temporary problem. Your private data was not shown in this error screen.
+          We could not load this page. Please try again.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button
@@ -36,7 +36,7 @@ export default function ErrorPage({
             <RotateCcw /> Try again
           </Button>
           <Button asChild variant="outline" className="h-10 rounded-md bg-white">
-            <Link href="/today">Go to Today</Link>
+            <Link href="/roadmap">Go to Roadmap</Link>
           </Button>
         </div>
       </div>

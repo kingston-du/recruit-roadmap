@@ -40,9 +40,9 @@ export type SeoRoute = {
 
 export const siteConfig = {
   name: "Hockey Pathway",
-  title: "Hockey Pathway | Boys Hockey Recruiting Tracker",
+  title: "Hockey Pathway | Boys Hockey Roadmap and League Guide",
   description:
-    "A simple boys hockey recruiting tracker for families to learn the pathway, build My Plan, manage targets, and know what to do this week.",
+    "Learn how boys hockey leagues connect from youth and school programs through prep, academy, junior, college, and professional hockey.",
   locale: "en_US",
   language: "en-US",
   logoPath: "/logo.png",
@@ -51,16 +51,18 @@ export const siteConfig = {
     url: "/landing-hero.png",
     width: 1672,
     height: 941,
-    alt: "Hockey Pathway planning app for boys hockey families",
+    alt: "Hockey players standing together on the ice",
   },
   keywords: [
-    "boys hockey recruiting",
-    "hockey recruiting tracker",
+    "boys hockey roadmap",
     "hockey pathway",
-    "junior hockey roadmap",
-    "college hockey planning",
-    "hockey target list",
-    "hockey parent planner",
+    "junior hockey leagues",
+    "college hockey pathways",
+    "AAA hockey",
+    "prep school hockey",
+    "NCAA hockey",
+    "ACHA hockey",
+    "Canadian junior hockey",
   ],
 } as const;
 
@@ -77,25 +79,16 @@ export const publicSeoRoutes = [
     path: "/roadmap",
     title: "Boys Hockey Roadmap",
     description:
-      "Learn common boys hockey paths from youth, AAA, high school, prep, academy, junior hockey, college, and beyond before building your target list.",
-    changeFrequency: "monthly",
-    priority: 0.9,
+      "See how boys hockey can move from youth and school programs into prep, academy, junior, college, and professional leagues.",
+    changeFrequency: "weekly",
+    priority: 0.95,
     image: "/images/hockey/empty-rink.jpg",
-  },
-  {
-    path: "/pricing",
-    title: "Pricing",
-    description:
-      "Start Hockey Pathway free, upgrade to Pro for unlimited tracking, or add optional Setup Assist for user-provided targets, contacts, dates, and links.",
-    changeFrequency: "monthly",
-    priority: 0.8,
-    image: "/images/hockey/sticks-detail.jpg",
   },
   {
     path: "/privacy",
     title: "Privacy Policy",
     description:
-      "Read how Hockey Pathway protects private family recruiting details, player profile information, targets, contacts, dates, and account data.",
+      "Read what Hockey Pathway collects, how site analytics may be used, and what happens when you follow an outside link.",
     changeFrequency: "yearly",
     priority: 0.3,
   },
@@ -103,7 +96,7 @@ export const publicSeoRoutes = [
     path: "/terms",
     title: "Terms",
     description:
-      "Review the terms for using Hockey Pathway as a hockey recruiting planning and organization tool for families.",
+      "Read the terms for using Hockey Pathway and its league guides.",
     changeFrequency: "yearly",
     priority: 0.3,
   },
@@ -111,7 +104,7 @@ export const publicSeoRoutes = [
     path: "/disclaimer",
     title: "Disclaimer",
     description:
-      "Understand Hockey Pathway's role as a planning tool, not a recruiting agency, scouting service, marketplace, or guarantee of outcomes.",
+      "Hockey Pathway provides general information. We are not recruiters, scouts, or a player placement service.",
     changeFrequency: "yearly",
     priority: 0.3,
   },
@@ -259,76 +252,46 @@ export function createWebsiteJsonLd() {
     "@id": absoluteUrl("/#website"),
     name: siteConfig.name,
     url: absoluteUrl("/"),
+    inLanguage: siteConfig.language,
     publisher: {
       "@id": absoluteUrl("/#organization"),
     },
-    inLanguage: siteConfig.language,
+    description: siteConfig.description,
   };
 }
 
-export function createOfferCatalogJsonLd() {
-  return {
-    "@type": "OfferCatalog",
-    name: "Hockey Pathway plans",
-    itemListElement: [
-      {
-        "@type": "Offer",
-        name: "Free",
-        price: "0",
-        priceCurrency: "USD",
-        url: absoluteUrl("/pricing"),
-        availability: "https://schema.org/InStock",
-      },
-      {
-        "@type": "Offer",
-        name: "Pro monthly",
-        price: "5",
-        priceCurrency: "USD",
-        url: absoluteUrl("/pricing"),
-        availability: "https://schema.org/InStock",
-      },
-      {
-        "@type": "Offer",
-        name: "Pro yearly",
-        price: "39",
-        priceCurrency: "USD",
-        url: absoluteUrl("/pricing"),
-        availability: "https://schema.org/InStock",
-      },
-      {
-        "@type": "Offer",
-        name: "Setup Assist",
-        price: "20",
-        priceCurrency: "USD",
-        url: absoluteUrl("/pricing"),
-        availability: "https://schema.org/InStock",
-      },
-    ],
-  };
-}
-
-export function createWebApplicationJsonLd() {
+export function createCollectionJsonLd({
+  description,
+  id,
+  items,
+  name,
+  path,
+}: {
+  description: string;
+  id: string;
+  items: Array<{ name: string; description: string; url: string }>;
+  name: string;
+  path: string;
+}) {
   return {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "@id": absoluteUrl("/#web-application"),
-    name: siteConfig.name,
-    url: absoluteUrl("/"),
-    applicationCategory: "SportsApplication",
-    operatingSystem: "Web",
-    description: siteConfig.description,
-    image: absoluteUrl(siteConfig.ogImage.url),
-    audience: {
-      "@type": "Audience",
-      audienceType: "Boys hockey players and parents",
+    "@type": "CollectionPage",
+    "@id": id,
+    name,
+    description,
+    url: absoluteUrl(path),
+    isPartOf: {
+      "@id": absoluteUrl("/#website"),
     },
-    featureList: [
-      "Public boys hockey Roadmap",
-      "My Plan family recruiting plan",
-      "Targets, coach contacts, camps, and dates",
-      "My Player profile details and video links",
-      "Today checklist for next steps",
-    ],
-    offers: createOfferCatalogJsonLd(),
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: items.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.name,
+        description: item.description,
+        url: item.url,
+      })),
+    },
   };
 }

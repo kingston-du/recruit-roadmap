@@ -1,12 +1,10 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 
-import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
-import { LogoMark } from "@/components/recruit/logo";
+import { SiteShell } from "@/components/roadmap/site-shell";
 import { createPageMetadata } from "@/lib/seo";
 
 const disclaimerDescription =
-  "Understand Hockey Pathway's role as a planning tool, not a recruiting agency, scouting service, marketplace, or guarantee of outcomes.";
+  "Hockey Pathway provides general information. We are not recruiters, scouts, or a player placement service.";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Disclaimer",
@@ -16,82 +14,71 @@ export const metadata: Metadata = createPageMetadata({
 
 const disclaimerSections = [
   {
-    title: "Planning tool only",
+    title: "General information only",
     body: [
-      "Hockey Pathway helps families organize targets, dates, contacts, profile links, notes, and next steps. This is not a recruiting agency, scouting service, or legal/eligibility advisor.",
-      "The app does not evaluate players, rank players, decide where players should go, send messages to coaches, or scrape recruiting websites.",
+      "Hockey Pathway explains boys hockey leagues and the paths between them. The information is general and may not apply to your player.",
+      "We do not evaluate or rank players and teams. We also do not tell families which league or program to choose.",
+    ],
+  },
+  {
+    title: "Not a recruiting service",
+    body: [
+      "Hockey Pathway is not a recruiting agency, scouting service, marketplace, placement service, or professional adviser.",
+      "We do not contact coaches, send player information, negotiate offers, or promise that anyone will reply.",
     ],
   },
   {
     title: "No guaranteed outcomes",
     body: [
-      "We do not guarantee roster spots, scholarships, placement, coach responses, or recruiting outcomes.",
-      "Any recruiting result depends on many people and rules outside this app, including players, families, coaches, teams, schools, leagues, and eligibility organizations.",
+      "Nothing on this site promises a roster spot, scholarship, admission, draft selection, college placement, professional contract, or any other result.",
+      "A team or league is included for reference. Its inclusion does not mean that we recommend it or believe it is right for a particular player.",
     ],
   },
   {
-    title: "Verify independently",
+    title: "Verify current information",
     body: [
-      "Users must verify team, league, school, NCAA, and eligibility information independently. Do not rely on saved notes, links, or dates as the final source of truth.",
-      "Before making decisions, check current official team, league, school, NCAA, and eligibility resources.",
+      "Leagues, teams, rules, costs, rosters, deadlines, and contact details can change at any time.",
+      "Please confirm anything important with the league, team, school, or governing body before you make a decision.",
     ],
   },
   {
-    title: "Minors",
+    title: "No scraping or AI advice",
     body: [
-      "Parent/guardian should manage accounts for minors. Do not use the service if the player is under 13 without parent/guardian involvement.",
-    ],
-  },
-  {
-    title: "Privacy reminder",
-    body: [
-      "We collect only information needed to organize recruiting tracking. Users can request deletion of account/data.",
+      "We do not collect listings from MyHockeyRankings, Elite Prospects, or team, school, and league websites.",
+      "We do not use AI to advise families or decide where a player should play.",
     ],
   },
 ];
 
 export default function DisclaimerPage() {
   return (
-    <main className="min-h-screen bg-white px-5 py-12 text-slate-950">
-      <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-3xl flex-col">
-        <article className="flex-1">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-md text-sm font-semibold text-cyan-800 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
-          >
-            <LogoMark size={28} />
-            <span>Hockey Pathway</span>
-          </Link>
-          <p className="mt-8 text-sm font-semibold text-cyan-800">Last updated May 26, 2026</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight">Disclaimer</h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">
-            This page keeps the boundary clear: Hockey Pathway is for organizing
-            family recruiting work, not for promising or deciding recruiting results.
-          </p>
+    <SiteShell activeHref="/disclaimer" className="px-5 py-10 sm:px-6 lg:px-8">
+      <article className="mx-auto max-w-3xl rounded-md border border-slate-200 bg-white p-6 shadow-sm">
+        <p className="text-sm font-semibold text-cyan-800">Last updated June 18, 2026</p>
+        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">
+          Disclaimer
+        </h1>
+        <p className="mt-4 text-base leading-7 text-slate-600">
+          Hockey Pathway shares public information. We do not represent or evaluate players.
+        </p>
 
-          <div className="mt-10 grid gap-8">
-            {disclaimerSections.map((section) => (
-              <section key={section.title}>
-                <h2 className="text-xl font-semibold tracking-tight">{section.title}</h2>
-                <div className="mt-3 grid gap-3">
-                  {section.body.map((paragraph) => (
-                    <p key={paragraph} className="text-base leading-7 text-slate-600">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        </article>
-
-        <footer className="mt-12 border-t border-slate-200 pt-6">
-          <LegalFooterLinks
-            className="flex flex-wrap gap-4 text-sm"
-            linkClassName="text-slate-600 hover:text-cyan-800"
-          />
-        </footer>
-      </div>
-    </main>
+        <div className="mt-10 grid gap-8">
+          {disclaimerSections.map((section) => (
+            <section key={section.title}>
+              <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+                {section.title}
+              </h2>
+              <div className="mt-3 grid gap-3">
+                {section.body.map((paragraph) => (
+                  <p key={paragraph} className="text-base leading-7 text-slate-600">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </article>
+    </SiteShell>
   );
 }

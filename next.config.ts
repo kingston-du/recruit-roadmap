@@ -1,12 +1,10 @@
 import type { NextConfig } from "next";
 
 const isProduction = process.env.NODE_ENV === "production";
-const turnstileOrigin = "https://challenges.cloudflare.com";
 const scriptSources = [
   "'self'",
   "'unsafe-inline'",
   isProduction ? "" : "'unsafe-eval'",
-  turnstileOrigin,
   "https://*.posthog.com",
   "https://*.i.posthog.com",
 ]
@@ -26,8 +24,8 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.posthog.com https://*.i.posthog.com",
-      `frame-src https://checkout.stripe.com ${turnstileOrigin}`,
+      "connect-src 'self' https://*.posthog.com https://*.i.posthog.com",
+      "frame-src 'none'",
       isProduction ? "upgrade-insecure-requests" : "",
     ]
       .filter(Boolean)
@@ -57,11 +55,6 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "64kb",
-    },
-  },
   async headers() {
     return [
       {
@@ -69,6 +62,25 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
     ];
+  },
+  async redirects() {
+    return [
+      "/admin",
+      "/auth/:path*",
+      "/login",
+      "/signup",
+      "/pricing",
+      "/today",
+      "/my-plan",
+      "/targets",
+      "/my-player",
+      "/settings",
+      "/setup-assist",
+    ].map((source) => ({
+      source,
+      destination: "/roadmap",
+      permanent: true,
+    }));
   },
   turbopack: {
     root: process.cwd(),

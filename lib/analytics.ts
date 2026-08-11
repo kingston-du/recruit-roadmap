@@ -1,64 +1,29 @@
 import type { CaptureResult, Properties } from "posthog-js";
 
 export const analyticsEventNames = [
-  "signup_completed",
-  "player_profile_saved",
-  "target_created",
-  "third_target_created",
-  "free_limit_hit",
-  "upgrade_clicked",
-  "roadmap_card_clicked",
-  "my_plan_created",
-  "event_created",
-  "contact_created",
+  "league_source_clicked",
+  "roadmap_filter_used",
 ] as const;
 
 export type AnalyticsEventName = (typeof analyticsEventNames)[number];
-export type AnalyticsBillingInterval = "monthly" | "yearly";
-export type AnalyticsLimitType = "target" | "contact" | "event" | "outreach";
-export type AnalyticsPlanTier = "free" | "pro";
 export type AnalyticsSource =
-  | "signup_redirect"
-  | "pricing_page"
-  | "target_limit_banner"
-  | "target_limit_drawer"
-  | "contact_limit_drawer"
-  | "event_limit_drawer"
-  | "outreach_limit_drawer"
-  | "inline_target_limit"
-  | "inline_contact_limit"
-  | "inline_event_limit"
-  | "inline_outreach_limit"
-  | "target_add_button"
-  | "contact_add_button"
-  | "event_add_button"
-  | "outreach_add_button"
-  | "target_form"
-  | "contact_form"
-  | "event_form"
-  | "player_profile_form"
-  | "my_plan_form"
-  | "roadmap_card";
+  | "home_featured_league"
+  | "league_page_source"
+  | "roadmap_filter"
+  | "roadmap_node";
 
 export type AnalyticsProperties = {
   "$cookieless_mode"?: boolean;
   "$current_url"?: string;
   "$host"?: string;
   "$pathname"?: string;
-  billing_interval?: AnalyticsBillingInterval;
-  contact_count?: number;
-  event_count?: number;
   event_type?: string;
-  limit_count?: number;
-  limit_type?: AnalyticsLimitType;
+  filter_type?: string;
+  filter_value?: string;
+  league_slug?: string;
   page_name?: string;
   page_path?: string;
-  path_count?: number;
-  plan_tier?: AnalyticsPlanTier;
   source?: AnalyticsSource;
-  target_count?: number;
-  target_type?: string;
-  used_count?: number;
 };
 
 const analyticsEventNameSet = new Set<string>(analyticsEventNames);
@@ -68,20 +33,13 @@ const allowedPropertyKeys = new Set<string>([
   "$current_url",
   "$host",
   "$pathname",
-  "billing_interval",
-  "contact_count",
-  "event_count",
   "event_type",
-  "limit_count",
-  "limit_type",
+  "filter_type",
+  "filter_value",
+  "league_slug",
   "page_name",
   "page_path",
-  "path_count",
-  "plan_tier",
   "source",
-  "target_count",
-  "target_type",
-  "used_count",
 ]);
 const postHogInternalPropertyKeys = new Set<string>(["distinct_id", "token"]);
 const forbiddenPropertyNamePattern =
@@ -260,34 +218,16 @@ export function pageNameFromPathname(pathname: string) {
   const [segment] = path.slice(1).split("/");
 
   switch (segment) {
-    case "admin":
-      return "Admin";
     case "disclaimer":
       return "Disclaimer";
-    case "login":
-      return "Login";
-    case "my-plan":
-      return "My Plan";
-    case "my-player":
-      return "My Player";
-    case "pricing":
-      return "Pricing";
+    case "leagues":
+      return "League";
     case "privacy":
       return "Privacy";
     case "roadmap":
       return "Roadmap";
-    case "settings":
-      return "Settings";
-    case "setup-assist":
-      return "Setup Assist";
-    case "signup":
-      return "Signup";
-    case "targets":
-      return "Targets";
     case "terms":
       return "Terms";
-    case "today":
-      return "Today";
     default:
       return "Unknown";
   }
@@ -305,14 +245,6 @@ export function buildPageViewProperties(pathname: string, origin?: string) {
     page_name: pageNameFromPathname(pagePath),
     page_path: pagePath,
   });
-}
-
-export function appendSignupCompletedMarker(path: string) {
-  const safePath = path.startsWith("/") && !path.startsWith("//") ? path : "/";
-  const url = new URL(safePath, "https://hockey-pathway.local");
-  url.searchParams.set("signup", "completed");
-
-  return `${url.pathname}${url.search}`;
 }
 
 export function isAnalyticsEventName(value: string): value is AnalyticsEventName {

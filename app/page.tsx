@@ -1,421 +1,258 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
-  CalendarCheck,
+  BookOpen,
   CheckCircle2,
-  ClipboardList,
-  Mail,
+  Compass,
+  ExternalLink,
   Map,
-  Target,
-  UserRound,
-  Video,
+  ShieldCheck,
 } from "lucide-react";
 
-import { LegalFooterLinks } from "@/components/recruit/legal-footer-links";
+import { ImageBackdrop, StatusPill } from "@/components/recruit/ui";
 import { JsonLd } from "@/components/recruit/json-ld";
-import { LogoMark } from "@/components/recruit/logo";
-import { ImageBackdrop, ImagePanel } from "@/components/recruit/ui";
+import { SiteShell } from "@/components/roadmap/site-shell";
 import { Button } from "@/components/ui/button";
-import { createPageMetadata, createWebApplicationJsonLd, siteConfig } from "@/lib/seo";
+import {
+  formatReviewDate,
+  getLeaguePath,
+  leagues,
+  pathwayStages,
+} from "@/lib/roadmap-data";
+import {
+  absoluteUrl,
+  createCollectionJsonLd,
+  createPageMetadata,
+  siteConfig,
+} from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
   title: siteConfig.title,
   description: siteConfig.description,
   path: "/",
+  image: "/landing-hero.png",
 });
 
-const productPages: Array<{
-  name: string;
-  href: string;
-  description: string;
-  icon: LucideIcon;
-}> = [
-  {
-    name: "Today",
-    href: "/today",
-    description: "See the few things that need attention this week.",
-    icon: CalendarCheck,
-  },
-  {
-    name: "My Plan",
-    href: "/my-plan",
-    description: "Turn goals into a simple plan the whole family can follow.",
-    icon: ClipboardList,
-  },
-  {
-    name: "Targets",
-    href: "/targets",
-    description: "Track teams, schools, camps, coaches, notes, and next steps.",
-    icon: Target,
-  },
-  {
-    name: "My Player",
-    href: "/my-player",
-    description: "Keep player details, video links, and profile items in one place.",
-    icon: UserRound,
-  },
-  {
-    name: "Roadmap",
-    href: "/roadmap",
-    description: "Learn common boys hockey paths before choosing what to research.",
-    icon: Map,
-  },
+const featuredLeagueSlugs = ["aaa-hockey", "ushl", "chl", "ncaa-d3", "acha", "bchl"];
+const featuredLeagues = featuredLeagueSlugs
+  .map((slug) => leagues.find((league) => league.slug === slug))
+  .filter((league): league is (typeof leagues)[number] => Boolean(league));
+
+const principles = [
+  "Free information for hockey families",
+  "Links to official sources on every league page",
+  "No rankings, promises, or player evaluations",
+  "No accounts, payments, scraping, AI, or marketplace",
 ];
 
-const problemItems = [
-  { label: "Teams", icon: Target },
-  { label: "Coaches", icon: UserRound },
-  { label: "Camps", icon: CalendarCheck },
-  { label: "Videos", icon: Video },
-  { label: "Emails", icon: Mail },
-  { label: "Follow-ups", icon: CheckCircle2 },
-];
-
-const freePlanItems = [
-  "Public Roadmap",
-  "My Player and My Plan",
-  "Up to 5 targets",
-  "Up to 3 coach contacts",
-  "Up to 3 events or dates",
-  "Basic Today checklist",
-];
-
-const proPlanItems = [
-  "Unlimited targets",
-  "Unlimited contacts",
-  "Unlimited events and dates",
-  "Outreach history",
-  "Follow-up reminders",
-  "Shareable player profile",
-  "Advanced Today checklist",
-];
-
-function StartFreeButton({ className = "" }: { className?: string }) {
-  return (
-    <Button
-      asChild
-      className={`h-12 rounded-md bg-[#d71920] px-5 text-base text-white hover:bg-[#b8141a] ${className}`}
-    >
-      <Link href="/signup">
-        Start free <ArrowRight className="size-4" />
-      </Link>
-    </Button>
-  );
-}
-
-function SectionHeading({
-  eyebrow,
-  title,
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="max-w-3xl">
-      <p className="text-sm font-semibold text-cyan-800">{eyebrow}</p>
-      <h2 className="mt-3 text-3xl font-semibold text-slate-950 md:text-4xl">
-        {title}
-      </h2>
-      <p className="mt-4 text-base leading-7 text-slate-600">{children}</p>
-    </div>
-  );
+function homeJsonLd() {
+  return [
+    createCollectionJsonLd({
+      id: absoluteUrl("/#league-guide"),
+      name: "North American boys hockey league and pathway guide",
+      description: siteConfig.description,
+      path: "/",
+      items: leagues.map((league) => ({
+        name: league.name,
+        description: league.summary,
+        url: absoluteUrl(getLeaguePath(league)),
+      })),
+    }),
+  ];
 }
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white text-slate-950">
-      <JsonLd data={createWebApplicationJsonLd()} />
-      <section
-        className="relative flex min-h-[84svh] overflow-hidden bg-[#071a2f] text-white"
-        style={{
-          backgroundImage: "url('/landing-hero.png')",
-          backgroundPosition: "center right",
-          backgroundSize: "cover",
-        }}
-      >
-        <div className="absolute inset-0 bg-[#071a2f]/50" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#071a2f] via-[#071a2f]/88 to-[#071a2f]/20" />
+    <SiteShell activeHref="/">
+      <JsonLd data={homeJsonLd()} />
 
-        <div className="relative mx-auto flex w-full max-w-7xl flex-col px-5 py-5 sm:px-6 lg:px-8">
-          <header className="flex items-center justify-between gap-4">
-            <Link href="/" className="flex items-center gap-3">
-              <LogoMark size={40} className="ring-1 ring-white/20" />
-              <span>
-                <span className="block text-sm font-semibold">Hockey Pathway</span>
-                <span className="block text-xs text-cyan-100">Hockey family plan</span>
-              </span>
-            </Link>
-
-            <nav className="hidden items-center gap-5 text-sm font-medium text-cyan-50 md:flex">
-              <Link href="#product" className="underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200/40">
-                Product
-              </Link>
-              <Link href="/pricing" className="underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200/40">
-                Plans
-              </Link>
-              <Link href="/roadmap" className="underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200/40">
-                Roadmap
-              </Link>
-              <Link href="/login" className="underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200/40">
-                Log in
-              </Link>
-            </nav>
-          </header>
-
-          <div className="flex flex-1 items-center py-16 md:py-20">
-            <div className="max-w-3xl">
-              <p className="text-sm font-semibold text-cyan-100">
-                Boys hockey recruiting tracker for families
-              </p>
-              <h1 className="mt-5 text-4xl font-semibold leading-[1.08] text-white md:text-6xl">
-                Organize your hockey recruiting path without messy spreadsheets.
-              </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-100">
-                Hockey Pathway helps parents and players keep targets, coach contacts,
-                camps, videos, dates, and next steps together so the week feels clear.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <StartFreeButton />
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-12 rounded-md border-white/35 bg-white/10 px-5 text-base text-white hover:bg-white hover:text-[#071a2f]"
-                >
-                  <Link href="/roadmap">View Roadmap</Link>
-                </Button>
-              </div>
-              <p className="mt-4 text-sm text-cyan-50">
-                Free includes the public Roadmap, My Plan, My Player, and 5 targets.
-              </p>
+      <section className="relative overflow-hidden bg-[#071a2f] text-white">
+        <ImageBackdrop
+          imageSrc="/landing-hero.png"
+          imagePosition="center right"
+          overlayClassName="bg-[#071a2f]/54"
+          gradientClassName="bg-gradient-to-r from-[#071a2f] via-[#071a2f]/90 to-[#071a2f]/36"
+        />
+        <div className="relative mx-auto grid min-h-[calc(100svh-6.5rem)] max-w-7xl content-center gap-10 px-5 py-14 sm:px-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:px-8">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-cyan-50 ring-1 ring-white/15">
+              <Map className="size-4" />
+              North American boys hockey roadmap
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#eef7fb]">
-        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-16 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-          <SectionHeading
-            eyebrow="The problem"
-            title="Recruiting gets hard to manage before it gets official."
-          >
-            Families are juggling teams, coaches, camps, videos, emails, and
-            follow-ups. A simple plan keeps important details from getting buried in
-            texts, tabs, and old spreadsheets.
-          </SectionHeading>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:pt-8">
-            {problemItems.map((item) => (
-              <div
-                key={item.label}
-                className="flex min-h-20 items-center gap-3 rounded-md border border-cyan-100 bg-white p-4 shadow-sm"
+            <h1 className="mt-5 text-4xl font-semibold leading-[1.08] tracking-tight md:text-6xl">
+              Hockey Pathway
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-100">
+              Learn how youth, prep, academy, junior, and college hockey fit together
+              before your family starts making calls.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button
+                asChild
+                className="h-12 rounded-md bg-white px-5 text-base text-[#071a2f] hover:bg-cyan-50"
               >
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-cyan-50 text-cyan-800">
-                  <item.icon className="size-5" />
-                </span>
-                <p className="font-semibold text-slate-900">{item.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="product" className="bg-white">
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8">
-          <SectionHeading
-            eyebrow="The product"
-            title="Five simple pages for the work families already do."
-          >
-            The app is organized around the way hockey parents actually plan:
-            understand the pathway, build a plan, track targets, keep the player
-            profile ready, and know what to do next.
-          </SectionHeading>
-
-          <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-            {productPages.map((page) => (
-              <Link
-                key={page.name}
-                href={page.href}
-                className="smooth-card group flex min-h-56 flex-col rounded-md border border-slate-200 bg-white p-5 shadow-sm hover:border-cyan-300 hover:bg-cyan-50/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
-              >
-                <span className="flex size-11 items-center justify-center rounded-md bg-[#071a2f] text-white">
-                  <page.icon className="size-5" />
-                </span>
-                <h3 className="mt-5 text-xl font-semibold text-slate-950">{page.name}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  {page.description}
-                </p>
-                <span className="mt-auto flex items-center gap-2 pt-5 text-sm font-semibold text-cyan-800">
-                  Preview page <ArrowRight className="size-4" />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="plans" className="bg-[#f8fafc]">
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8">
-          <SectionHeading
-            eyebrow="Start free"
-            title="Begin with 5 targets before you decide to upgrade."
-          >
-            Hockey Pathway is built for families who want to get organized first.
-            Start with the free plan, then move to Pro only when tracking grows.
-          </SectionHeading>
-
-          <div className="mt-10 grid gap-5 lg:grid-cols-2">
-            <div className="smooth-card rounded-md border border-cyan-200 bg-white p-6 shadow-sm hover:shadow-md">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-                <div>
-                  <p className="text-sm font-semibold text-cyan-800">Free plan</p>
-                  <h3 className="mt-2 text-3xl font-semibold text-slate-950">$0</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    A clear place to start without a payment method.
-                  </p>
-                </div>
-                <StartFreeButton className="sm:mt-1" />
-              </div>
-
-              <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-                {freePlanItems.map((item) => (
-                  <li key={item} className="flex gap-3 text-sm leading-6 text-slate-700">
-                    <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-cyan-700" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <ImagePanel
-              imageSrc="/images/hockey/sticks-detail.jpg"
-              imagePosition="center"
-              overlayClassName="bg-[#071a2f]/88"
-              gradientClassName="bg-gradient-to-br from-[#071a2f]/95 via-[#071a2f]/86 to-[#071a2f]/72"
-              className="border-slate-900/10 p-6"
-            >
-              <p className="text-sm font-semibold text-cyan-100">Pro plan</p>
-              <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
-                <h3 className="text-3xl font-semibold">$5/month</h3>
-                <p className="pb-1 text-sm text-slate-300">or $39/year</p>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                For families tracking more teams, contacts, dates, and follow-ups.
-              </p>
-
-              <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-                {proPlanItems.map((item) => (
-                  <li key={item} className="flex gap-3 text-sm leading-6 text-slate-200">
-                    <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-cyan-200" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-6 text-sm text-slate-300">
-                Upgrade when the family is tracking more than the free limits.
-              </p>
+                <Link href="/roadmap">
+                  See the Roadmap <ArrowRight className="size-4" />
+                </Link>
+              </Button>
               <Button
                 asChild
                 variant="outline"
-                className="mt-5 h-10 rounded-md border-white/25 bg-white text-[#071a2f] hover:bg-cyan-50"
+                className="h-12 rounded-md border-white/30 bg-white/10 px-5 text-base text-white hover:bg-white hover:text-[#071a2f]"
               >
-                <Link href="/pricing">View Pro options</Link>
+                <Link href="#leagues">Find a League</Link>
               </Button>
-            </ImagePanel>
+            </div>
+          </div>
+
+          <aside className="rounded-md border border-white/15 bg-white/10 p-5 shadow-2xl backdrop-blur">
+            <p className="text-sm font-semibold text-cyan-100">What you will find here</p>
+            <div className="mt-4 grid gap-3">
+              {principles.map((principle) => (
+                <div key={principle} className="flex gap-3 text-sm leading-6 text-slate-100">
+                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                  {principle}
+                </div>
+              ))}
+            </div>
+            <p className="mt-5 text-xs leading-5 text-slate-300">
+              We are not recruiters or scouts. We do not represent players, contact
+              coaches, or promise roster spots, scholarships, or replies.
+            </p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="pathways" className="bg-white">
+        <div className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold text-cyan-800">How the roadmap works</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">
+              Start with where your player is now.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-slate-600">
+              From there, you can look at school, prep, academy, junior, and college
+              options. Each section shows what families usually need to think about next.
+            </p>
+          </div>
+
+          <div className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {pathwayStages.map((stage, index) => (
+              <div
+                key={stage.id}
+                className="rounded-md border border-slate-200 bg-[#fbfcfe] p-5 shadow-sm"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <StatusPill tone={index < 2 ? "amber" : index < 5 ? "cyan" : "slate"}>
+                    {stage.eyebrow}
+                  </StatusPill>
+                  <span className="font-mono text-xs text-slate-400">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <h3 className="mt-4 text-xl font-semibold tracking-tight text-slate-950">
+                  {stage.title}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{stage.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="leagues" className="bg-[#eef7fb]">
+        <div className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
+          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+            <div className="max-w-3xl">
+              <p className="text-sm font-semibold text-cyan-800">League guides</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">
+                Get the basics without digging through dozens of tabs.
+              </h2>
+              <p className="mt-4 text-base leading-7 text-slate-600">
+                Each page covers who the league is for, how players get in, what it may
+                cost, which questions to ask, and where to check the official details.
+              </p>
+            </div>
+            <Button asChild className="h-10 w-fit rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]">
+              <Link href="/roadmap">
+                See Every Path <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {featuredLeagues.map((league) => (
+              <Link
+                key={league.slug}
+                href={getLeaguePath(league)}
+                className="smooth-card group flex min-h-60 flex-col rounded-md border border-slate-200 bg-white p-5 shadow-sm hover:border-cyan-300 hover:bg-cyan-50/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-cyan-200"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-wrap gap-2">
+                    <StatusPill tone="cyan">{league.type}</StatusPill>
+                    <StatusPill tone="amber">{league.geography}</StatusPill>
+                  </div>
+                  <ArrowRight className="size-4 shrink-0 text-slate-400 transition-[color,transform] duration-200 group-hover:translate-x-0.5 group-hover:text-cyan-700" />
+                </div>
+                <h3 className="mt-5 text-xl font-semibold tracking-tight text-slate-950">
+                  {league.name}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{league.summary}</p>
+                <div className="mt-auto flex items-center gap-2 pt-5 text-xs font-semibold text-cyan-800">
+                  <ShieldCheck className="size-3.5" />
+                  Information checked {formatReviewDate(league.lastReviewed)}
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
       <section className="bg-white">
-        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-16 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
-          <SectionHeading
-            eyebrow="Setup Assist"
-            title="Optional $20 import help when your list is already scattered."
-          >
-            Some families already have targets, coach names, camp dates, and links in
-            different places. Setup Assist is a one-time import service to help get
-            those details into the tracker.
-          </SectionHeading>
-
-          <div className="smooth-card rounded-md border border-[#f5c2c5] bg-[#fff7f7] p-6 hover:shadow-md">
-            <h3 className="text-xl font-semibold text-slate-950">What it can help with</h3>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {["Targets", "Coach contacts", "Important dates", "Video and profile links"].map(
-                (item) => (
-                  <div key={item} className="flex gap-3 rounded-md bg-white p-4">
-                    <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[#d71920]" />
-                    <p className="text-sm font-medium text-slate-800">{item}</p>
-                  </div>
-                ),
-              )}
-            </div>
-            <p className="mt-5 text-sm leading-6 text-slate-600">
-              This is optional and not required to use the free plan.
-            </p>
-            <Button
-              asChild
-              className="mt-5 h-10 rounded-md bg-[#071a2f] text-white hover:bg-[#0b2745]"
-            >
-              <Link href="/pricing">View Setup Assist</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section className="relative overflow-hidden bg-[#071a2f] text-white">
-        <ImageBackdrop
-          imageSrc="/images/hockey/skates-lineup.jpg"
-          imagePosition="center 58%"
-          overlayClassName="bg-[#071a2f]/88"
-          gradientClassName="bg-gradient-to-r from-[#071a2f]/96 via-[#071a2f]/90 to-[#071a2f]/76"
-        />
-        <div className="relative mx-auto grid max-w-7xl gap-8 px-5 py-14 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:px-8">
+        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
           <div>
-            <p className="text-sm font-semibold text-cyan-100">Plain-English disclaimer</p>
-            <h2 className="mt-3 text-3xl font-semibold">
-              A planning tool, not a recruiting service.
+            <p className="text-sm font-semibold text-cyan-800">A quick note</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">
+              Use this as a starting point for your own research.
             </h2>
-          </div>
-          <p className="text-base leading-8 text-slate-200">
-            Hockey Pathway is not a recruiting agency, scouting service, coach/player
-            marketplace, or guarantee of roster spots, scholarships, coach responses,
-            or outcomes. It helps your family stay organized while you do your own
-            research and outreach.
-          </p>
-        </div>
-      </section>
-
-      <section className="bg-[#eef7fb]">
-        <div
-          id="start-free"
-          className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 px-5 py-14 sm:px-6 md:flex-row md:items-center lg:px-8"
-        >
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold text-cyan-800">Ready to get organized?</p>
-            <h2 className="mt-3 text-3xl font-semibold text-slate-950">
-              Start free and build your first hockey recruiting plan.
-            </h2>
-            <p className="mt-3 text-base leading-7 text-slate-600">
-              Add your player profile, pick a few targets, and use Today to keep the
-              next step clear.
+            <p className="mt-4 text-base leading-7 text-slate-600">
+              League rules, costs, rosters, and deadlines change. Check important details
+              with the league, team, school, or governing body before making a decision.
             </p>
           </div>
-          <StartFreeButton />
+
+          <div className="grid gap-3">
+            {[
+              {
+                icon: BookOpen,
+                title: "Written and checked by hand",
+                body: "The information comes from published sources. We do not scrape listings or accept public rankings.",
+              },
+              {
+                icon: Compass,
+                title: "Notes for families",
+                body: "The parent, coach, and scout notes are general points to consider. They are not quotes or endorsements.",
+              },
+              {
+                icon: ExternalLink,
+                title: "Official links",
+                body: "Every league page links to official websites so you can confirm the current details yourself.",
+              },
+            ].map((item) => (
+              <div key={item.title} className="flex gap-4 rounded-md border border-slate-200 bg-[#fbfcfe] p-4">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#d71920] text-white">
+                  <item.icon className="size-5" />
+                </span>
+                <div>
+                  <h3 className="font-semibold tracking-tight text-slate-950">{item.title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">{item.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
-
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-8 text-sm text-slate-600 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <p>Hockey Pathway is a planning tool for hockey families.</p>
-          <LegalFooterLinks
-            className="flex flex-wrap gap-4"
-            linkClassName="hover:text-cyan-800"
-          />
-        </div>
-      </footer>
-    </main>
+    </SiteShell>
   );
 }
